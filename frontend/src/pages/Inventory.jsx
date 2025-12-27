@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import AuthContext from '../context/AuthContext';
 import Dialog from '../components/Dialog';
+import Toast from '../components/Toast';
 import { Plus, Edit2, Trash2, X, Package, Loader2 } from 'lucide-react';
 import { API_ENDPOINTS } from '../constants/constants';
 
@@ -10,6 +11,7 @@ const Inventory = () => {
     const { user } = useContext(AuthContext);
     const navigate = useNavigate();
     const [batteries, setBatteries] = useState([]);
+    const [toast, setToast] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [editingBattery, setEditingBattery] = useState(null);
     const [formData, setFormData] = useState({
@@ -88,6 +90,7 @@ const Inventory = () => {
 
             fetchBatteries();
             closeModal();
+            setToast({ message: `Battery ${editingBattery ? 'updated' : 'added'} successfully!`, type: 'success' });
         } catch (err) {
             console.error(err);
             setDialog({ isOpen: true, title: 'Error', message: 'Error saving battery. Please try again.', type: 'error' });
@@ -106,6 +109,7 @@ const Inventory = () => {
                         headers: { Authorization: `Bearer ${user.token}` }
                     });
                     fetchBatteries();
+                    setToast({ message: 'Battery deleted successfully!', type: 'success' });
                 } catch (err) {
                     console.error(err);
                     setDialog({ isOpen: true, title: 'Error', message: 'Error deleting battery', type: 'error' });
@@ -650,6 +654,15 @@ const Inventory = () => {
                     </>
                 )}
             </div>
+
+            {/* Toast */}
+            {toast && (
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => setToast(null)}
+                />
+            )}
         </div>
     );
 };

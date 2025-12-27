@@ -2,16 +2,15 @@ import { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import AuthContext from '../context/AuthContext';
-import Dialog from '../components/Dialog';
+import Toast from '../components/Toast';
 import { ArrowLeft, Save, Package, Loader2 } from 'lucide-react';
 import { API_ENDPOINTS } from '../constants/constants';
 
 const AddBattery = () => {
     const { user } = useContext(AuthContext);
     const navigate = useNavigate();
+    const [toast, setToast] = useState(null);
     const [formData, setFormData] = useState({
-        serialNumber: '',
-        barcode: '',
         brand: '',
         model: '',
         capacity: '',
@@ -71,21 +70,29 @@ const AddBattery = () => {
                 shelfLifeMonths: parseInt(formData.shelfLifeMonths)
             };
 
-            await axios.post(API_ENDPOINTS.BATTERY, payload, {
+            const response = await axios.post(API_ENDPOINTS.BATTERY, payload, {
                 headers: { Authorization: `Bearer ${user.token}` }
             });
 
-            setDialog({
-                isOpen: true,
-                title: 'Success',
-                message: 'Battery added successfully!',
-                type: 'success',
-                onConfirm: () => navigate('/inventory/view')
+            // Show success toast with serial number
+            setToast({
+                message: `Battery added! Serial: ${response.data.serialNumber || 'N/A'}`,
+                type: 'success'
+            });
+
+            // Clear form
+            setFormData({
+                brand: '',
+                model: '',
+                capacity: '',
+                purchasePrice: '',
+                sellingPrice: '',
+                stockQuantity: '',
+                warrantyPeriodMonths: '12',
+                shelfLifeMonths: '24'
             });
         } catch (err) {
-            setDialog({
-                isOpen: true,
-                title: 'Error',
+            setToast({
                 message: err.response?.data?.message || 'Failed to add battery',
                 type: 'error'
             });
@@ -356,14 +363,12 @@ const AddBattery = () => {
                 </div>
             </div>
 
-            {/* Dialog */}
-            {dialog.isOpen && (
-                <Dialog
-                    title={dialog.title}
-                    message={dialog.message}
-                    type={dialog.type}
-                    onClose={() => setDialog({ ...dialog, isOpen: false })}
-                    onConfirm={dialog.onConfirm}
+            {/* Toast */}
+            {toast && (
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => setToast(null)}
                 />
             )}
         </div>
