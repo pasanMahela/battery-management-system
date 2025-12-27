@@ -29,7 +29,8 @@ public class AuthService
         var user = new User
         {
             Username = dto.Username,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+            // Use work factor of 10 for faster hashing while maintaining security
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password, workFactor: 10),
             Role = dto.Role
         };
         await _users.InsertOneAsync(user);
@@ -83,8 +84,8 @@ public class AuthService
             return false;
         }
 
-        // Hash and update new password
-        var newPasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+        // Hash and update new password (work factor 10 for performance)
+        var newPasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword, workFactor: 10);
         var update = Builders<User>.Update.Set(u => u.PasswordHash, newPasswordHash);
         await _users.UpdateOneAsync(u => u.Id == userId, update);
 
