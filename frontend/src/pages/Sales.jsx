@@ -33,7 +33,7 @@ const Sales = () => {
     const fetchSales = async () => {
         try {
             setIsLoading(true);
-            const res = await axios.get('http://localhost:5038/api/Sale', {
+            const res = await axios.get(API_ENDPOINTS.SALE, {
                 headers: { Authorization: `Bearer ${user.token}` }
             });
             setSales(res.data);
