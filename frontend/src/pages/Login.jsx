@@ -46,8 +46,16 @@ const Login = () => {
                     {/* Logo & Title */}
                     <div className="text-center space-y-2">
                         <div className="flex justify-center mb-4">
-                            <div className="w-16 h-16 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-2xl flex items-center justify-center shadow-lg shadow-cyan-500/50 animate-in spin-in duration-1000">
-                                <Battery className="w-9 h-9 text-white" />
+                            <div className="w-16 h-16 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-2xl flex items-center justify-center shadow-lg shadow-cyan-500/50 animate-in spin-in duration-1000 relative overflow-hidden">
+                                <Battery className="w-9 h-9 text-white relative z-10" />
+                                {/* Charging animation overlay */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-white/30 to-transparent animate-pulse"></div>
+                                <div
+                                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
+                                    style={{
+                                        animation: 'slide 2s ease-in-out infinite',
+                                    }}
+                                ></div>
                             </div>
                         </div>
                         <h2 className="text-3xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
@@ -56,6 +64,19 @@ const Login = () => {
                         <h3 className="text-lg text-gray-400">{APP_CONFIG.APP_SUBTITLE}</h3>
                         <p className="text-sm text-gray-500">Sign in to continue</p>
                     </div>
+
+                    {/* Add keyframe animation */}
+                    <style dangerouslySetInnerHTML={{
+                        __html: `
+                        @keyframes slide {
+                            0% {
+                                transform: translateX(-100%);
+                            }
+                            100% {
+                                transform: translateX(100%);
+                            }
+                        }
+                    `}} />
 
                     {/* Error Message */}
                     {error && (

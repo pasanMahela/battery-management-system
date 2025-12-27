@@ -69,6 +69,28 @@ public class AuthService
         return tokenHandler.WriteToken(token);
     }
 
+    public async Task<bool> ChangePasswordAsync(string userId, string currentPassword, string newPassword)
+    {
+        var user = await _users.Find(u => u.Id == userId).FirstOrDefaultAsync();
+        if (user == null)
+        {
+            return false;
+        }
+
+        // Verify current password
+        if (!BCrypt.Net.BCrypt.Verify(currentPassword, user.PasswordHash))
+        {
+            return false;
+        }
+
+        // Hash and update new password
+        var newPasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+        var update = Builders<User>.Update.Set(u => u.PasswordHash, newPasswordHash);
+        await _users.UpdateOneAsync(u => u.Id == userId, update);
+
+        return true;
+    }
+
     public async Task<List<User>> GetAllUsersAsync()
     {
         return await _users.Find(_ => true).ToListAsync();

@@ -1,7 +1,16 @@
 import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react';
+import { useEffect } from 'react';
 
-const Dialog = ({ isOpen, onClose, title, message, type = 'info', onConfirm, confirmText = 'OK', cancelText = 'Cancel' }) => {
-    if (!isOpen) return null;
+const Dialog = ({ onClose, title, message, type = 'info', onConfirm, confirmText = 'OK', cancelText = 'Cancel', autoClose }) => {
+    // Auto-close for success messages
+    useEffect(() => {
+        if (autoClose && type === 'success') {
+            const timer = setTimeout(() => {
+                onClose();
+            }, autoClose);
+            return () => clearTimeout(timer);
+        }
+    }, [autoClose, type, onClose]);
 
     const handleBackdropClick = (e) => {
         if (e.target === e.currentTarget && type !== 'confirm') {

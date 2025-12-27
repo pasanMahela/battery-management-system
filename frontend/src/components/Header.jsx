@@ -1,7 +1,7 @@
 import { useContext, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
-import { Home, Package, ShoppingCart, BarChart3, LogOut, User, Zap, ChevronDown, Plus, List, UserPlus } from 'lucide-react';
+import { Home, Package, ShoppingCart, BarChart3, LogOut, User, Zap, ChevronDown, Plus, List, UserPlus, Users } from 'lucide-react';
 import { APP_CONFIG } from '../constants/constants';
 
 const Header = () => {
@@ -11,6 +11,7 @@ const Header = () => {
     const role = user?.role || 'Unknown';
     const username = user?.['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || user?.name || 'User';
     const [showInventoryDropdown, setShowInventoryDropdown] = useState(false);
+    const [showUserDropdown, setShowUserDropdown] = useState(false);
 
     const handleLogout = () => {
         logout();
@@ -103,40 +104,71 @@ const Header = () => {
                                                 className="w-full flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
                                             >
                                                 <Plus size={18} />
-                                                <span className="font-medium">Add Inventory</span>
+                                                <span className="font-medium">Add Battery</span>
                                             </button>
                                         </div>
                                     )}
                                 </div>
 
                                 <NavButton path="/sales" icon={BarChart3} label="Sales Reports" />
+
+                                {/* User Management Button (Admin only) */}
+                                <NavButton path="/user-management" icon={Users} label="User Management" />
                             </>
                         )}
 
                         <NavButton path="/pos" icon={ShoppingCart} label="Point of Sale" />
-
-                        {role === 'Admin' && (
-                            <NavButton path="/users" icon={UserPlus} label="Users" />
-                        )}
                     </nav>
 
                     {/* User Info & Actions */}
                     <div className="flex items-center gap-4">
-                        {/* User Profile */}
-                        <div className="hidden md:flex items-center gap-3 px-4 py-2 bg-gray-100 rounded-lg border border-gray-200">
-                            <div className="w-9 h-9 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold shadow-lg">
-                                {username.charAt(0).toUpperCase()}
-                            </div>
-                            <div className="text-right">
-                                <p className="text-gray-800 font-semibold text-sm leading-tight">{username}</p>
-                                <p className="text-xs text-blue-600 font-medium">{role}</p>
-                            </div>
+                        {/* User Dropdown */}
+                        <div className="relative hidden md:block"
+                            onMouseEnter={() => setShowUserDropdown(true)}
+                            onMouseLeave={() => setShowUserDropdown(false)}
+                        >
+                            <button className="flex items-center gap-3 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg border border-gray-200 transition-colors cursor-pointer">
+                                <div className="w-9 h-9 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold shadow-lg">
+                                    {username.charAt(0).toUpperCase()}
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-gray-800 font-semibold text-sm leading-tight">{username}</p>
+                                    <p className="text-xs text-blue-600 font-medium">{role}</p>
+                                </div>
+                                <ChevronDown size={16} className={`transition-transform ${showUserDropdown ? 'rotate-180' : ''}`} />
+                            </button>
+
+                            {showUserDropdown && (
+                                <div className="absolute right-0 top-full mt-0 w-56 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
+                                    <button
+                                        onClick={() => {
+                                            navigate('/change-password');
+                                            setShowUserDropdown(false);
+                                        }}
+                                        className="w-full text-left px-4 py-2.5 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors flex items-center gap-2"
+                                    >
+                                        <User size={18} />
+                                        <span className="font-medium">Change Password</span>
+                                    </button>
+                                    <div className="border-t border-gray-100 my-1"></div>
+                                    <button
+                                        onClick={() => {
+                                            handleLogout();
+                                            setShowUserDropdown(false);
+                                        }}
+                                        className="w-full text-left px-4 py-2.5 text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
+                                    >
+                                        <LogOut size={18} />
+                                        <span className="font-medium">Logout</span>
+                                    </button>
+                                </div>
+                            )}
                         </div>
 
-                        {/* Logout Button */}
+                        {/* Mobile Logout Button */}
                         <button
                             onClick={handleLogout}
-                            className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg transition-all shadow-md font-medium"
+                            className="md:hidden flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white rounded-lg transition-all shadow-md font-medium"
                         >
                             <LogOut size={18} />
                             <span className="hidden sm:inline">Logout</span>

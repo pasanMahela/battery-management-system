@@ -8,6 +8,7 @@ import AddBattery from './pages/AddBattery';
 import POS from './pages/POS';
 import Sales from './pages/Sales';
 import UserManagement from './pages/UserManagement';
+import ChangePassword from './pages/ChangePassword';
 import { useContext, useState, useEffect } from 'react';
 import AuthContext from './context/AuthContext';
 import { Package, ShoppingCart, BarChart3, TrendingUp, DollarSign, Battery } from 'lucide-react';
@@ -217,12 +218,19 @@ function App() {
               </Layout>
             </RoleBasedRoute>
           } />
-          <Route path="/users" element={
+          <Route path="/user-management" element={
             <RoleBasedRoute allowedRoles={[USER_ROLES.ADMIN]}>
               <Layout>
                 <UserManagement />
               </Layout>
             </RoleBasedRoute>
+          } />
+          <Route path="/change-password" element={
+            <PrivateRoute>
+              <Layout>
+                <ChangePassword />
+              </Layout>
+            </PrivateRoute>
           } />
         </Routes>
       </BrowserRouter>

@@ -52,4 +52,23 @@ public class AuthController : ControllerBase
         
         return Ok(new { message = "User deleted successfully" });
     }
+
+    [HttpPost("change-password")]
+    [Authorize]
+    public async Task<IActionResult> ChangePassword(ChangePasswordDto dto)
+    {
+        var userId = User.FindFirst("id")?.Value;
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Unauthorized();
+        }
+
+        var success = await _authService.ChangePasswordAsync(userId, dto.CurrentPassword, dto.NewPassword);
+        if (!success)
+        {
+            return BadRequest(new { message = "Current password is incorrect" });
+        }
+
+        return Ok(new { message = "Password changed successfully" });
+    }
 }
