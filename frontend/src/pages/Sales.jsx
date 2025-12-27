@@ -203,90 +203,106 @@ const Sales = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
-                                {filteredSales.map((sale) => (
-                                    <tr key={sale.id} className="hover:bg-blue-50/50 transition-colors group">
-                                        <td className="px-6 py-4">
-                                            <div className="font-bold text-gray-900">{new Date(sale.date).toLocaleDateString()}</div>
-                                            <div className="text-xs text-gray-500 font-mono">{new Date(sale.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-start gap-3">
-                                                <div className="p-2 bg-gray-100 rounded-full text-gray-500 group-hover:bg-white group-hover:text-blue-500 transition-colors">
-                                                    <User size={16} />
-                                                </div>
-                                                <div>
-                                                    <div className="font-bold text-gray-900 text-sm">{sale.customerName}</div>
-                                                    <div className="text-xs text-gray-500 flex flex-col">
-                                                        <span>{sale.customerPhone}</span>
-                                                        <span className="font-mono text-[10px] bg-gray-100 px-1 rounded w-fit mt-0.5">ID: {sale.customerId}</span>
-                                                    </div>
-                                                </div>
+                                {isLoading ? (
+                                    <tr>
+                                        <td colSpan="7" className="px-6 py-16 text-center">
+                                            <div className="flex flex-col items-center justify-center gap-3">
+                                                <Loader2 size={48} className="text-blue-500 animate-spin" />
+                                                <p className="text-gray-500 font-medium text-lg">Loading sales data...</p>
                                             </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="space-y-1">
-                                                {sale.items.map((item, idx) => (
-                                                    <div key={idx} className="text-sm border-b border-gray-100 pb-2 last:border-b-0">
-                                                        <div className="flex justify-between items-center gap-4">
-                                                            <span className="text-gray-700">{item.brand} {item.model}</span>
-                                                            <span className="text-xs font-bold text-gray-400">x{item.quantity}</span>
-                                                        </div>
-                                                        {item.warrantyExpiryDate && (
-                                                            <div className="text-xs mt-1">
-                                                                <span className={`px-2 py-0.5 rounded font-medium ${new Date(item.warrantyExpiryDate) > new Date() ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
-                                                                    {new Date(item.warrantyExpiryDate) > new Date() ? '✓' : '✗'} Warranty: {new Date(item.warrantyExpiryDate).toLocaleDateString()}
-                                                                </span>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                ))}
-                                                <div className="text-xs text-gray-400 pt-1 border-t border-dashed border-gray-200 mt-1">
-                                                    {sale.items.length} items total
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            {sale.discount > 0 ? (
-                                                <span className="px-2 py-1 bg-red-50 text-red-600 rounded text-xs font-bold">
-                                                    - {sale.discount.toLocaleString()}
-                                                </span>
-                                            ) : (
-                                                <span className="text-gray-300">-</span>
-                                            )}
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <div className="font-extrabold text-gray-900 text-lg">
-                                                {sale.totalAmount.toLocaleString()}
-                                            </div>
-                                            <div className="text-[10px] text-gray-400 uppercase font-bold">LKR</div>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <div className="text-sm font-medium text-gray-600 bg-gray-100 px-2 py-1 rounded inline-block">
-                                                {sale.cashierName || 'Unknown'}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-center">
-                                            <button
-                                                onClick={() => setPrintingSale(sale)}
-                                                className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors font-medium text-sm"
-                                                title="View Receipt"
-                                            >
-                                                <Eye size={16} /> View
-                                            </button>
                                         </td>
                                     </tr>
-                                ))}
+                                ) : filteredSales.length === 0 ? (
+                                    <tr>
+                                        <td colSpan="7" className="px-6 py-16 text-center">
+                                            <div className="flex flex-col items-center gap-3">
+                                                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
+                                                    <Filter className="text-gray-400" size={32} />
+                                                </div>
+                                                <div>
+                                                    <p className="text-gray-600 font-bold text-lg">No records found</p>
+                                                    <p className="text-gray-500 text-sm mt-1">Try adjusting your search or date filters.</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    filteredSales.map((sale) => (
+                                        <tr key={sale.id} className="hover:bg-blue-50/50 transition-colors group">
+                                            <td className="px-6 py-4">
+                                                <div className="font-bold text-gray-900">{new Date(sale.date).toLocaleDateString()}</div>
+                                                <div className="text-xs text-gray-500 font-mono">{new Date(sale.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex items-start gap-3">
+                                                    <div className="p-2 bg-gray-100 rounded-full text-gray-500 group-hover:bg-white group-hover:text-blue-500 transition-colors">
+                                                        <User size={16} />
+                                                    </div>
+                                                    <div>
+                                                        <div className="font-bold text-gray-900 text-sm">{sale.customerName}</div>
+                                                        <div className="text-xs text-gray-500 flex flex-col">
+                                                            <span>{sale.customerPhone}</span>
+                                                            <span className="font-mono text-[10px] bg-gray-100 px-1 rounded w-fit mt-0.5">ID: {sale.customerId}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="space-y-1">
+                                                    {sale.items.map((item, idx) => (
+                                                        <div key={idx} className="text-sm border-b border-gray-100 pb-2 last:border-b-0">
+                                                            <div className="flex justify-between items-center gap-4">
+                                                                <span className="text-gray-700">{item.brand} {item.model}</span>
+                                                                <span className="text-xs font-bold text-gray-400">x{item.quantity}</span>
+                                                            </div>
+                                                            {item.warrantyExpiryDate && (
+                                                                <div className="text-xs mt-1">
+                                                                    <span className={`px-2 py-0.5 rounded font-medium ${new Date(item.warrantyExpiryDate) > new Date() ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
+                                                                        {new Date(item.warrantyExpiryDate) > new Date() ? '✓' : '✗'} Warranty: {new Date(item.warrantyExpiryDate).toLocaleDateString()}
+                                                                    </span>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                    <div className="text-xs text-gray-400 pt-1 border-t border-dashed border-gray-200 mt-1">
+                                                        {sale.items.length} items total
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                {sale.discount > 0 ? (
+                                                    <span className="px-2 py-1 bg-red-50 text-red-600 rounded text-xs font-bold">
+                                                        - {sale.discount.toLocaleString()}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-gray-300">-</span>
+                                                )}
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <div className="font-extrabold text-gray-900 text-lg">
+                                                    {sale.totalAmount.toLocaleString()}
+                                                </div>
+                                                <div className="text-[10px] text-gray-400 uppercase font-bold">LKR</div>
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <div className="text-sm font-medium text-gray-600 bg-gray-100 px-2 py-1 rounded inline-block">
+                                                    {sale.cashierName || 'Unknown'}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-center">
+                                                <button
+                                                    onClick={() => setPrintingSale(sale)}
+                                                    className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors font-medium text-sm"
+                                                    title="View Receipt"
+                                                >
+                                                    <Eye size={16} /> View
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
                             </tbody>
                         </table>
-                        {filteredSales.length === 0 && (
-                            <div className="p-12 text-center">
-                                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400">
-                                    <Filter size={32} />
-                                </div>
-                                <h3 className="text-lg font-bold text-gray-900">No records found</h3>
-                                <p className="text-gray-500">Try adjusting your search or date filters.</p>
-                            </div>
-                        )}
                     </div>
                 </div>
             </div>
