@@ -1,0 +1,6 @@
+@BatteryShop.API_HostAddress = http://localhost:5038
+
+GET {{BatteryShop.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

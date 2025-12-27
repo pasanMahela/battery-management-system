@@ -1,0 +1,14 @@
+@import "tailwindcss";
+
+/* Global button and clickable element cursor */
+button,
+[role="button"],
+.cursor-pointer,
+a {
+    cursor: pointer;
+}
+
+button:disabled,
+[role="button"][disabled] {
+    cursor: not-allowed;
+}
