@@ -10,7 +10,7 @@ const Footer = () => {
                     {/* Company Info */}
                     <div className="md:col-span-2">
                         <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-3">
-                            PowerCell Pro
+                            Ruhunu Tyre House
                         </h3>
                         <p className="text-gray-600 text-sm mb-4 leading-relaxed">
                             Your trusted partner for professional battery management solutions.
@@ -60,11 +60,11 @@ const Footer = () => {
                         <ul className="space-y-2 text-sm text-gray-600">
                             <li className="flex items-center gap-2">
                                 <Mail size={16} className="text-blue-500" />
-                                support@powercellpro.com
+                                pasancp2000@gmail.com
                             </li>
                             <li className="flex items-center gap-2">
                                 <Phone size={16} className="text-blue-500" />
-                                +94 77 123 4567
+                                +94 71 268 4685
                             </li>
                             <li className="flex items-center gap-2">
                                 <MapPin size={16} className="text-blue-500" />
@@ -77,7 +77,7 @@ const Footer = () => {
                 <div className="border-t border-gray-200 pt-6">
                     <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                         <p className="text-gray-600 text-sm">
-                            &copy; {currentYear} PowerCell Pro. All rights reserved.
+                            &copy; {currentYear} Ruhunu Tyre House. All rights reserved.
                         </p>
                         <div className="flex gap-6 text-xs text-gray-500">
                             <a href="#" className="hover:text-blue-600 transition-colors">Privacy Policy</a>

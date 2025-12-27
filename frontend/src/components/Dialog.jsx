@@ -1,7 +1,9 @@
 import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react';
 import { useEffect } from 'react';
 
-const Dialog = ({ onClose, title, message, type = 'info', onConfirm, confirmText = 'OK', cancelText = 'Cancel', autoClose }) => {
+const Dialog = ({ isOpen = true, onClose, title, message, type = 'info', onConfirm, confirmText = 'OK', cancelText = 'Cancel', autoClose }) => {
+    if (!isOpen) return null;
+
     // Auto-close for success messages
     useEffect(() => {
         if (autoClose && type === 'success') {
