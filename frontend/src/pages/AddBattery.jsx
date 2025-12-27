@@ -71,7 +71,7 @@ const AddBattery = () => {
                 shelfLifeMonths: parseInt(formData.shelfLifeMonths)
             };
 
-            await axios.post('http://localhost:5038/api/Battery', payload, {
+            await axios.post(API_ENDPOINTS.BATTERY, payload, {
                 headers: { Authorization: `Bearer ${user.token}` }
             });
 
