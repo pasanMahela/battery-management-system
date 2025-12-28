@@ -21,4 +21,10 @@ public class Battery
     public int StockQuantity { get; set; }
     public int WarrantyPeriodMonths { get; set; }
     public int ShelfLifeMonths { get; set; } // Storage duration before battery expires
+    public string? SalesRep { get; set; }
+    public string? InvoiceNumber { get; set; }
+    
+    // Return tracking
+    public bool IsReturned { get; set; } = false;
+    public string? ReturnId { get; set; }
 }

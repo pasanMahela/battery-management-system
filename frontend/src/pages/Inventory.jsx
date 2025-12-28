@@ -1,10 +1,10 @@
-import { useState, useEffect, useContext } from 'react';
+﻿import { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import AuthContext from '../context/AuthContext';
 import Dialog from '../components/Dialog';
 import Toast from '../components/Toast';
-import { Plus, Edit2, Trash2, X, Package, Loader2 } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Package, Loader2, RotateCcw, Eye } from 'lucide-react';
 import { API_ENDPOINTS } from '../constants/constants';
 
 const Inventory = () => {
@@ -34,6 +34,11 @@ const Inventory = () => {
     const [filterModel, setFilterModel] = useState('all');
     const [filterCapacity, setFilterCapacity] = useState('all');
     const [filterExpiry, setFilterExpiry] = useState('all'); // all, expired, expiring, valid
+    const [filterStatus, setFilterStatus] = useState('all'); // all, inStock, expired, returned, sold
+    const [viewingReturn, setViewingReturn] = useState(null);
+    const [returns, setReturns] = useState([]);
+    const [filterSalesRep, setFilterSalesRep] = useState('all');
+    const [filterInvoiceNumber, setFilterInvoiceNumber] = useState('');
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
     const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
     const [isNavigating, setIsNavigating] = useState(false);
@@ -41,6 +46,7 @@ const Inventory = () => {
 
     useEffect(() => {
         fetchBatteries();
+        fetchReturns();
 
         // Check for filter query parameter
         const params = new URLSearchParams(window.location.search);
@@ -50,6 +56,52 @@ const Inventory = () => {
             setShowAdvancedFilters(true);
         }
     }, []);
+
+    const fetchReturns = async () => {
+        try {
+            const res = await axios.get(API_ENDPOINTS.RETURN, {
+                headers: { Authorization: `Bearer ${user.token}` }
+            });
+            setReturns(res.data);
+        } catch (err) {
+            console.error('Error fetching returns:', err);
+        }
+    };
+
+    // Helper function to get battery status
+    const getBatteryStatus = (battery) => {
+        const purchaseDate = new Date(battery.purchaseDate);
+        const expiryDate = new Date(purchaseDate);
+        expiryDate.setMonth(expiryDate.getMonth() + (battery.shelfLifeMonths || 12));
+        const today = new Date();
+        const isExpired = expiryDate <= today;
+
+        if (battery.isReturned) return 'Returned';
+        if (battery.stockQuantity === 0) return 'Sold';
+        if (isExpired) return 'Expired';
+        return 'In Stock';
+    };
+
+    // Helper function to get status badge style
+    const getStatusBadgeStyle = (status) => {
+        switch (status) {
+            case 'In Stock':
+                return 'bg-green-100 text-green-700 border-green-200';
+            case 'Expired':
+                return 'bg-red-100 text-red-700 border-red-200';
+            case 'Returned':
+                return 'bg-orange-100 text-orange-700 border-orange-200';
+            case 'Sold':
+                return 'bg-blue-100 text-blue-700 border-blue-200';
+            default:
+                return 'bg-gray-100 text-gray-700 border-gray-200';
+        }
+    };
+
+    // Get return data for a battery
+    const getReturnForBattery = (batteryId) => {
+        return returns.find(r => r.batteryId === batteryId);
+    };
 
     const fetchBatteries = async () => {
         try {
@@ -169,7 +221,9 @@ const Inventory = () => {
                 battery.serialNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 battery.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 battery.model.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                (battery.barcode && battery.barcode.toLowerCase().includes(searchQuery.toLowerCase()))
+                (battery.barcode && battery.barcode.toLowerCase().includes(searchQuery.toLowerCase())) ||
+                (battery.salesRep && battery.salesRep.toLowerCase().includes(searchQuery.toLowerCase())) ||
+                (battery.invoiceNumber && battery.invoiceNumber.toLowerCase().includes(searchQuery.toLowerCase()))
             );
         }
 
@@ -188,6 +242,18 @@ const Inventory = () => {
             filtered = filtered.filter(b => b.capacity === parseFloat(filterCapacity));
         }
 
+        // Sales Rep filter
+        if (filterSalesRep !== 'all') {
+            filtered = filtered.filter(b => b.salesRep === filterSalesRep);
+        }
+
+        // Invoice Number filter
+        if (filterInvoiceNumber) {
+            filtered = filtered.filter(b =>
+                b.invoiceNumber && b.invoiceNumber.toLowerCase().includes(filterInvoiceNumber.toLowerCase())
+            );
+        }
+
         // Expiry filter
         if (filterExpiry !== 'all') {
             filtered = filtered.filter(battery => {
@@ -203,6 +269,18 @@ const Inventory = () => {
                 if (filterExpiry === 'expired') return isExpired;
                 if (filterExpiry === 'expiring') return isExpiring;
                 if (filterExpiry === 'valid') return !isExpired && !isExpiring;
+                return true;
+            });
+        }
+
+        // Status filter
+        if (filterStatus !== 'all') {
+            filtered = filtered.filter(battery => {
+                const status = getBatteryStatus(battery);
+                if (filterStatus === 'inStock') return status === 'In Stock';
+                if (filterStatus === 'expired') return status === 'Expired';
+                if (filterStatus === 'returned') return status === 'Returned';
+                if (filterStatus === 'sold') return status === 'Sold';
                 return true;
             });
         }
@@ -300,7 +378,7 @@ const Inventory = () => {
                                     <label className="block text-sm font-semibold text-gray-700 mb-2">Search</label>
                                     <input
                                         type="text"
-                                        placeholder="Search by serial, brand, model, or barcode..."
+                                        placeholder="Search by serial, brand, model, invoice, sales rep..."
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                         className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-blue-500 outline-none transition-all"
@@ -356,6 +434,33 @@ const Inventory = () => {
                                         </select>
                                     </div>
 
+                                    {/* Sales Rep Filter */}
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Sales Rep</label>
+                                        <select
+                                            value={filterSalesRep}
+                                            onChange={(e) => setFilterSalesRep(e.target.value)}
+                                            className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-blue-500 outline-none transition-all"
+                                        >
+                                            <option value="all">All Sales Reps</option>
+                                            {[...new Set(batteries.filter(b => b.salesRep).map(b => b.salesRep))].map(rep => (
+                                                <option key={rep} value={rep}>{rep}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    {/* Invoice Number Filter */}
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Invoice Number</label>
+                                        <input
+                                            type="text"
+                                            placeholder="Search by invoice..."
+                                            value={filterInvoiceNumber}
+                                            onChange={(e) => setFilterInvoiceNumber(e.target.value)}
+                                            className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-blue-500 outline-none transition-all"
+                                        />
+                                    </div>
+
                                     {/* Expiry Filter */}
                                     <div>
                                         <label className="block text-sm font-semibold text-gray-700 mb-2">Expiry Status</label>
@@ -370,6 +475,22 @@ const Inventory = () => {
                                             <option value="valid">Valid</option>
                                         </select>
                                     </div>
+
+                                    {/* Battery Status Filter */}
+                                    <div>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Battery Status</label>
+                                        <select
+                                            value={filterStatus}
+                                            onChange={(e) => setFilterStatus(e.target.value)}
+                                            className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-blue-500 outline-none transition-all"
+                                        >
+                                            <option value="all">All Statuses</option>
+                                            <option value="inStock">In Stock</option>
+                                            <option value="expired">Expired</option>
+                                            <option value="returned">Returned</option>
+                                            <option value="sold">Sold</option>
+                                        </select>
+                                    </div>
                                 </div>
                             )}
 
@@ -379,105 +500,281 @@ const Inventory = () => {
                             </div>
                         </div>
 
-                        {/* Inventory Table Card */}
-                        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-                            <table className="w-full">
-                                <thead>
-                                    <tr className="bg-gradient-to-r from-blue-500 to-indigo-600">
-                                        <th onClick={() => handleSort('serialNumber')} className="px-6 py-4 text-left text-sm font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-600">
-                                            Serial # {sortConfig.key === 'serialNumber' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
-                                        </th>
-                                        <th className="px-6 py-4 text-left text-sm font-bold text-white uppercase tracking-wider">Barcode</th>
-                                        <th onClick={() => handleSort('brand')} className="px-6 py-4 text-left text-sm font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-600">
-                                            Brand {sortConfig.key === 'brand' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
-                                        </th>
-                                        <th onClick={() => handleSort('model')} className="px-6 py-4 text-left text-sm font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-600">
-                                            Model {sortConfig.key === 'model' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
-                                        </th>
-                                        <th onClick={() => handleSort('capacity')} className="px-6 py-4 text-left text-sm font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-600">
-                                            Capacity {sortConfig.key === 'capacity' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
-                                        </th>
-                                        <th onClick={() => handleSort('voltage')} className="px-6 py-4 text-left text-sm font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-600">
-                                            Voltage {sortConfig.key === 'voltage' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
-                                        </th>
-                                        <th onClick={() => handleSort('sellingPrice')} className="px-6 py-4 text-left text-sm font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-600">
-                                            Price {sortConfig.key === 'sellingPrice' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
-                                        </th>
-                                        <th onClick={() => handleSort('stockQuantity')} className="px-6 py-4 text-left text-sm font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-600">
-                                            Stock {sortConfig.key === 'stockQuantity' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
-                                        </th>
-                                        <th onClick={() => handleSort('purchaseDate')} className="px-6 py-4 text-left text-sm font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-600">
-                                            Purchase Date {sortConfig.key === 'purchaseDate' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
-                                        </th>
-                                        <th className="px-6 py-4 text-left text-sm font-bold text-white uppercase tracking-wider">Expiry Date</th>
-                                        <th className="px-6 py-4 text-right text-sm font-bold text-white uppercase tracking-wider">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {filteredBatteries.map((battery) => {
-                                        // Calculate expiry date
-                                        const purchaseDate = new Date(battery.purchaseDate);
-                                        const expiryDate = new Date(purchaseDate);
-                                        expiryDate.setMonth(expiryDate.getMonth() + (battery.shelfLifeMonths || 12));
+                        {/* Mobile Card View */}
+                        <div className="md:hidden space-y-4">
+                            {filteredBatteries.map((battery) => {
+                                const purchaseDate = new Date(battery.purchaseDate);
+                                const expiryDate = new Date(purchaseDate);
+                                expiryDate.setMonth(expiryDate.getMonth() + (battery.shelfLifeMonths || 12));
+                                const today = new Date();
+                                const oneMonthFromNow = new Date();
+                                oneMonthFromNow.setMonth(oneMonthFromNow.getMonth() + 1);
+                                const isExpiringSoon = expiryDate <= oneMonthFromNow && expiryDate > today;
+                                const isExpired = expiryDate <= today;
+                                const status = getBatteryStatus(battery);
 
-                                        // Check if expiring within 1 month
-                                        const today = new Date();
-                                        const oneMonthFromNow = new Date();
-                                        oneMonthFromNow.setMonth(oneMonthFromNow.getMonth() + 1);
-                                        const isExpiringSoon = expiryDate <= oneMonthFromNow && expiryDate > today;
-                                        const isExpired = expiryDate <= today;
+                                return (
+                                    <div 
+                                        key={battery.id} 
+                                        className={`bg-white rounded-xl shadow-md border p-4 ${
+                                            isExpiringSoon || isExpired ? 'border-red-300 bg-red-50' : 'border-gray-200'
+                                        }`}
+                                    >
+                                        {/* Header with Serial & Status */}
+                                        <div className="flex justify-between items-start mb-3">
+                                            <div>
+                                                <p className="text-xs text-gray-500 font-medium">Serial #</p>
+                                                <p className="font-bold text-gray-800">{battery.serialNumber}</p>
+                                                {battery.barcode && (
+                                                    <p className="text-xs text-gray-500 font-mono">{battery.barcode}</p>
+                                                )}
+                                            </div>
+                                            <span className={`px-2 py-1 rounded-full text-xs font-bold border ${getStatusBadgeStyle(status)}`}>
+                                                {status}
+                                            </span>
+                                        </div>
 
-                                        return (
-                                            <tr key={battery.id} className={`border-b border-gray-200 transition-colors ${isExpiringSoon || isExpired ? 'bg-red-50 hover:bg-red-100' : 'hover:bg-blue-50'}`}>
-                                                <td className="px-4 py-3 text-gray-800">{battery.serialNumber}</td>
-                                                <td className="px-4 py-3 text-gray-600 font-mono text-sm">{battery.barcode || '-'}</td>
-                                                <td className="px-4 py-3 text-gray-800">{battery.brand}</td>
-                                                <td className="px-4 py-3 text-gray-800">{battery.model}</td>
-                                                <td className="px-4 py-3 text-gray-800">{battery.capacity}</td>
-                                                <td className="px-4 py-3 text-gray-800">{battery.voltage}V</td>
-                                                <td className="px-4 py-3 text-gray-800">LKR {battery.sellingPrice}</td>
-                                                <td className="px-4 py-3">
-                                                    <span className={`px-2 py-1 rounded text-sm font-medium ${battery.stockQuantity > 5 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                                        {battery.stockQuantity}
-                                                    </span>
-                                                </td>
-                                                <td className="px-4 py-3">
-                                                    <span className="text-sm text-gray-700">
+                                        {/* Brand & Model */}
+                                        <div className="flex gap-4 mb-3">
+                                            <div className="flex-1">
+                                                <p className="text-xs text-gray-500">Brand</p>
+                                                <p className="font-semibold text-gray-800">{battery.brand}</p>
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="text-xs text-gray-500">Model</p>
+                                                <p className="font-semibold text-gray-800">{battery.model}</p>
+                                            </div>
+                                        </div>
+
+                                        {/* Purchase, Expiry & Stock */}
+                                        <div className="grid grid-cols-3 gap-2 mb-3">
+                                            <div>
+                                                <p className="text-xs text-gray-500">Purchase</p>
+                                                <p className="font-medium text-gray-700 text-sm">{purchaseDate.toLocaleDateString()}</p>
+                                            </div>
+                                            <div>
+                                                <p className="text-xs text-gray-500">Expiry</p>
+                                                <p className={`font-bold text-sm ${isExpired ? 'text-red-600' : isExpiringSoon ? 'text-orange-600' : 'text-gray-700'}`}>
+                                                    {expiryDate.toLocaleDateString()}
+                                                </p>
+                                                {isExpired && <span className="text-xs text-red-600 font-bold">EXPIRED</span>}
+                                                {isExpiringSoon && !isExpired && <span className="text-xs text-orange-600 font-bold">EXPIRING</span>}
+                                            </div>
+                                            <div>
+                                                <p className="text-xs text-gray-500">Stock</p>
+                                                <p className="font-bold text-gray-800 text-sm">{battery.stockQuantity}</p>
+                                            </div>
+                                        </div>
+
+                                        {/* Actions */}
+                                        <div className="flex justify-end gap-2 pt-3 border-t border-gray-200">
+                                            {battery.isReturned && (
+                                                <button
+                                                    onClick={() => setViewingReturn(getReturnForBattery(battery.id))}
+                                                    className="flex items-center gap-1 px-3 py-2 text-orange-600 bg-orange-50 hover:bg-orange-100 rounded-lg transition-all text-sm font-medium"
+                                                >
+                                                    <Eye size={16} /> View Return
+                                                </button>
+                                            )}
+                                            {(() => { 
+                                                const expDate = new Date(battery.purchaseDate); 
+                                                expDate.setMonth(expDate.getMonth() + (battery.shelfLifeMonths || 12)); 
+                                                const isExp = expDate < new Date(); 
+                                                return isExp && !battery.isReturned && (
+                                                    <button 
+                                                        onClick={() => navigate('/returns', { state: { battery } })} 
+                                                        className="flex items-center gap-1 px-3 py-2 text-orange-600 bg-orange-50 hover:bg-orange-100 rounded-lg transition-all text-sm font-medium"
+                                                    >
+                                                        <RotateCcw size={16} /> Return
+                                                    </button>
+                                                ); 
+                                            })()}
+                                            <button
+                                                onClick={() => openModal(battery)}
+                                                className="flex items-center gap-1 px-3 py-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-all text-sm font-medium"
+                                            >
+                                                <Edit2 size={16} /> Edit
+                                            </button>
+                                            <button
+                                                onClick={() => handleDelete(battery.id)}
+                                                className="flex items-center gap-1 px-3 py-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-all text-sm font-medium"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        {/* Table View with Progressive Column Hiding */}
+                        {/* 
+                            Column visibility by screen size:
+                            - Always visible: Serial#, Brand, Model, Expiry, Status, Actions
+                            - Hidden on small (sm): Sales Rep, Invoice#
+                            - Hidden on medium (md): Capacity, Voltage, Stock
+                            - Hidden on large (lg): Barcode, Purchase Date, Price
+                            - All visible on xl+
+                        */}
+                        <div className="hidden md:block bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+                            <div className="overflow-x-auto">
+                                <table className="w-full">
+                                    <thead>
+                                        <tr className="bg-gradient-to-r from-blue-500 to-indigo-600">
+                                            {/* ALWAYS VISIBLE */}
+                                            <th onClick={() => handleSort('serialNumber')} className="px-3 py-3 text-left text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-600 whitespace-nowrap">
+                                                Serial # {sortConfig.key === 'serialNumber' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                                            </th>
+                                            {/* Hidden below lg */}
+                                            <th className="hidden lg:table-cell px-3 py-3 text-left text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Barcode</th>
+                                            {/* ALWAYS VISIBLE */}
+                                            <th onClick={() => handleSort('brand')} className="px-3 py-3 text-left text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-600 whitespace-nowrap">
+                                                Brand {sortConfig.key === 'brand' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                                            </th>
+                                            {/* ALWAYS VISIBLE */}
+                                            <th onClick={() => handleSort('model')} className="px-3 py-3 text-left text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-600 whitespace-nowrap">
+                                                Model {sortConfig.key === 'model' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                                            </th>
+                                            {/* Hidden below xl */}
+                                            <th onClick={() => handleSort('capacity')} className="hidden xl:table-cell px-3 py-3 text-left text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-600 whitespace-nowrap">
+                                                Capacity {sortConfig.key === 'capacity' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                                            </th>
+                                            {/* Hidden below xl */}
+                                            <th onClick={() => handleSort('voltage')} className="hidden xl:table-cell px-3 py-3 text-left text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-600 whitespace-nowrap">
+                                                Voltage {sortConfig.key === 'voltage' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                                            </th>
+                                            {/* Hidden below xl */}
+                                            <th onClick={() => handleSort('sellingPrice')} className="hidden xl:table-cell px-3 py-3 text-left text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-600 whitespace-nowrap">
+                                                Price {sortConfig.key === 'sellingPrice' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                                            </th>
+                                            {/* Hidden below lg */}
+                                            <th onClick={() => handleSort('purchaseDate')} className="hidden lg:table-cell px-3 py-3 text-left text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-600 whitespace-nowrap">
+                                                Purchase {sortConfig.key === 'purchaseDate' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                                            </th>
+                                            {/* ALWAYS VISIBLE */}
+                                            <th className="px-3 py-3 text-left text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Expiry</th>
+                                            {/* ALWAYS VISIBLE */}
+                                            <th className="px-3 py-3 text-left text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Stock</th>
+                                            {/* Hidden below 2xl */}
+                                            <th className="hidden 2xl:table-cell px-3 py-3 text-left text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Sales Rep</th>
+                                            {/* Hidden below 2xl */}
+                                            <th className="hidden 2xl:table-cell px-3 py-3 text-left text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Invoice #</th>
+                                            {/* ALWAYS VISIBLE */}
+                                            <th className="px-3 py-3 text-left text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Status</th>
+                                            {/* ALWAYS VISIBLE */}
+                                            <th className="px-3 py-3 text-right text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {filteredBatteries.map((battery) => {
+                                            const purchaseDate = new Date(battery.purchaseDate);
+                                            const expiryDate = new Date(purchaseDate);
+                                            expiryDate.setMonth(expiryDate.getMonth() + (battery.shelfLifeMonths || 12));
+                                            const today = new Date();
+                                            const oneMonthFromNow = new Date();
+                                            oneMonthFromNow.setMonth(oneMonthFromNow.getMonth() + 1);
+                                            const isExpiringSoon = expiryDate <= oneMonthFromNow && expiryDate > today;
+                                            const isExpired = expiryDate <= today;
+
+                                            return (
+                                                <tr key={battery.id} className={`border-b border-gray-200 transition-colors ${isExpiringSoon || isExpired ? 'bg-red-50 hover:bg-red-100' : 'hover:bg-blue-50'}`}>
+                                                    {/* ALWAYS VISIBLE */}
+                                                    <td className="px-3 py-3 text-gray-800 text-sm font-medium">{battery.serialNumber}</td>
+                                                    {/* Hidden below lg */}
+                                                    <td className="hidden lg:table-cell px-3 py-3 text-gray-600 font-mono text-xs">{battery.barcode || '-'}</td>
+                                                    {/* ALWAYS VISIBLE */}
+                                                    <td className="px-3 py-3 text-gray-800 text-sm">{battery.brand}</td>
+                                                    {/* ALWAYS VISIBLE */}
+                                                    <td className="px-3 py-3 text-gray-800 text-sm">{battery.model}</td>
+                                                    {/* Hidden below xl */}
+                                                    <td className="hidden xl:table-cell px-3 py-3 text-gray-800 text-sm">{battery.capacity}Ah</td>
+                                                    {/* Hidden below xl */}
+                                                    <td className="hidden xl:table-cell px-3 py-3 text-gray-800 text-sm">{battery.voltage}V</td>
+                                                    {/* Hidden below xl */}
+                                                    <td className="hidden xl:table-cell px-3 py-3 text-gray-800 text-sm whitespace-nowrap">LKR {battery.sellingPrice?.toLocaleString()}</td>
+                                                    {/* Hidden below lg */}
+                                                    <td className="hidden lg:table-cell px-3 py-3 text-sm text-gray-700 whitespace-nowrap">
                                                         {new Date(battery.purchaseDate).toLocaleDateString()}
-                                                    </span>
-                                                </td>
-                                                <td className="px-4 py-3">
-                                                    <div className="flex flex-col gap-1">
-                                                        <span className={`text-sm font-medium ${isExpired ? 'text-red-700 font-bold' : isExpiringSoon ? 'text-orange-600 font-bold' : 'text-gray-700'}`}>
-                                                            {expiryDate.toLocaleDateString()}
-                                                        </span>
-                                                        {isExpired && <span className="text-xs text-red-600 font-bold">EXPIRED</span>}
-                                                        {isExpiringSoon && !isExpired && <span className="text-xs text-orange-600 font-bold">EXPIRING SOON</span>}
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center gap-2">
-                                                        <button
-                                                            onClick={() => openModal(battery)}
-                                                            className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-all"
-                                                            title="Edit"
-                                                        >
-                                                            <Edit2 size={18} />
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleDelete(battery.id)}
-                                                            className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-all"
-                                                            title="Delete"
-                                                        >
-                                                            <Trash2 size={18} />
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
+                                                    </td>
+                                                    {/* ALWAYS VISIBLE */}
+                                                    <td className="px-3 py-3">
+                                                        <div className="flex flex-col">
+                                                            <span className={`text-sm font-medium whitespace-nowrap ${isExpired ? 'text-red-700 font-bold' : isExpiringSoon ? 'text-orange-600 font-bold' : 'text-gray-700'}`}>
+                                                                {expiryDate.toLocaleDateString()}
+                                                            </span>
+                                                            {isExpired && <span className="text-xs text-red-600 font-bold">EXPIRED</span>}
+                                                            {isExpiringSoon && !isExpired && <span className="text-xs text-orange-600 font-bold">EXPIRING</span>}
+                                                        </div>
+                                                    </td>
+                                                    {/* ALWAYS VISIBLE */}
+                                                    <td className="px-3 py-3 text-gray-800 text-sm text-center">{battery.stockQuantity}</td>
+                                                    {/* Hidden below 2xl */}
+                                                    <td className="hidden 2xl:table-cell px-3 py-3 text-gray-700 text-sm">
+                                                        {battery.salesRep || '-'}
+                                                    </td>
+                                                    {/* Hidden below 2xl */}
+                                                    <td className="hidden 2xl:table-cell px-3 py-3 text-gray-600 font-mono text-xs">
+                                                        {battery.invoiceNumber || '-'}
+                                                    </td>
+                                                    {/* ALWAYS VISIBLE */}
+                                                    <td className="px-3 py-3">
+                                                        {(() => {
+                                                            const status = getBatteryStatus(battery);
+                                                            return (
+                                                                <span className={`px-2 py-1 rounded-full text-xs font-bold border whitespace-nowrap ${getStatusBadgeStyle(status)}`}>
+                                                                    {status}
+                                                                </span>
+                                                            );
+                                                        })()}
+                                                    </td>
+                                                    {/* ALWAYS VISIBLE */}
+                                                    <td className="px-3 py-3 text-right">
+                                                        <div className="flex justify-end gap-1">
+                                                            {battery.isReturned && (
+                                                                <button
+                                                                    onClick={() => setViewingReturn(getReturnForBattery(battery.id))}
+                                                                    className="p-2 text-orange-600 hover:bg-orange-100 rounded-lg transition-all"
+                                                                    title="View Return Details"
+                                                                >
+                                                                    <Eye size={16} />
+                                                                </button>
+                                                            )}
+                                                            {(() => { 
+                                                                const expDate = new Date(battery.purchaseDate); 
+                                                                expDate.setMonth(expDate.getMonth() + (battery.shelfLifeMonths || 12)); 
+                                                                const isExp = expDate < new Date(); 
+                                                                return isExp && !battery.isReturned && (
+                                                                    <button 
+                                                                        onClick={() => navigate('/returns', { state: { battery } })} 
+                                                                        className="p-2 text-orange-600 hover:bg-orange-100 rounded-lg transition-all" 
+                                                                        title="Return Expired Battery"
+                                                                    >
+                                                                        <RotateCcw size={16} />
+                                                                    </button>
+                                                                ); 
+                                                            })()}
+                                                            <button
+                                                                onClick={() => openModal(battery)}
+                                                                className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-all"
+                                                                title="Edit"
+                                                            >
+                                                                <Edit2 size={16} />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleDelete(battery.id)}
+                                                                className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-all"
+                                                                title="Delete"
+                                                            >
+                                                                <Trash2 size={16} />
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
 
                         {showModal && (
@@ -663,6 +960,137 @@ const Inventory = () => {
                     onClose={() => setToast(null)}
                 />
             )}
+
+            {/* View Return Modal */}
+            {viewingReturn && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+                        <div className="sticky top-0 bg-gradient-to-r from-orange-500 to-red-600 p-6 flex justify-between items-center">
+                            <h2 className="text-2xl font-bold text-white">Return Details</h2>
+                            <button 
+                                onClick={() => setViewingReturn(null)} 
+                                className="text-white hover:bg-white/20 p-2 rounded-lg transition-colors"
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
+                        
+                        <div className="p-6 space-y-6">
+                            {/* Battery Info */}
+                            <div className="bg-gray-50 rounded-xl p-4">
+                                <h3 className="font-bold text-lg text-gray-800 mb-3">Battery Information</h3>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <p className="text-sm text-gray-500">Serial Number</p>
+                                        <p className="font-bold text-gray-800">{viewingReturn.serialNumber}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-500">Brand</p>
+                                        <p className="font-bold text-gray-800">{viewingReturn.brand}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-500">Model</p>
+                                        <p className="font-bold text-gray-800">{viewingReturn.model}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-500">Expiry Date</p>
+                                        <p className="font-bold text-red-600">
+                                            {new Date(viewingReturn.expiryDate).toLocaleDateString()}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {/* Return Info */}
+                            <div className="bg-orange-50 rounded-xl p-4">
+                                <h3 className="font-bold text-lg text-gray-800 mb-3">Return Information</h3>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <p className="text-sm text-gray-500">Return Date</p>
+                                        <p className="font-bold text-gray-800">
+                                            {new Date(viewingReturn.returnDate).toLocaleDateString()}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-500">Returned By</p>
+                                        <p className="font-bold text-gray-800">{viewingReturn.returnedBy}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-500">Status</p>
+                                        <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium border ${
+                                            viewingReturn.status === 'Completed' 
+                                                ? 'bg-green-100 text-green-700 border-green-200' 
+                                                : 'bg-yellow-100 text-yellow-700 border-yellow-200'
+                                        }`}>
+                                            {viewingReturn.status}
+                                        </span>
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-gray-500">Reason</p>
+                                        <p className="font-bold text-gray-800">{viewingReturn.reason}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {/* Compensation Info */}
+                            <div className={`rounded-xl p-4 ${viewingReturn.compensationType === 'Money' ? 'bg-green-50' : 'bg-blue-50'}`}>
+                                <h3 className="font-bold text-lg text-gray-800 mb-3">Compensation Details</h3>
+                                <div className="flex items-center gap-3 mb-3">
+                                    <span className={`text-xl font-bold ${viewingReturn.compensationType === 'Money' ? 'text-green-600' : 'text-blue-600'}`}>
+                                        {viewingReturn.compensationType}
+                                    </span>
+                                </div>
+                                {viewingReturn.compensationType === 'Money' && (
+                                    <div>
+                                        <p className="text-sm text-gray-500">Refund Amount</p>
+                                        <p className="text-2xl font-bold text-green-600">
+                                            LKR {viewingReturn.moneyAmount?.toLocaleString() || '0'}
+                                        </p>
+                                    </div>
+                                )}
+                                {viewingReturn.compensationType === 'Replacement' && (
+                                    <div className="space-y-3">
+                                        <div>
+                                            <p className="text-sm text-gray-500">Replacement Battery Serial Number</p>
+                                            <p className="font-bold text-blue-600">{viewingReturn.replacementSerialNumber || 'N/A'}</p>
+                                        </div>
+                                        {viewingReturn.replacementSalesRep && (
+                                            <div>
+                                                <p className="text-sm text-gray-500">Sales Rep</p>
+                                                <p className="font-bold text-gray-800">{viewingReturn.replacementSalesRep}</p>
+                                            </div>
+                                        )}
+                                        {viewingReturn.replacementInvoiceNumber && (
+                                            <div>
+                                                <p className="text-sm text-gray-500">Invoice Number</p>
+                                                <p className="font-bold text-gray-800">{viewingReturn.replacementInvoiceNumber}</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                            
+                            {/* Notes */}
+                            {viewingReturn.notes && (
+                                <div className="bg-gray-50 rounded-xl p-4">
+                                    <h3 className="font-bold text-lg text-gray-800 mb-2">Notes</h3>
+                                    <p className="text-gray-600">{viewingReturn.notes}</p>
+                                </div>
+                            )}
+                        </div>
+                        
+                        <div className="p-6 border-t border-gray-200">
+                            <button
+                                onClick={() => setViewingReturn(null)}
+                                className="w-full px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-colors"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 };

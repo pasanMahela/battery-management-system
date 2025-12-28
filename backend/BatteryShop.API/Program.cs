@@ -12,6 +12,7 @@ builder.Services.AddSingleton<MongoDbService>();
 builder.Services.AddSingleton<AuthService>();
 builder.Services.AddSingleton<BatteryService>();
 builder.Services.AddSingleton<SaleService>();
+builder.Services.AddSingleton<BatteryReturnService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

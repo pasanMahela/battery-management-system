@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect } from 'react';
+import { useState, useContext, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import AuthContext from '../context/AuthContext';
@@ -10,16 +10,22 @@ const AddBattery = () => {
     const { user } = useContext(AuthContext);
     const navigate = useNavigate();
     const [toast, setToast] = useState(null);
+    const serialNumberRef = useRef(null);
     const [formData, setFormData] = useState({
+        serialNumber: '',
+        barcode: '',
         brand: '',
         model: '',
         capacity: '',
+        voltage: '',
         purchasePrice: '',
         sellingPrice: '',
         purchaseDate: '',
         stockQuantity: '',
-        warrantyPeriodMonths: '',
-        shelfLifeMonths: ''
+        warrantyPeriodMonths: '12',
+        shelfLifeMonths: '24',
+        salesRep: '',
+        invoiceNumber: ''
     });
     const [dialog, setDialog] = useState({ isOpen: false, title: '', message: '', type: 'info', onConfirm: null });
     const [existingBatteries, setExistingBatteries] = useState([]);
@@ -62,12 +68,14 @@ const AddBattery = () => {
             setIsSubmitting(true);
             const payload = {
                 ...formData,
-                capacity: parseFloat(formData.capacity),
-                purchasePrice: parseFloat(formData.purchasePrice),
-                sellingPrice: parseFloat(formData.sellingPrice),
-                stockQuantity: parseInt(formData.stockQuantity),
-                warrantyPeriodMonths: parseInt(formData.warrantyPeriodMonths),
-                shelfLifeMonths: parseInt(formData.shelfLifeMonths)
+                capacity: parseFloat(formData.capacity) || 0,
+                voltage: parseFloat(formData.voltage) || 12,
+                purchasePrice: parseFloat(formData.purchasePrice) || 0,
+                sellingPrice: parseFloat(formData.sellingPrice) || 0,
+                purchaseDate: formData.purchaseDate || new Date().toISOString().split('T')[0],
+                stockQuantity: parseInt(formData.stockQuantity) || 0,
+                warrantyPeriodMonths: parseInt(formData.warrantyPeriodMonths) || 12,
+                shelfLifeMonths: parseInt(formData.shelfLifeMonths) || 24
             };
 
             const response = await axios.post(API_ENDPOINTS.BATTERY, payload, {
@@ -82,15 +90,26 @@ const AddBattery = () => {
 
             // Clear form
             setFormData({
+                serialNumber: '',
+                barcode: '',
                 brand: '',
                 model: '',
                 capacity: '',
+                voltage: '',
                 purchasePrice: '',
                 sellingPrice: '',
+                purchaseDate: '',
                 stockQuantity: '',
                 warrantyPeriodMonths: '12',
-                shelfLifeMonths: '24'
+                shelfLifeMonths: '24',
+                salesRep: '',
+                invoiceNumber: ''
             });
+
+            // Focus on serial number field
+            if (serialNumberRef.current) {
+                serialNumberRef.current.focus();
+            }
         } catch (err) {
             setToast({
                 message: err.response?.data?.message || 'Failed to add battery',
@@ -142,6 +161,7 @@ const AddBattery = () => {
                                 </label>
                                 <input
                                     type="text"
+                                    ref={serialNumberRef}
                                     value={formData.serialNumber}
                                     onChange={(e) => setFormData({ ...formData, serialNumber: e.target.value })}
                                     className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:bg-white outline-none transition-all"
@@ -334,6 +354,34 @@ const AddBattery = () => {
                                     required
                                 />
                                 <p className="text-xs text-gray-500 mt-2">How long can battery be stored before expiring</p>
+                            </div>
+
+                            {/* Sales Rep */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    Sales Rep
+                                </label>
+                                <input
+                                    type="text"
+                                    value={formData.salesRep}
+                                    onChange={(e) => setFormData({ ...formData, salesRep: e.target.value })}
+                                    className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:bg-white outline-none transition-all"
+                                    placeholder="Sales representative name"
+                                />
+                            </div>
+
+                            {/* Invoice Number */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    Invoice Number
+                                </label>
+                                <input
+                                    type="text"
+                                    value={formData.invoiceNumber}
+                                    onChange={(e) => setFormData({ ...formData, invoiceNumber: e.target.value })}
+                                    className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:bg-white outline-none transition-all"
+                                    placeholder="Invoice number"
+                                />
                             </div>
                         </div>
 

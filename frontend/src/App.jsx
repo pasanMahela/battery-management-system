@@ -9,6 +9,9 @@ import POS from './pages/POS';
 import Sales from './pages/Sales';
 import UserManagement from './pages/UserManagement';
 import ChangePassword from './pages/ChangePassword';
+import Customers from './pages/Customers';
+import Returns from './pages/Returns';
+import ReturnHistory from './pages/ReturnHistory';
 import { useContext, useState, useEffect } from 'react';
 import AuthContext from './context/AuthContext';
 import { Package, ShoppingCart, BarChart3, TrendingUp, DollarSign, Battery } from 'lucide-react';
@@ -27,7 +30,8 @@ const Dashboard = () => {
     totalInventory: 0,
     todaysSales: 0,
     expiringSoon: 0,
-    totalRevenue: 0
+    totalRevenue: 0,
+    totalInventoryValue: 0
   });
 
   useEffect(() => {
@@ -47,6 +51,9 @@ const Dashboard = () => {
 
         // Calculate total inventory
         const totalInventory = batteries.reduce((sum, b) => sum + b.stockQuantity, 0);
+
+        // Calculate total inventory value (selling price × stock quantity)
+        const totalInventoryValue = batteries.reduce((sum, b) => sum + (b.sellingPrice * b.stockQuantity), 0);
 
         // Calculate today's sales count
         const today = new Date();
@@ -77,7 +84,8 @@ const Dashboard = () => {
           totalInventory,
           todaysSales,
           expiringSoon,
-          totalRevenue
+          totalRevenue,
+          totalInventoryValue
         });
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
@@ -140,6 +148,17 @@ const Dashboard = () => {
                 <h3 className="text-3xl font-bold text-gray-800 mt-1">LKR {stats.totalRevenue.toLocaleString()}</h3>
               </div>
               <BarChart3 size={40} className="text-purple-500" />
+            </div>
+          </a>
+
+          {/* Total Inventory Value */}
+          <a href="/inventory/view" className="bg-white p-6 rounded-xl shadow-md border border-indigo-100 hover:shadow-lg transition-all cursor-pointer">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-600 text-sm">Inventory Value</p>
+                <h3 className="text-3xl font-bold text-gray-800 mt-1">LKR {stats.totalInventoryValue.toLocaleString()}</h3>
+              </div>
+              <Package size={40} className="text-indigo-500" />
             </div>
           </a>
         </div>
@@ -211,26 +230,58 @@ function App() {
               </Layout>
             </PrivateRoute>
           } />
-          <Route path="/sales" element={
-            <RoleBasedRoute allowedRoles={[USER_ROLES.ADMIN]}>
-              <Layout>
-                <Sales />
-              </Layout>
-            </RoleBasedRoute>
-          } />
-          <Route path="/user-management" element={
-            <RoleBasedRoute allowedRoles={[USER_ROLES.ADMIN]}>
-              <Layout>
-                <UserManagement />
-              </Layout>
-            </RoleBasedRoute>
-          } />
+          <Route
+            path="/sales"
+            element={
+              <PrivateRoute>
+                <RoleBasedRoute allowedRoles={[USER_ROLES.ADMIN, USER_ROLES.CASHIER]}>
+                  <Layout><Sales /></Layout>
+                </RoleBasedRoute>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/customers"
+            element={
+              <PrivateRoute>
+                <RoleBasedRoute allowedRoles={[USER_ROLES.ADMIN]}>
+                  <Layout><Customers /></Layout>
+                </RoleBasedRoute>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/users"
+            element={
+              <PrivateRoute>
+                <RoleBasedRoute allowedRoles={[USER_ROLES.ADMIN]}>
+                  <Layout>
+                    <UserManagement />
+                  </Layout>
+                </RoleBasedRoute>
+              </PrivateRoute>
+            }
+          />
           <Route path="/change-password" element={
             <PrivateRoute>
               <Layout>
                 <ChangePassword />
               </Layout>
             </PrivateRoute>
+          } />
+          <Route path="/returns" element={
+            <RoleBasedRoute allowedRoles={[USER_ROLES.ADMIN]}>
+              <Layout>
+                <Returns />
+              </Layout>
+            </RoleBasedRoute>
+          } />
+          <Route path="/return-history" element={
+            <RoleBasedRoute allowedRoles={[USER_ROLES.ADMIN]}>
+              <Layout>
+                <ReturnHistory />
+              </Layout>
+            </RoleBasedRoute>
           } />
         </Routes>
       </BrowserRouter>

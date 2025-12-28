@@ -70,6 +70,7 @@ export const API_ENDPOINTS = {
     SALE: `${APP_CONFIG.API_BASE_URL}/Sale`,
     AUTH: `${APP_CONFIG.API_BASE_URL}/Auth`,
     REGISTER: `${APP_CONFIG.API_BASE_URL}/Auth/register`,
+    RETURN: `${APP_CONFIG.API_BASE_URL}/Returns`,
 };
 
 // UI Constants

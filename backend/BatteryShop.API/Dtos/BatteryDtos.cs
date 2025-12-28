@@ -12,7 +12,9 @@ public record BatteryCreateDto(
     DateTime PurchaseDate,
     int StockQuantity,
     int WarrantyPeriodMonths,
-    int ShelfLifeMonths
+    int ShelfLifeMonths,
+    string? SalesRep,
+    string? InvoiceNumber
 );
 
 public record BatteryUpdateDto(
@@ -27,5 +29,7 @@ public record BatteryUpdateDto(
     DateTime PurchaseDate,
     int StockQuantity,
     int WarrantyPeriodMonths,
-    int ShelfLifeMonths
+    int ShelfLifeMonths,
+    string? SalesRep,
+    string? InvoiceNumber
 );

@@ -38,7 +38,9 @@ public class BatteryService
             PurchaseDate = dto.PurchaseDate,
             StockQuantity = dto.StockQuantity,
             WarrantyPeriodMonths = dto.WarrantyPeriodMonths,
-            ShelfLifeMonths = dto.ShelfLifeMonths
+            ShelfLifeMonths = dto.ShelfLifeMonths,
+            SalesRep = dto.SalesRep,
+            InvoiceNumber = dto.InvoiceNumber
         };
         
         await _batteries.InsertOneAsync(battery);
@@ -59,7 +61,9 @@ public class BatteryService
             .Set(b => b.PurchaseDate, dto.PurchaseDate)
             .Set(b => b.StockQuantity, dto.StockQuantity)
             .Set(b => b.WarrantyPeriodMonths, dto.WarrantyPeriodMonths)
-            .Set(b => b.ShelfLifeMonths, dto.ShelfLifeMonths);
+            .Set(b => b.ShelfLifeMonths, dto.ShelfLifeMonths)
+            .Set(b => b.SalesRep, dto.SalesRep)
+            .Set(b => b.InvoiceNumber, dto.InvoiceNumber);
 
         var result = await _batteries.UpdateOneAsync(b => b.Id == id, update);
         return result.ModifiedCount > 0;
