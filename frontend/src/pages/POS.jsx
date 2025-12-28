@@ -63,6 +63,43 @@ const POS = () => {
     const [isAddingToCart, setIsAddingToCart] = useState(false);
     const [isProcessingSale, setIsProcessingSale] = useState(false);
 
+    // Load persisted cart data on mount
+    useEffect(() => {
+        const savedCart = localStorage.getItem('pos_cart');
+        const savedCustomer = localStorage.getItem('pos_customer');
+        const savedDiscount = localStorage.getItem('pos_discount');
+
+        if (savedCart) {
+            try {
+                setCart(JSON.parse(savedCart));
+            } catch (e) {
+                console.error('Failed to load cart:', e);
+            }
+        }
+
+        if (savedCustomer) {
+            try {
+                const customer = JSON.parse(savedCustomer);
+                setCustomerName(customer.name || '');
+                setCustomerPhone(customer.phone || '');
+                setCustomerId(customer.id || '');
+                setCustomerSearchTerm(customer.phone || '');
+            } catch (e) {
+                console.error('Failed to load customer:', e);
+            }
+        }
+
+        if (savedDiscount) {
+            try {
+                const discountData = JSON.parse(savedDiscount);
+                setDiscount(discountData.amount || 0);
+                setDiscountType(discountData.type || 'amount');
+            } catch (e) {
+                console.error('Failed to load discount:', e);
+            }
+        }
+    }, []);
+
     useEffect(() => {
         fetchBatteries();
     }, []);
@@ -141,6 +178,41 @@ const POS = () => {
             }
         }
     }, [selectedIndex]);
+
+    // Save cart to localStorage whenever it changes
+    useEffect(() => {
+        if (cart.length > 0) {
+            localStorage.setItem('pos_cart', JSON.stringify(cart));
+        } else {
+            localStorage.removeItem('pos_cart');
+        }
+    }, [cart]);
+
+    // Save customer data to localStorage
+    useEffect(() => {
+        if (customerName || customerPhone || customerId) {
+            localStorage.setItem('pos_customer', JSON.stringify({
+                name: customerName,
+                phone: customerPhone,
+                id: customerId
+            }));
+        } else {
+            localStorage.removeItem('pos_customer');
+        }
+    }, [customerName, customerPhone, customerId]);
+
+    // Save discount to localStorage
+    useEffect(() => {
+        if (discount > 0) {
+            localStorage.setItem('pos_discount', JSON.stringify({
+                amount: discount,
+                type: discountType
+            }));
+        } else {
+            localStorage.removeItem('pos_discount');
+        }
+    }, [discount, discountType]);
+
 
     useEffect(() => {
         const handleClickOutside = (event) => {
