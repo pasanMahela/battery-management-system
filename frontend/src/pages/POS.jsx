@@ -23,6 +23,10 @@ const POS = () => {
     const customerSearchRef = useRef(null);
     const customerResultsRef = useRef(null);
 
+    // Validation errors
+    const [phoneError, setPhoneError] = useState('');
+    const [idError, setIdError] = useState('');
+
     // Discount State
     const [discount, setDiscount] = useState(0);
     const [discountType, setDiscountType] = useState('amount');
@@ -166,7 +170,7 @@ const POS = () => {
         if (searchValue.length >= 3) {
             setShowCustomerDropdown(true);
             try {
-                const res = await axios.get(`${API_ENDPOINTS.SALE}/customer/${encodeURIComponent(searchValue)}`, {
+                const res = await axios.get(`${API_ENDPOINTS.SALE}/customer/phone/${encodeURIComponent(searchValue)}`, {
                     headers: { Authorization: `Bearer ${user.token}` }
                 });
                 setCustomerResults(res.data);
@@ -210,18 +214,18 @@ const POS = () => {
     };
 
     const selectCustomer = (customer) => {
-        setCustomerId(customer.customerId);
+        setCustomerId(customer.customerId || '');
         setCustomerName(customer.customerName);
         setCustomerPhone(customer.customerPhone);
-        setCustomerSearchTerm(customer.customerId);
+        setCustomerSearchTerm(customer.customerPhone);
         setShowCustomerDropdown(false);
         setIsNewCustomer(false);
     };
 
     const selectNewCustomer = () => {
-        setCustomerId(customerSearchTerm);
+        setCustomerId('');
         setCustomerName('');
-        setCustomerPhone('');
+        setCustomerPhone(customerSearchTerm);
         setShowCustomerDropdown(false);
         setIsNewCustomer(true);
     };
@@ -328,10 +332,24 @@ const POS = () => {
     };
 
     const handleCheckout = async () => {
-        if (!customerName || !customerPhone || !customerId) {
-            setDialog({ isOpen: true, title: 'Missing Details', message: 'Please enter all customer details (Name, Phone, ID Number)', type: 'warning' });
+        // Validate phone number
+        const phoneValidationError = customerPhone ? (/^0\d{9}$/.test(customerPhone) ? '' : 'Phone must be 10 digits starting with 0') : 'Phone number is required';
+        setPhoneError(phoneValidationError);
+
+        // Validate ID (optional field)
+        const idValidationError = customerId ? ((/^\d{12}$/.test(customerId) || /^\d{9}[vV]$/.test(customerId)) ? '' : 'ID must be 12 digits or 9 digits ending with V') : '';
+        setIdError(idValidationError);
+
+        if (!customerName || !customerPhone) {
+            setDialog({ isOpen: true, title: 'Missing Details', message: 'Please enter customer name and phone number', type: 'warning' });
             return;
         }
+
+        if (phoneValidationError || idValidationError) {
+            setDialog({ isOpen: true, title: 'Validation Error', message: phoneValidationError || idValidationError, type: 'warning' });
+            return;
+        }
+
         if (cart.length === 0) {
             setDialog({ isOpen: true, title: 'Empty Cart', message: 'Please add items to cart before checkout', type: 'warning' });
             return;
@@ -418,7 +436,7 @@ const POS = () => {
                 </div>
 
                 {/* 2. SEARCH BAR & RESULTS */}
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 relative z-30" ref={searchRef}>
+                <div className="bg-white p-6 rounded-2xl shadow-sm border-2 border-gray-400 relative z-30" ref={searchRef}>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">Search Products</label>
                     <div className="relative">
                         <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={24} />
@@ -433,11 +451,11 @@ const POS = () => {
                             }}
                             onFocus={() => searchTerm.length >= 2 && setShowDropdown(true)}
                             onKeyDown={handleKeyDown}
-                            className="w-full pl-12 pr-4 py-4 bg-blue-50/30 border-2 border-blue-100 rounded-xl focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-500/10 outline-none text-xl font-medium transition-all"
+                            className="w-full pl-12 pr-4 py-4 bg-white border-3 border-gray-400 rounded-xl focus:border-blue-600 focus:border-3 focus:bg-white focus:ring-4 focus:ring-blue-500/10 outline-none text-xl font-medium transition-all"
                             autoFocus
                         />
                         {showDropdown && filteredBatteries.length > 0 && (
-                            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 max-h-[400px] overflow-y-auto z-50">
+                            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border-2 border-gray-400 max-h-[400px] overflow-y-auto z-50">
                                 <ul className="py-2" ref={resultsRef}>
                                     {filteredBatteries.map((battery, index) => (
                                         <li
@@ -469,7 +487,7 @@ const POS = () => {
                 </div>
 
                 {/* 3. CART (Vertical Layout) */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
+                <div className="bg-white rounded-2xl shadow-sm border-2 border-gray-400 overflow-hidden flex flex-col">
                     <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
                         <h2 className="font-bold text-gray-800 flex items-center gap-2">
                             <ShoppingCart size={20} className="text-blue-600" />
@@ -508,7 +526,7 @@ const POS = () => {
                                     </tr>
                                 ) : (
                                     cart.map((item, index) => (
-                                        <tr key={index} className="hover:bg-blue-50/30 transition-colors">
+                                        <tr key={index} className="hover:bg-white transition-colors">
                                             <td className="px-6 py-4">
                                                 <div className="font-bold text-gray-900">{item.brand} {item.model}</div>
                                                 <div className="text-xs text-gray-500 font-mono">SN: {item.serialNumber}</div>
@@ -542,36 +560,35 @@ const POS = () => {
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
                             {/* CUSTOMER DETAILS */}
-                            <div className="space-y-4 border-r border-gray-200 pr-8" ref={customerSearchRef}>
-                                <h3 className="text-sm font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2">
-                                    <User size={16} /> Customer Search
-                                </h3>
-
-                                {/* Customer ID Search with Dropdown */}
-                                <div className="relative">
-                                    <input
-                                        type="text"
-                                        value={customerSearchTerm}
-                                        onChange={(e) => handleCustomerSearch(e.target.value)}
-                                        onKeyDown={handleCustomerKeyDown}
-                                        onFocus={() => customerSearchTerm.length >= 3 && setShowCustomerDropdown(true)}
-                                        placeholder="Enter Customer ID (NIC / Passport) *"
-                                        className="w-full px-4 py-3 bg-blue-50/30 border-2 border-blue-100 rounded-xl focus:border-blue-500 focus:bg-white outline-none transition-all"
-                                        autoFocus={cart.length > 0}
-                                    />
+                            <div className="space-y-4">
+                                <div className="relative" ref={customerSearchRef}>
+                                    <label className="block text-sm font-bold text-gray-500 uppercase mb-2">Customer Phone Number</label>
+                                    <div className="relative">
+                                        <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                                        <input
+                                            type="tel"
+                                            value={customerSearchTerm}
+                                            onChange={(e) => handleCustomerSearch(e.target.value)}
+                                            onKeyDown={handleCustomerKeyDown}
+                                            onFocus={() => customerSearchTerm.length >= 3 && setShowCustomerDropdown(true)}
+                                            placeholder="Enter Phone Number (Min 3 digits) *"
+                                            className="w-full pl-10 pr-4 py-3 bg-white border-3 border-gray-400 rounded-xl focus:border-blue-600 focus:border-3 focus:bg-white outline-none transition-all"
+                                            autoFocus={cart.length > 0}
+                                        />
+                                    </div>
                                     {showCustomerDropdown && (customerResults.length > 0 || customerSearchTerm.length >= 3) && (
-                                        <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 max-h-[300px] overflow-y-auto z-50">
+                                        <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border-2 border-gray-400 max-h-[300px] overflow-y-auto z-50">
                                             <ul className="py-2" ref={customerResultsRef}>
                                                 {customerResults.map((customer, index) => (
                                                     <li
-                                                        key={customer.customerId}
+                                                        key={customer.customerPhone}
                                                         onClick={() => selectCustomer(customer)}
                                                         onMouseEnter={() => setSelectedCustomerIndex(index)}
                                                         className={`px-4 py-3 cursor-pointer border-b border-gray-50 last:border-b-0 transition-colors ${index === selectedCustomerIndex ? 'bg-blue-50' : 'hover:bg-gray-50'}`}
                                                     >
-                                                        <div className="font-bold text-gray-900">{customer.customerName}</div>
-                                                        <div className="text-xs text-gray-500">ID: {customer.customerId} | Phone: {customer.customerPhone}</div>
-                                                        <div className="text-xs text-gray-400">Last purchase: {new Date(customer.lastPurchase).toLocaleDateString()}</div>
+                                                        <div className="font-bold text-gray-800">{customer.customerName}</div>
+                                                        <div className="text-sm text-gray-600">Phone: {customer.customerPhone}</div>
+                                                        {customer.customerId && <div className="text-xs text-gray-400">ID: {customer.customerId}</div>}
                                                     </li>
                                                 ))}
                                                 {customerSearchTerm.length >= 3 && (
@@ -592,32 +609,43 @@ const POS = () => {
                                 </div>
 
                                 {/* Show customer details after selection */}
-                                {(customerId || isNewCustomer) && (
-                                    <div className="grid grid-cols-2 gap-4 pt-2 border-t border-gray-200">
+                                {(customerPhone || isNewCustomer) && (
+                                    <div className="space-y-3 pt-3 border-t border-gray-200">
+                                        <input
+                                            type="text"
+                                            value={customerId}
+                                            onChange={(e) => {
+                                                setCustomerId(e.target.value);
+                                                // Validate on change
+                                                const val = e.target.value;
+                                                if (val && !/^\d{12}$/.test(val) && !/^\d{9}[vV]$/.test(val)) {
+                                                    setIdError('ID must be 12 digits or 9 digits ending with V');
+                                                } else {
+                                                    setIdError('');
+                                                }
+                                            }}
+                                            placeholder="Customer ID (NIC / Passport)"
+                                            className={`w-full px-4 py-3 bg-white rounded-lg outline-none transition-colors ${idError ? 'border-3 border-red-500' : 'border-2 border-gray-400 focus:border-blue-600 focus:border-3'
+                                                }`}
+                                            disabled={!isNewCustomer}
+                                        />
+                                        {idError && <p className="text-red-500 text-xs mt-1">{idError}</p>}
                                         <input
                                             type="text"
                                             value={customerName}
                                             onChange={(e) => setCustomerName(e.target.value)}
                                             placeholder="Customer Name *"
-                                            className="px-4 py-3 bg-white border border-gray-200 rounded-lg focus:border-blue-500 outline-none transition-colors w-full"
-                                            disabled={!isNewCustomer}
-                                        />
-                                        <input
-                                            type="tel"
-                                            value={customerPhone}
-                                            onChange={(e) => setCustomerPhone(e.target.value)}
-                                            placeholder="Phone Number *"
-                                            className="px-4 py-3 bg-white border border-gray-200 rounded-lg focus:border-blue-500 outline-none transition-colors w-full"
+                                            className="w-full px-4 py-3 bg-white border-2 border-gray-400 rounded-lg focus:border-blue-600 focus:border-3 outline-none transition-colors"
                                             disabled={!isNewCustomer}
                                         />
                                         {isNewCustomer && (
-                                            <div className="col-span-2 text-sm text-green-600 font-medium">
-                                                ✨ New customer - Enter name and phone number
+                                            <div className="text-sm text-green-600 font-medium">
+                                                ✨ New customer - Fill in details
                                             </div>
                                         )}
-                                        {!isNewCustomer && customerId && (
-                                            <div className="col-span-2 text-sm text-blue-600 font-medium">
-                                                ✅ Existing customer loaded
+                                        {!isNewCustomer && customerPhone && (
+                                            <div className="text-sm text-blue-600 font-medium flex items-center justify-between">
+                                                <span>✅ Existing customer loaded</span>
                                                 <button
                                                     onClick={() => {
                                                         setCustomerId('');
@@ -626,7 +654,7 @@ const POS = () => {
                                                         setCustomerSearchTerm('');
                                                         setIsNewCustomer(false);
                                                     }}
-                                                    className="ml-3 text-red-600 hover:text-red-700"
+                                                    className="text-red-600 hover:text-red-700 text-xs font-medium"
                                                 >
                                                     Clear
                                                 </button>
@@ -647,7 +675,7 @@ const POS = () => {
                                                 min="0"
                                                 value={discount}
                                                 onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
-                                                className="w-32 px-3 py-2 border border-gray-300 rounded-lg outline-none focus:border-blue-500 font-medium text-right"
+                                                className="w-32 px-3 py-2 border border-gray-300 rounded-lg outline-none focus:border-blue-600 focus:border-3 font-medium text-right"
                                             />
                                             <select
                                                 value={discountType}
@@ -674,7 +702,7 @@ const POS = () => {
 
                                 <button
                                     onClick={handleCheckout}
-                                    disabled={cart.length === 0 || !customerName || !customerPhone || !customerId || isProcessingSale}
+                                    disabled={cart.length === 0 || !customerName || !customerPhone || isProcessingSale}
                                     className="w-full py-4 bg-gray-900 hover:bg-black text-white rounded-xl font-bold text-lg shadow-lg flex items-center justify-center gap-2 transition-all disabled:bg-gray-300 disabled:cursor-not-allowed mt-auto"
                                 >
                                     {isProcessingSale ? (
@@ -692,127 +720,129 @@ const POS = () => {
                         </div>
                     </div>
                 </div>
-            </div>
+            </div >
 
             {/* MODAL: ADD ITEM */}
-            {showItemModal && selectedBattery && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-                    <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-                        <div className="bg-gray-50 p-6 border-b border-gray-100">
-                            <div className="flex justify-between items-start mb-4">
-                                <h3 className="text-2xl font-extrabold text-gray-900 break-words max-w-[85%]">{selectedBattery.brand} {selectedBattery.model}</h3>
-                                <button onClick={closeItemModal} className="text-gray-400 hover:text-gray-600 transition-colors p-1">
-                                    <X size={28} />
-                                </button>
-                            </div>
-                            <div className="space-y-3">
-                                <div className="flex items-center gap-3">
-                                    <span className="text-xs uppercase font-bold text-gray-500 tracking-wider">Serial No</span>
-                                    <span className="font-mono text-lg font-bold text-gray-800 bg-white px-2 py-1 rounded border border-gray-200">
-                                        {selectedBattery.serialNumber}
-                                    </span>
+            {
+                showItemModal && selectedBattery && (
+                    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
+                        <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+                            <div className="bg-gray-50 p-6 border-b border-gray-100">
+                                <div className="flex justify-between items-start mb-4">
+                                    <h3 className="text-2xl font-extrabold text-gray-900 break-words max-w-[85%]">{selectedBattery.brand} {selectedBattery.model}</h3>
+                                    <button onClick={closeItemModal} className="text-gray-400 hover:text-gray-600 transition-colors p-1">
+                                        <X size={28} />
+                                    </button>
                                 </div>
-                                {selectedBattery.barcode && (
+                                <div className="space-y-3">
                                     <div className="flex items-center gap-3">
-                                        <span className="text-xs uppercase font-bold text-gray-500 tracking-wider">Barcode</span>
-                                        <span className="font-mono text-lg font-bold text-gray-800 bg-white px-2 py-1 rounded border border-gray-200">
-                                            {selectedBattery.barcode}
+                                        <span className="text-xs uppercase font-bold text-gray-500 tracking-wider">Serial No</span>
+                                        <span className="font-mono text-lg font-bold text-gray-800 bg-white px-2 py-1 rounded border-2 border-gray-400">
+                                            {selectedBattery.serialNumber}
                                         </span>
                                     </div>
-                                )}
-                                <div className="flex items-center gap-4 text-sm font-medium text-gray-600">
-                                    <span className="flex items-center gap-1"><Battery size={16} /> {selectedBattery.capacity}Ah</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="p-6 space-y-6">
-                            {/* Override Price Input */}
-                            <div>
-                                <label className="block text-xs font-bold text-blue-600 uppercase tracking-wider mb-2 flex items-center gap-1">
-                                    <Edit2 size={12} /> Unit Price (Editable)
-                                </label>
-                                <div className="relative">
-                                    <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 font-bold">LKR</span>
-                                    <input
-                                        type="number"
-                                        ref={priceRef}
-                                        onKeyDown={handlePriceKeyDown}
-                                        value={overridePrice}
-                                        onChange={(e) => setOverridePrice(e.target.value)}
-                                        className="w-full pl-12 pr-4 py-3 bg-blue-50/50 border-2 border-blue-100 rounded-xl focus:border-blue-500 focus:bg-white outline-none font-bold text-xl text-gray-900 transition-all"
-                                    />
+                                    {selectedBattery.barcode && (
+                                        <div className="flex items-center gap-3">
+                                            <span className="text-xs uppercase font-bold text-gray-500 tracking-wider">Barcode</span>
+                                            <span className="font-mono text-lg font-bold text-gray-800 bg-white px-2 py-1 rounded border-2 border-gray-400">
+                                                {selectedBattery.barcode}
+                                            </span>
+                                        </div>
+                                    )}
+                                    <div className="flex items-center gap-4 text-sm font-medium text-gray-600">
+                                        <span className="flex items-center gap-1"><Battery size={16} /> {selectedBattery.capacity}Ah</span>
+                                    </div>
                                 </div>
                             </div>
 
-                            {/* Quantity Input */}
-                            <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Quantity</label>
-                                <div className="flex h-12 bg-gray-100 rounded-xl p-1">
-                                    <button onClick={() => setItemQuantity(Math.max(1, itemQuantity - 1))} className="w-14 h-full bg-white rounded-lg shadow-sm text-gray-600 hover:text-blue-600 flex items-center justify-center transition-all"><Minus size={20} /></button>
-                                    <input
-                                        type="number"
-                                        ref={qtyRef}
-                                        onKeyDown={handleQtyKeyDown}
-                                        className="flex-1 bg-transparent text-center font-bold text-xl text-gray-800 outline-none"
-                                        value={itemQuantity}
-                                        onChange={(e) => setItemQuantity(Math.max(1, Math.min(selectedBattery.stockQuantity, parseInt(e.target.value) || 1)))}
-                                    />
-                                    <button onClick={() => setItemQuantity(Math.min(selectedBattery.stockQuantity, itemQuantity + 1))} className="w-14 h-full bg-white rounded-lg shadow-sm text-gray-600 hover:text-blue-600 flex items-center justify-center transition-all"><Plus size={20} /></button>
-                                </div>
-                            </div>
-
-                            {/* Discount Input */}
-                            <div>
-                                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Item Discount</label>
-                                <div className="flex gap-2">
-                                    <div className="relative flex-1">
+                            <div className="p-6 space-y-6">
+                                {/* Override Price Input */}
+                                <div>
+                                    <label className="block text-xs font-bold text-blue-600 uppercase tracking-wider mb-2 flex items-center gap-1">
+                                        <Edit2 size={12} /> Unit Price (Editable)
+                                    </label>
+                                    <div className="relative">
+                                        <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 font-bold">LKR</span>
                                         <input
                                             type="number"
-                                            ref={discountRef}
-                                            onKeyDown={handleDiscountKeyDown}
-                                            value={itemDiscount}
-                                            onChange={(e) => setItemDiscount(parseFloat(e.target.value) || 0)}
-                                            className="w-full pl-3 pr-3 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-medium text-lg"
-                                            placeholder="0"
+                                            ref={priceRef}
+                                            onKeyDown={handlePriceKeyDown}
+                                            value={overridePrice}
+                                            onChange={(e) => setOverridePrice(e.target.value)}
+                                            className="w-full pl-12 pr-4 py-3 bg-blue-50/50 border-3 border-gray-400 rounded-xl focus:border-blue-600 focus:border-3 focus:bg-white outline-none font-bold text-xl text-gray-900 transition-all"
                                         />
                                     </div>
-                                    <div className="flex bg-gray-100 p-1 rounded-xl">
-                                        <button onClick={() => setItemDiscountType('amount')} className={`px-4 rounded-lg text-sm font-bold transition-all ${itemDiscountType === 'amount' ? 'bg-white shadow text-blue-600' : 'text-gray-500'}`}>LKR</button>
-                                        <button onClick={() => setItemDiscountType('percentage')} className={`px-4 rounded-lg text-sm font-bold transition-all ${itemDiscountType === 'percentage' ? 'bg-white shadow text-blue-600' : 'text-gray-500'}`}>%</button>
+                                </div>
+
+                                {/* Quantity Input */}
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Quantity</label>
+                                    <div className="flex h-12 bg-gray-100 rounded-xl p-1">
+                                        <button onClick={() => setItemQuantity(Math.max(1, itemQuantity - 1))} className="w-14 h-full bg-white rounded-lg shadow-sm text-gray-600 hover:text-blue-600 flex items-center justify-center transition-all"><Minus size={20} /></button>
+                                        <input
+                                            type="number"
+                                            ref={qtyRef}
+                                            onKeyDown={handleQtyKeyDown}
+                                            className="flex-1 bg-transparent text-center font-bold text-xl text-gray-800 outline-none"
+                                            value={itemQuantity}
+                                            onChange={(e) => setItemQuantity(Math.max(1, Math.min(selectedBattery.stockQuantity, parseInt(e.target.value) || 1)))}
+                                        />
+                                        <button onClick={() => setItemQuantity(Math.min(selectedBattery.stockQuantity, itemQuantity + 1))} className="w-14 h-full bg-white rounded-lg shadow-sm text-gray-600 hover:text-blue-600 flex items-center justify-center transition-all"><Plus size={20} /></button>
+                                    </div>
+                                </div>
+
+                                {/* Discount Input */}
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Item Discount</label>
+                                    <div className="flex gap-2">
+                                        <div className="relative flex-1">
+                                            <input
+                                                type="number"
+                                                ref={discountRef}
+                                                onKeyDown={handleDiscountKeyDown}
+                                                value={itemDiscount}
+                                                onChange={(e) => setItemDiscount(parseFloat(e.target.value) || 0)}
+                                                className="w-full pl-3 pr-3 py-3 border-2 border-gray-400 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none font-medium text-lg"
+                                                placeholder="0"
+                                            />
+                                        </div>
+                                        <div className="flex bg-gray-100 p-1 rounded-xl">
+                                            <button onClick={() => setItemDiscountType('amount')} className={`px-4 rounded-lg text-sm font-bold transition-all ${itemDiscountType === 'amount' ? 'bg-white shadow text-blue-600' : 'text-gray-500'}`}>LKR</button>
+                                            <button onClick={() => setItemDiscountType('percentage')} className={`px-4 rounded-lg text-sm font-bold transition-all ${itemDiscountType === 'percentage' ? 'bg-white shadow text-blue-600' : 'text-gray-500'}`}>%</button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <div className="bg-gray-50 p-4 border-t border-gray-100">
-                            <div className="flex justify-between items-center mb-4 px-2">
-                                <span className="text-gray-500 font-medium">Total Price</span>
-                                <span className="text-3xl font-extrabold text-blue-600">
-                                    LKR {((parseFloat(overridePrice) * itemQuantity) - calculateItemDiscount()).toLocaleString()}
-                                </span>
+                            <div className="bg-gray-50 p-4 border-t border-gray-100">
+                                <div className="flex justify-between items-center mb-4 px-2">
+                                    <span className="text-gray-500 font-medium">Total Price</span>
+                                    <span className="text-3xl font-extrabold text-blue-600">
+                                        LKR {((parseFloat(overridePrice) * itemQuantity) - calculateItemDiscount()).toLocaleString()}
+                                    </span>
+                                </div>
+                                <button
+                                    onClick={addItemToCart}
+                                    ref={addBtnRef}
+                                    disabled={isAddingToCart}
+                                    className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-200 transaction-all flex items-center justify-center gap-2 text-lg focus:ring-4 focus:ring-blue-300 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {isAddingToCart ? (
+                                        <>
+                                            <Loader2 size={24} className="animate-spin" />
+                                            Adding...
+                                        </>
+                                    ) : (
+                                        <>
+                                            Add to Cart <ChevronRight size={24} />
+                                        </>
+                                    )}
+                                </button>
                             </div>
-                            <button
-                                onClick={addItemToCart}
-                                ref={addBtnRef}
-                                disabled={isAddingToCart}
-                                className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-200 transaction-all flex items-center justify-center gap-2 text-lg focus:ring-4 focus:ring-blue-300 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {isAddingToCart ? (
-                                    <>
-                                        <Loader2 size={24} className="animate-spin" />
-                                        Adding...
-                                    </>
-                                ) : (
-                                    <>
-                                        Add to Cart <ChevronRight size={24} />
-                                    </>
-                                )}
-                            </button>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Dialog Component */}
             <Dialog
@@ -825,17 +855,19 @@ const POS = () => {
             />
 
             {/* Print Bill Component */}
-            {showPrintBill && completedSale && (
-                <PrintableBill
-                    saleData={completedSale}
-                    showPreview={true}
-                    onClose={() => {
-                        setShowPrintBill(false);
-                        setCompletedSale(null);
-                    }}
-                />
-            )}
-        </div>
+            {
+                showPrintBill && completedSale && (
+                    <PrintableBill
+                        saleData={completedSale}
+                        showPreview={true}
+                        onClose={() => {
+                            setShowPrintBill(false);
+                            setCompletedSale(null);
+                        }}
+                    />
+                )
+            }
+        </div >
     );
 };
 

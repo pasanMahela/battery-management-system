@@ -2,7 +2,7 @@ import { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import AuthContext from '../context/AuthContext';
 import PrintableBill from '../components/PrintableBill';
-import { Search, Calendar, DollarSign, User, Phone, Package, ArrowUpDown, Filter, Download, FileText, Eye, Loader2 } from 'lucide-react';
+import { Search, Calendar, DollarSign, User, Phone, Package, ArrowUpDown, Filter, Download, FileText, Eye, Loader2, X } from 'lucide-react';
 import { API_ENDPOINTS } from '../constants/constants';
 
 const Sales = () => {
@@ -14,6 +14,7 @@ const Sales = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
+    const [timePeriod, setTimePeriod] = useState('today'); // 'today', 'week', 'month'
 
     // Sort
     const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' });
@@ -47,15 +48,24 @@ const Sales = () => {
     const applyFilters = () => {
         let result = [...sales];
 
-        // 1. Text Search
+        // 1. Text Search - includes customer details, cashier, and battery details
         if (searchTerm) {
             const term = searchTerm.toLowerCase();
-            result = result.filter(sale =>
-                (sale.customerName?.toLowerCase() || '').includes(term) ||
-                (sale.customerPhone || '').includes(term) ||
-                (sale.customerId || '').includes(term) ||
-                (sale.cashierName?.toLowerCase() || '').includes(term)
-            );
+            result = result.filter(sale => {
+                // Search in customer and cashier details
+                const customerMatch = (sale.customerName?.toLowerCase() || '').includes(term) ||
+                    (sale.customerPhone || '').includes(term) ||
+                    (sale.customerId || '').includes(term) ||
+                    (sale.cashierName?.toLowerCase() || '').includes(term);
+
+                // Search in battery items (brand and model)
+                const batteryMatch = sale.items?.some(item =>
+                    (item.brand?.toLowerCase() || '').includes(term) ||
+                    (item.model?.toLowerCase() || '').includes(term)
+                ) || false;
+
+                return customerMatch || batteryMatch;
+            });
         }
 
         // 2. Date Range
@@ -89,6 +99,48 @@ const Sales = () => {
         }));
     };
 
+    // Calculate date range based on time period
+    const getDateRange = () => {
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+        switch (timePeriod) {
+            case 'today':
+                return { start: today, end: new Date() };
+            case 'week':
+                const weekStart = new Date(today);
+                weekStart.setDate(today.getDate() - today.getDay()); // Start of week (Sunday)
+                return { start: weekStart, end: new Date() };
+            case 'month':
+                const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+                return { start: monthStart, end: new Date() };
+            default:
+                return { start: today, end: new Date() };
+        }
+    };
+
+    // Filter sales by time period
+    const { start, end } = getDateRange();
+    const periodSales = filteredSales.filter(sale => {
+        const saleDate = new Date(sale.date);
+        return saleDate >= start && saleDate <= end;
+    });
+
+    // Calculate metrics
+    const totalSalesToday = periodSales.length;
+    const totalRevenueToday = periodSales.reduce((sum, sale) => sum + sale.totalAmount, 0);
+
+    // Calculate profit (Revenue - Cost)
+    // Assuming each item has purchasePrice in the battery data
+    const totalProfitToday = periodSales.reduce((sum, sale) => {
+        const saleProfit = sale.items?.reduce((itemSum, item) => {
+            // Profit = (selling price - purchase price) * quantity
+            const itemProfit = (item.unitPrice - (item.purchasePrice || item.unitPrice * 0.7)) * item.quantity;
+            return itemSum + itemProfit;
+        }, 0) || 0;
+        return sum + saleProfit;
+    }, 0);
+
     const totalRevenue = filteredSales.reduce((sum, sale) => sum + sale.totalAmount, 0);
 
     return (
@@ -108,34 +160,78 @@ const Sales = () => {
                 </div>
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <div className="bg-white p-6 rounded-xl shadow-sm border border-blue-100 flex items-center justify-between">
-                        <div>
-                            <p className="text-sm font-semibold text-blue-600 uppercase tracking-wider">Total Sales</p>
-                            <h3 className="text-3xl font-extrabold text-gray-900 mt-2">{filteredSales.length}</h3>
-                        </div>
-                        <div className="p-3 bg-blue-50 text-blue-600 rounded-lg">
-                            <FileText size={24} />
+                <div className="bg-white rounded-xl shadow-sm p-5 mb-6 border border-gray-200">
+                    <div className="flex items-center justify-between mb-4">
+                        <h2 className="text-lg font-bold text-gray-900">Sales Overview</h2>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => setTimePeriod('today')}
+                                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${timePeriod === 'today'
+                                    ? 'bg-blue-600 text-white'
+                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                    }`}
+                            >
+                                Today
+                            </button>
+                            <button
+                                onClick={() => setTimePeriod('week')}
+                                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${timePeriod === 'week'
+                                    ? 'bg-blue-600 text-white'
+                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                    }`}
+                            >
+                                This Week
+                            </button>
+                            <button
+                                onClick={() => setTimePeriod('month')}
+                                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${timePeriod === 'month'
+                                    ? 'bg-blue-600 text-white'
+                                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                    }`}
+                            >
+                                This Month
+                            </button>
                         </div>
                     </div>
-                    <div className="bg-white p-6 rounded-xl shadow-sm border border-green-100 flex items-center justify-between">
-                        <div>
-                            <p className="text-sm font-semibold text-green-600 uppercase tracking-wider">Revenue</p>
-                            <h3 className="text-3xl font-extrabold text-gray-900 mt-2">LKR {totalRevenue.toLocaleString()}</h3>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-xl border border-blue-200 flex items-center justify-between">
+                            <div>
+                                <p className="text-sm font-semibold text-blue-700 uppercase tracking-wider">
+                                    Total Sales {timePeriod === 'today' ? 'Today' : timePeriod === 'week' ? 'This Week' : 'This Month'}
+                                </p>
+                                <h3 className="text-4xl font-extrabold text-blue-900 mt-2">{totalSalesToday}</h3>
+                                <p className="text-xs text-blue-600 mt-1">Transactions</p>
+                            </div>
+                            <div className="p-4 bg-blue-600 text-white rounded-xl">
+                                <FileText size={28} />
+                            </div>
                         </div>
-                        <div className="p-3 bg-green-50 text-green-600 rounded-lg">
-                            <DollarSign size={24} />
+
+                        <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-xl border border-green-200 flex items-center justify-between">
+                            <div>
+                                <p className="text-sm font-semibold text-green-700 uppercase tracking-wider">
+                                    Total Revenue {timePeriod === 'today' ? 'Today' : timePeriod === 'week' ? 'This Week' : 'This Month'}
+                                </p>
+                                <h3 className="text-4xl font-extrabold text-green-900 mt-2">LKR {totalRevenueToday.toLocaleString()}</h3>
+                                <p className="text-xs text-green-600 mt-1">Total earnings</p>
+                            </div>
+                            <div className="p-4 bg-green-600 text-white rounded-xl">
+                                <DollarSign size={28} />
+                            </div>
                         </div>
-                    </div>
-                    <div className="bg-white p-6 rounded-xl shadow-sm border border-purple-100 flex items-center justify-between">
-                        <div>
-                            <p className="text-sm font-semibold text-purple-600 uppercase tracking-wider">Avg. Ticket</p>
-                            <h3 className="text-3xl font-extrabold text-gray-900 mt-2">
-                                LKR {filteredSales.length > 0 ? Math.round(totalRevenue / filteredSales.length).toLocaleString() : '0'}
-                            </h3>
-                        </div>
-                        <div className="p-3 bg-purple-50 text-purple-600 rounded-lg">
-                            <Package size={24} />
+
+                        <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-xl border border-purple-200 flex items-center justify-between">
+                            <div>
+                                <p className="text-sm font-semibold text-purple-700 uppercase tracking-wider">
+                                    Total Profit {timePeriod === 'today' ? 'Today' : timePeriod === 'week' ? 'This Week' : 'This Month'}
+                                </p>
+                                <h3 className="text-4xl font-extrabold text-purple-900 mt-2">LKR {totalProfitToday.toLocaleString()}</h3>
+                                <p className="text-xs text-purple-600 mt-1">Net earnings</p>
+                            </div>
+                            <div className="p-4 bg-purple-600 text-white rounded-xl">
+                                <Package size={28} />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -148,10 +244,10 @@ const Sales = () => {
                             <Search className="absolute left-3 top-[34px] text-gray-400" size={18} />
                             <input
                                 type="text"
-                                placeholder="Customer Name, Phone, ID or Cashier..."
+                                placeholder="Search customer, phone, battery brand, model..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:border-blue-500 focus:bg-white outline-none transition-all font-medium"
+                                className="w-full pl-10 pr-3 py-2.5 border-2 border-gray-200 rounded-lg focus:border-blue-500 outline-none transition-all"
                             />
                         </div>
                         <div className="md:col-span-3">
@@ -160,7 +256,7 @@ const Sales = () => {
                                 type="date"
                                 value={startDate}
                                 onChange={(e) => setStartDate(e.target.value)}
-                                className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:border-blue-500 focus:bg-white outline-none transition-all font-medium text-gray-700"
+                                className="w-full px-3 py-2.5 border-2 border-gray-200 rounded-lg focus:border-blue-500 outline-none transition-all"
                             />
                         </div>
                         <div className="md:col-span-3">
@@ -169,19 +265,68 @@ const Sales = () => {
                                 type="date"
                                 value={endDate}
                                 onChange={(e) => setEndDate(e.target.value)}
-                                className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:border-blue-500 focus:bg-white outline-none transition-all font-medium text-gray-700"
+                                className="w-full px-3 py-2.5 border-2 border-gray-200 rounded-lg focus:border-blue-500 outline-none transition-all"
                             />
                         </div>
                         <div className="md:col-span-1">
                             <button
-                                onClick={() => { setSearchTerm(''); setStartDate(''); setEndDate(''); }}
-                                className="w-full py-2.5 bg-gray-100 text-gray-600 font-bold rounded-lg hover:bg-gray-200 transition-colors text-sm"
+                                onClick={() => {
+                                    setSearchTerm('');
+                                    setStartDate('');
+                                    setEndDate('');
+                                }}
+                                className="w-full px-3 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors flex items-center justify-center"
+                                title="Clear Filters"
                             >
-                                Reset
+                                <X size={18} />
                             </button>
                         </div>
                     </div>
                 </div>
+
+                {/* Filtered Results Summary - Dynamic based on search and date filters */}
+                {(searchTerm || startDate || endDate) && (
+                    <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl shadow-lg p-5 mb-6 text-white">
+                        <div className="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 className="text-lg font-bold">Filtered Results</h3>
+                                <p className="text-sm text-blue-100">
+                                    {searchTerm && `Search: "${searchTerm}"`}
+                                    {(searchTerm && (startDate || endDate)) && ' • '}
+                                    {startDate && `From: ${new Date(startDate).toLocaleDateString()}`}
+                                    {(startDate && endDate) && ' - '}
+                                    {endDate && `To: ${new Date(endDate).toLocaleDateString()}`}
+                                </p>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="bg-white/10 backdrop-blur rounded-lg p-4 border border-white/20">
+                                <p className="text-xs font-semibold text-blue-100 uppercase tracking-wider mb-1">Total Sales</p>
+                                <h4 className="text-3xl font-extrabold">{filteredSales.length}</h4>
+                                <p className="text-xs text-blue-100 mt-1">Transactions</p>
+                            </div>
+                            <div className="bg-white/10 backdrop-blur rounded-lg p-4 border border-white/20">
+                                <p className="text-xs font-semibold text-blue-100 uppercase tracking-wider mb-1">Total Revenue</p>
+                                <h4 className="text-3xl font-extrabold">LKR {totalRevenue.toLocaleString()}</h4>
+                                <p className="text-xs text-blue-100 mt-1">Total earnings</p>
+                            </div>
+                            <div className="bg-white/10 backdrop-blur rounded-lg p-4 border border-white/20">
+                                <p className="text-xs font-semibold text-blue-100 uppercase tracking-wider mb-1">Total Profit</p>
+                                <h4 className="text-3xl font-extrabold">LKR {(() => {
+                                    const filteredProfit = filteredSales.reduce((sum, sale) => {
+                                        const saleProfit = sale.items?.reduce((itemSum, item) => {
+                                            const itemProfit = (item.unitPrice - (item.purchasePrice || item.unitPrice * 0.7)) * item.quantity;
+                                            return itemSum + itemProfit;
+                                        }, 0) || 0;
+                                        return sum + saleProfit;
+                                    }, 0);
+                                    return filteredProfit.toLocaleString();
+                                })()}</h4>
+                                <p className="text-xs text-blue-100 mt-1">Net earnings</p>
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Sales Table */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -192,6 +337,7 @@ const Sales = () => {
                                     <th onClick={() => handleSort('date')} className="px-6 py-4 text-xs font-bold text-gray-500 uppercase cursor-pointer hover:bg-gray-100 select-none">
                                         <div className="flex items-center gap-1">Date <ArrowUpDown size={14} /></div>
                                     </th>
+                                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Invoice #</th>
                                     <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Customer</th>
                                     <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Items</th>
                                     <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase text-right">Discount</th>
@@ -214,7 +360,7 @@ const Sales = () => {
                                     </tr>
                                 ) : filteredSales.length === 0 ? (
                                     <tr>
-                                        <td colSpan="7" className="px-6 py-16 text-center">
+                                        <td colSpan="8" className="px-6 py-16 text-center">
                                             <div className="flex flex-col items-center gap-3">
                                                 <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
                                                     <Filter className="text-gray-400" size={32} />
@@ -232,6 +378,9 @@ const Sales = () => {
                                             <td className="px-6 py-4">
                                                 <div className="font-bold text-gray-900">{new Date(sale.date).toLocaleDateString()}</div>
                                                 <div className="text-xs text-gray-500 font-mono">{new Date(sale.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="font-mono text-sm text-gray-900 font-bold">{sale.invoiceNumber || 'N/A'}</div>
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex items-start gap-3">

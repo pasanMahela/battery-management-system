@@ -514,11 +514,10 @@ const Inventory = () => {
                                 const status = getBatteryStatus(battery);
 
                                 return (
-                                    <div 
-                                        key={battery.id} 
-                                        className={`bg-white rounded-xl shadow-md border p-4 ${
-                                            isExpiringSoon || isExpired ? 'border-red-300 bg-red-50' : 'border-gray-200'
-                                        }`}
+                                    <div
+                                        key={battery.id}
+                                        className={`bg-white rounded-xl shadow-md border p-4 ${isExpiringSoon || isExpired ? 'border-red-300 bg-red-50' : 'border-gray-200'
+                                            }`}
                                     >
                                         {/* Header with Serial & Status */}
                                         <div className="flex justify-between items-start mb-3">
@@ -576,18 +575,18 @@ const Inventory = () => {
                                                     <Eye size={16} /> View Return
                                                 </button>
                                             )}
-                                            {(() => { 
-                                                const expDate = new Date(battery.purchaseDate); 
-                                                expDate.setMonth(expDate.getMonth() + (battery.shelfLifeMonths || 12)); 
-                                                const isExp = expDate < new Date(); 
+                                            {(() => {
+                                                const expDate = new Date(battery.purchaseDate);
+                                                expDate.setMonth(expDate.getMonth() + (battery.shelfLifeMonths || 12));
+                                                const isExp = expDate < new Date();
                                                 return isExp && !battery.isReturned && (
-                                                    <button 
-                                                        onClick={() => navigate('/returns', { state: { battery } })} 
+                                                    <button
+                                                        onClick={() => navigate('/returns', { state: { battery } })}
                                                         className="flex items-center gap-1 px-3 py-2 text-orange-600 bg-orange-50 hover:bg-orange-100 rounded-lg transition-all text-sm font-medium"
                                                     >
                                                         <RotateCcw size={16} /> Return
                                                     </button>
-                                                ); 
+                                                );
                                             })()}
                                             <button
                                                 onClick={() => openModal(battery)}
@@ -739,19 +738,19 @@ const Inventory = () => {
                                                                     <Eye size={16} />
                                                                 </button>
                                                             )}
-                                                            {(() => { 
-                                                                const expDate = new Date(battery.purchaseDate); 
-                                                                expDate.setMonth(expDate.getMonth() + (battery.shelfLifeMonths || 12)); 
-                                                                const isExp = expDate < new Date(); 
+                                                            {(() => {
+                                                                const expDate = new Date(battery.purchaseDate);
+                                                                expDate.setMonth(expDate.getMonth() + (battery.shelfLifeMonths || 12));
+                                                                const isExp = expDate < new Date();
                                                                 return isExp && !battery.isReturned && (
-                                                                    <button 
-                                                                        onClick={() => navigate('/returns', { state: { battery } })} 
-                                                                        className="p-2 text-orange-600 hover:bg-orange-100 rounded-lg transition-all" 
+                                                                    <button
+                                                                        onClick={() => navigate('/returns', { state: { battery } })}
+                                                                        className="p-2 text-orange-600 hover:bg-orange-100 rounded-lg transition-all"
                                                                         title="Return Expired Battery"
                                                                     >
                                                                         <RotateCcw size={16} />
                                                                     </button>
-                                                                ); 
+                                                                );
                                                             })()}
                                                             <button
                                                                 onClick={() => openModal(battery)}
@@ -967,14 +966,14 @@ const Inventory = () => {
                     <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
                         <div className="sticky top-0 bg-gradient-to-r from-orange-500 to-red-600 p-6 flex justify-between items-center">
                             <h2 className="text-2xl font-bold text-white">Return Details</h2>
-                            <button 
-                                onClick={() => setViewingReturn(null)} 
+                            <button
+                                onClick={() => setViewingReturn(null)}
                                 className="text-white hover:bg-white/20 p-2 rounded-lg transition-colors"
                             >
                                 <X size={24} />
                             </button>
                         </div>
-                        
+
                         <div className="p-6 space-y-6">
                             {/* Battery Info */}
                             <div className="bg-gray-50 rounded-xl p-4">
@@ -1000,7 +999,7 @@ const Inventory = () => {
                                     </div>
                                 </div>
                             </div>
-                            
+
                             {/* Return Info */}
                             <div className="bg-orange-50 rounded-xl p-4">
                                 <h3 className="font-bold text-lg text-gray-800 mb-3">Return Information</h3>
@@ -1017,11 +1016,10 @@ const Inventory = () => {
                                     </div>
                                     <div>
                                         <p className="text-sm text-gray-500">Status</p>
-                                        <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium border ${
-                                            viewingReturn.status === 'Completed' 
-                                                ? 'bg-green-100 text-green-700 border-green-200' 
+                                        <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium border ${viewingReturn.status === 'Completed'
+                                                ? 'bg-green-100 text-green-700 border-green-200'
                                                 : 'bg-yellow-100 text-yellow-700 border-yellow-200'
-                                        }`}>
+                                            }`}>
                                             {viewingReturn.status}
                                         </span>
                                     </div>
@@ -1031,7 +1029,7 @@ const Inventory = () => {
                                     </div>
                                 </div>
                             </div>
-                            
+
                             {/* Compensation Info */}
                             <div className={`rounded-xl p-4 ${viewingReturn.compensationType === 'Money' ? 'bg-green-50' : 'bg-blue-50'}`}>
                                 <h3 className="font-bold text-lg text-gray-800 mb-3">Compensation Details</h3>
@@ -1069,7 +1067,7 @@ const Inventory = () => {
                                     </div>
                                 )}
                             </div>
-                            
+
                             {/* Notes */}
                             {viewingReturn.notes && (
                                 <div className="bg-gray-50 rounded-xl p-4">
@@ -1078,7 +1076,7 @@ const Inventory = () => {
                                 </div>
                             )}
                         </div>
-                        
+
                         <div className="p-6 border-t border-gray-200">
                             <button
                                 onClick={() => setViewingReturn(null)}

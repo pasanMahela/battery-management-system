@@ -54,6 +54,26 @@ public class SaleController : ControllerBase
         return Ok(customers);
     }
 
+    [HttpGet("customer/phone/{phoneNumber}")]
+    public async Task<IActionResult> SearchCustomersByPhone(string phoneNumber)
+    {
+        var sales = await _saleService.SearchByPhoneAsync(phoneNumber);
+        
+        // Get unique customers based on Phone Number
+        var customers = sales
+            .GroupBy(s => s.CustomerPhone)
+            .Select(g => g.First())
+            .Select(s => new { 
+                customerId = s.CustomerId, 
+                customerName = s.CustomerName, 
+                customerPhone = s.CustomerPhone,
+                lastPurchase = s.Date
+            })
+            .ToList();
+        
+        return Ok(customers);
+    }
+
     [HttpPost]
     public async Task<IActionResult> Create(SaleCreateDto dto)
     {

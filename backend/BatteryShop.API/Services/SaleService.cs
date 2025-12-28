@@ -34,6 +34,15 @@ public class SaleService
             .ToListAsync();
     }
 
+    public async Task<List<Sale>> SearchByPhoneAsync(string phoneNumber)
+    {
+        var filter = Builders<Sale>.Filter.Regex(s => s.CustomerPhone, new MongoDB.Bson.BsonRegularExpression(phoneNumber, "i"));
+        return await _sales.Find(filter)
+            .SortByDescending(s => s.Date)
+            .Limit(10)
+            .ToListAsync();
+    }
+
     public async Task<Sale> CreateAsync(SaleCreateDto dto, string cashierId, string cashierName)
     {
         // Fetch all required batteries in ONE query instead of one-by-one

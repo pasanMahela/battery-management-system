@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("BatteryShop.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2e0c28876d0b144955b8f273bbe3c839a72e6995")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c44a8cbfe5bbca8dace475d4154387ab0c87194e")]
 [assembly: System.Reflection.AssemblyProductAttribute("BatteryShop.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("BatteryShop.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -26,12 +26,15 @@ const PrivateRoute = ({ children }) => {
 const Dashboard = () => {
   const { user } = useContext(AuthContext);
   const role = user?.role || 'Unknown';
+  const [timePeriod, setTimePeriod] = useState('today'); // 'today', 'yesterday', 'week', 'month', 'year'
   const [stats, setStats] = useState({
     totalInventory: 0,
     todaysSales: 0,
     expiringSoon: 0,
     totalRevenue: 0,
-    totalInventoryValue: 0
+    totalInventoryValue: 0,
+    periodRevenue: 0,
+    periodProfit: 0
   });
 
   useEffect(() => {
@@ -55,17 +58,58 @@ const Dashboard = () => {
         // Calculate total inventory value (selling price × stock quantity)
         const totalInventoryValue = batteries.reduce((sum, b) => sum + (b.sellingPrice * b.stockQuantity), 0);
 
-        // Calculate today's sales count
+        // Calculate sales based on selected time period
         const today = new Date();
-        const todayStr = today.toISOString().split('T')[0]; // Get YYYY-MM-DD
+        today.setHours(0, 0, 0, 0);
 
-        const todaysSales = sales.filter(sale => {
+        let startDate, endDate;
+        switch (timePeriod) {
+          case 'today':
+            startDate = today;
+            endDate = new Date();
+            break;
+          case 'yesterday':
+            startDate = new Date(today);
+            startDate.setDate(today.getDate() - 1);
+            endDate = new Date(today);
+            endDate.setMilliseconds(-1);
+            break;
+          case 'week':
+            startDate = new Date(today);
+            startDate.setDate(today.getDate() - today.getDay()); // Start of week (Sunday)
+            endDate = new Date();
+            break;
+          case 'month':
+            startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+            endDate = new Date();
+            break;
+          case 'year':
+            startDate = new Date(today.getFullYear(), 0, 1);
+            endDate = new Date();
+            break;
+          default:
+            startDate = today;
+            endDate = new Date();
+        }
+
+        const periodSales = sales.filter(sale => {
           if (!sale.date) return false;
           const saleDate = new Date(sale.date);
           if (isNaN(saleDate.getTime())) return false;
-          const saleDateStr = saleDate.toISOString().split('T')[0];
-          return saleDateStr === todayStr;
-        }).length;
+          return saleDate >= startDate && saleDate <= endDate;
+        });
+
+        const todaysSales = periodSales.length;
+
+        // Calculate period revenue and profit
+        const periodRevenue = periodSales.reduce((sum, sale) => sum + sale.totalAmount, 0);
+        const periodProfit = periodSales.reduce((sum, sale) => {
+          const saleProfit = sale.items?.reduce((itemSum, item) => {
+            const itemProfit = (item.unitPrice - (item.purchasePrice || item.unitPrice * 0.7)) * item.quantity;
+            return itemSum + itemProfit;
+          }, 0) || 0;
+          return sum + saleProfit;
+        }, 0);
 
         // Calculate expiring soon items
         const oneMonthFromNow = new Date();
@@ -85,7 +129,9 @@ const Dashboard = () => {
           todaysSales,
           expiringSoon,
           totalRevenue,
-          totalInventoryValue
+          totalInventoryValue,
+          periodRevenue,
+          periodProfit
         });
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
@@ -95,7 +141,7 @@ const Dashboard = () => {
     if (user?.token) {
       fetchDashboardData();
     }
-  }, [user]);
+  }, [user, timePeriod]);
 
   return (
     <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 min-h-screen">
@@ -106,7 +152,7 @@ const Dashboard = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
           {/* Total Inventory - Links to View Inventory */}
           <a href="/inventory/view" className="bg-white p-6 rounded-xl shadow-md border border-blue-100 hover:shadow-lg transition-all cursor-pointer">
             <div className="flex items-center justify-between">
@@ -118,16 +164,23 @@ const Dashboard = () => {
             </div>
           </a>
 
-          {/* Today's Sales - Links to Sales Page */}
-          <a href="/sales" className="bg-white p-6 rounded-xl shadow-md border border-green-100 hover:shadow-lg transition-all cursor-pointer">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm">Today's Sales</p>
-                <h3 className="text-3xl font-bold text-gray-800 mt-1">{stats.todaysSales}</h3>
+          {/* Sales with Period Selector */}
+          <div className="bg-white p-6 rounded-xl shadow-md border border-green-100">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex-1">
+                <p className="text-gray-600 text-sm mb-1">Total Sales</p>
+                <h3 className="text-3xl font-bold text-gray-800">{stats.todaysSales}</h3>
               </div>
               <DollarSign size={40} className="text-green-500" />
             </div>
-          </a>
+            <div className="flex gap-1 mt-3 flex-wrap">
+              <button onClick={() => setTimePeriod('today')} className={`px-2 py-1 text-xs rounded transition-colors ${timePeriod === 'today' ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>Today</button>
+              <button onClick={() => setTimePeriod('yesterday')} className={`px-2 py-1 text-xs rounded transition-colors ${timePeriod === 'yesterday' ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>Yesterday</button>
+              <button onClick={() => setTimePeriod('week')} className={`px-2 py-1 text-xs rounded transition-colors ${timePeriod === 'week' ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>Week</button>
+              <button onClick={() => setTimePeriod('month')} className={`px-2 py-1 text-xs rounded transition-colors ${timePeriod === 'month' ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>Month</button>
+              <button onClick={() => setTimePeriod('year')} className={`px-2 py-1 text-xs rounded transition-colors ${timePeriod === 'year' ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>Year</button>
+            </div>
+          </div>
 
           {/* Expiring Soon - Links to Inventory with Expiring Filter */}
           <a href="/inventory/view?filter=expiring" className="bg-white p-6 rounded-xl shadow-md border border-orange-100 hover:shadow-lg transition-all cursor-pointer">
@@ -140,25 +193,50 @@ const Dashboard = () => {
             </div>
           </a>
 
-          {/* Total Revenue - Links to Sales Page */}
-          <a href="/sales" className="bg-white p-6 rounded-xl shadow-md border border-purple-100 hover:shadow-lg transition-all cursor-pointer">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm">Total Revenue</p>
-                <h3 className="text-3xl font-bold text-gray-800 mt-1">LKR {stats.totalRevenue.toLocaleString()}</h3>
+          {/* Total Revenue with Period Selector */}
+          <div className="bg-white p-6 rounded-xl shadow-md border border-purple-100">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex-1">
+                <p className="text-gray-600 text-sm mb-1">Total Revenue</p>
+                <h3 className="text-3xl font-bold text-gray-800">LKR {stats.periodRevenue.toLocaleString()}</h3>
               </div>
               <BarChart3 size={40} className="text-purple-500" />
             </div>
-          </a>
+            <div className="flex gap-1 mt-3 flex-wrap">
+              <button onClick={() => setTimePeriod('today')} className={`px-2 py-1 text-xs rounded transition-colors ${timePeriod === 'today' ? 'bg-purple-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>Today</button>
+              <button onClick={() => setTimePeriod('yesterday')} className={`px-2 py-1 text-xs rounded transition-colors ${timePeriod === 'yesterday' ? 'bg-purple-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>Yesterday</button>
+              <button onClick={() => setTimePeriod('week')} className={`px-2 py-1 text-xs rounded transition-colors ${timePeriod === 'week' ? 'bg-purple-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>Week</button>
+              <button onClick={() => setTimePeriod('month')} className={`px-2 py-1 text-xs rounded transition-colors ${timePeriod === 'month' ? 'bg-purple-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>Month</button>
+              <button onClick={() => setTimePeriod('year')} className={`px-2 py-1 text-xs rounded transition-colors ${timePeriod === 'year' ? 'bg-purple-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>Year</button>
+            </div>
+          </div>
+
+          {/* Total Profit with Period Selector */}
+          <div className="bg-white p-6 rounded-xl shadow-md border border-indigo-100">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex-1">
+                <p className="text-gray-600 text-sm mb-1">Total Profit</p>
+                <h3 className="text-3xl font-bold text-gray-800">LKR {stats.periodProfit.toLocaleString()}</h3>
+              </div>
+              <Package size={40} className="text-indigo-500" />
+            </div>
+            <div className="flex gap-1 mt-3 flex-wrap">
+              <button onClick={() => setTimePeriod('today')} className={`px-2 py-1 text-xs rounded transition-colors ${timePeriod === 'today' ? 'bg-indigo-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>Today</button>
+              <button onClick={() => setTimePeriod('yesterday')} className={`px-2 py-1 text-xs rounded transition-colors ${timePeriod === 'yesterday' ? 'bg-indigo-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>Yesterday</button>
+              <button onClick={() => setTimePeriod('week')} className={`px-2 py-1 text-xs rounded transition-colors ${timePeriod === 'week' ? 'bg-indigo-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>Week</button>
+              <button onClick={() => setTimePeriod('month')} className={`px-2 py-1 text-xs rounded transition-colors ${timePeriod === 'month' ? 'bg-indigo-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>Month</button>
+              <button onClick={() => setTimePeriod('year')} className={`px-2 py-1 text-xs rounded transition-colors ${timePeriod === 'year' ? 'bg-indigo-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>Year</button>
+            </div>
+          </div>
 
           {/* Total Inventory Value */}
-          <a href="/inventory/view" className="bg-white p-6 rounded-xl shadow-md border border-indigo-100 hover:shadow-lg transition-all cursor-pointer">
+          <a href="/inventory/view" className="bg-white p-6 rounded-xl shadow-md border border-teal-100 hover:shadow-lg transition-all cursor-pointer">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-600 text-sm">Inventory Value</p>
                 <h3 className="text-3xl font-bold text-gray-800 mt-1">LKR {stats.totalInventoryValue.toLocaleString()}</h3>
               </div>
-              <Package size={40} className="text-indigo-500" />
+              <Battery size={40} className="text-teal-500" />
             </div>
           </a>
         </div>
