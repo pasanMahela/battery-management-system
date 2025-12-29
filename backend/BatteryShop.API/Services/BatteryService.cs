@@ -23,6 +23,11 @@ public class BatteryService
         return await _batteries.Find(b => b.Id == id).FirstOrDefaultAsync();
     }
 
+    public async Task<Battery?> GetBySerialNumberAsync(string serialNumber)
+    {
+        return await _batteries.Find(b => b.SerialNumber == serialNumber).FirstOrDefaultAsync();
+    }
+
     public async Task<Battery> CreateAsync(BatteryCreateDto dto)
     {
         var battery = new Battery

@@ -83,10 +83,7 @@ const AddBattery = () => {
             });
 
             // Show success toast with serial number
-            setToast({
-                message: `Battery added! Serial: ${response.data.serialNumber || 'N/A'}`,
-                type: 'success'
-            });
+            setToast({ type: 'success', message: 'Battery added successfully!' });
 
             // Clear form
             setFormData({
@@ -107,14 +104,20 @@ const AddBattery = () => {
             });
 
             // Focus on serial number field
-            if (serialNumberRef.current) {
-                serialNumberRef.current.focus();
+            serialNumberRef.current?.focus();
+        } catch (error) {
+            console.error('Error adding battery:', error);
+            // Handle duplicate serial number error
+            if (error.response?.status === 409) {
+                const errorData = error.response.data;
+                const existingBatt = errorData.existingBattery;
+                setToast({
+                    type: 'error',
+                    message: `Duplicate Serial Number! This serial number (${errorData.serialNumber}) already exists in:\n${existingBatt.brand} ${existingBatt.model} (Barcode: ${existingBatt.barcode})`
+                });
+            } else {
+                setToast({ type: 'error', message: error.response?.data?.message || 'Error adding battery' });
             }
-        } catch (err) {
-            setToast({
-                message: err.response?.data?.message || 'Failed to add battery',
-                type: 'error'
-            });
         } finally {
             setIsSubmitting(false);
         }
