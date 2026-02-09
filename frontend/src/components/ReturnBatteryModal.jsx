@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { X, DollarSign, Package } from 'lucide-react';
-import { API_ENDPOINTS } from '../constants/constants';
+import { API_ENDPOINTS, BUSINESS_DEFAULTS } from '../constants/constants';
 
 const ReturnBatteryModal = ({ battery, user, onClose, onSuccess }) => {
     const [compensationType, setCompensationType] = useState('Money');
@@ -16,12 +16,12 @@ const ReturnBatteryModal = ({ battery, user, onClose, onSuccess }) => {
         brand: '',
         model: '',
         capacity: '',
-        voltage: 12,
+        voltage: BUSINESS_DEFAULTS.DEFAULT_VOLTAGE,
         purchasePrice: 0,
         sellingPrice: 0,
         stockQuantity: 1,
-        warrantyPeriodMonths: 12,
-        shelfLifeMonths: 24
+        warrantyPeriodMonths: BUSINESS_DEFAULTS.DEFAULT_WARRANTY_MONTHS,
+        shelfLifeMonths: BUSINESS_DEFAULTS.DEFAULT_SHELF_LIFE_MONTHS
     });
 
     const handleSubmit = async (e) => {
@@ -65,7 +65,7 @@ const ReturnBatteryModal = ({ battery, user, onClose, onSuccess }) => {
     };
 
     const expiryDate = new Date(battery.purchaseDate);
-    expiryDate.setMonth(expiryDate.getMonth() + (battery.shelfLifeMonths || 12));
+    expiryDate.setMonth(expiryDate.getMonth() + (battery.shelfLifeMonths || BUSINESS_DEFAULTS.DEFAULT_SHELF_LIFE_MONTHS));
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">

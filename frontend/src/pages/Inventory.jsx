@@ -1,11 +1,11 @@
-﻿import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import AuthContext from '../context/AuthContext';
 import Dialog from '../components/Dialog';
 import Toast from '../components/Toast';
-import { Plus, Edit2, Trash2, X, Package, Loader2, RotateCcw, Eye } from 'lucide-react';
-import { API_ENDPOINTS } from '../constants/constants';
+import { Plus, Edit2, Trash2, X, Package, Loader2, RotateCcw, Eye, Download } from 'lucide-react';
+import { API_ENDPOINTS, BUSINESS_DEFAULTS, APP_CONFIG } from '../constants/constants';
 
 const Inventory = () => {
     const { user } = useContext(AuthContext);
@@ -43,6 +43,7 @@ const Inventory = () => {
     const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
     const [isNavigating, setIsNavigating] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [isExporting, setIsExporting] = useState(false);
 
     useEffect(() => {
         fetchBatteries();
@@ -72,7 +73,7 @@ const Inventory = () => {
     const getBatteryStatus = (battery) => {
         const purchaseDate = new Date(battery.purchaseDate);
         const expiryDate = new Date(purchaseDate);
-        expiryDate.setMonth(expiryDate.getMonth() + (battery.shelfLifeMonths || 12));
+        expiryDate.setMonth(expiryDate.getMonth() + (battery.shelfLifeMonths || BUSINESS_DEFAULTS.DEFAULT_SHELF_LIFE_MONTHS));
         const today = new Date();
         const isExpired = expiryDate <= today;
 
@@ -185,7 +186,7 @@ const Inventory = () => {
                 purchaseDate: battery.purchaseDate.split('T')[0],
                 stockQuantity: battery.stockQuantity,
                 warrantyPeriodMonths: battery.warrantyPeriodMonths,
-                shelfLifeMonths: battery.shelfLifeMonths || 12
+                shelfLifeMonths: battery.shelfLifeMonths || BUSINESS_DEFAULTS.DEFAULT_SHELF_LIFE_MONTHS
             });
         } else {
             setEditingBattery(null);
@@ -200,7 +201,7 @@ const Inventory = () => {
                 sellingPrice: '',
                 purchaseDate: new Date().toISOString().split('T')[0],
                 stockQuantity: '',
-                warrantyPeriodMonths: '12'
+                warrantyPeriodMonths: String(BUSINESS_DEFAULTS.DEFAULT_WARRANTY_MONTHS)
             });
         }
         setShowModal(true);
@@ -259,7 +260,7 @@ const Inventory = () => {
             filtered = filtered.filter(battery => {
                 const purchaseDate = new Date(battery.purchaseDate);
                 const expiryDate = new Date(purchaseDate);
-                expiryDate.setMonth(expiryDate.getMonth() + (battery.shelfLifeMonths || 12));
+                expiryDate.setMonth(expiryDate.getMonth() + (battery.shelfLifeMonths || BUSINESS_DEFAULTS.DEFAULT_SHELF_LIFE_MONTHS));
                 const today = new Date();
                 const oneMonthFromNow = new Date();
                 oneMonthFromNow.setMonth(oneMonthFromNow.getMonth() + 1);
@@ -315,6 +316,74 @@ const Inventory = () => {
 
     const filteredBatteries = getFilteredAndSortedBatteries();
 
+    // Export inventory to CSV
+    const exportInventory = () => {
+        setIsExporting(true);
+        try {
+            const headers = [
+                'Serial Number',
+                'Barcode',
+                'Brand',
+                'Model',
+                'Capacity (Ah)',
+                'Voltage (V)',
+                'Purchase Price',
+                'Selling Price',
+                'Purchase Date',
+                'Expiry Date',
+                'Stock Quantity',
+                'Warranty (Months)',
+                'Shelf Life (Months)',
+                'Sales Rep',
+                'Invoice Number',
+                'Status'
+            ];
+
+            const rows = filteredBatteries.map(battery => {
+                const purchaseDate = new Date(battery.purchaseDate);
+                const expiryDate = new Date(purchaseDate);
+                expiryDate.setMonth(expiryDate.getMonth() + (battery.shelfLifeMonths || BUSINESS_DEFAULTS.DEFAULT_SHELF_LIFE_MONTHS));
+                const status = getBatteryStatus(battery);
+
+                return [
+                    battery.serialNumber,
+                    battery.barcode || '',
+                    battery.brand,
+                    battery.model,
+                    battery.capacity,
+                    battery.voltage,
+                    battery.purchasePrice,
+                    battery.sellingPrice,
+                    purchaseDate.toLocaleDateString(),
+                    expiryDate.toLocaleDateString(),
+                    battery.stockQuantity,
+                    battery.warrantyPeriodMonths,
+                    battery.shelfLifeMonths || BUSINESS_DEFAULTS.DEFAULT_SHELF_LIFE_MONTHS,
+                    battery.salesRep || '',
+                    battery.invoiceNumber || '',
+                    status
+                ];
+            });
+
+            const csvContent = [
+                headers.join(','),
+                ...rows.map(row => row.map(cell => 
+                    typeof cell === 'string' && cell.includes(',') ? `"${cell}"` : cell
+                ).join(','))
+            ].join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `inventory_export_${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } finally {
+            setIsExporting(false);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8">
             <div className="container mx-auto px-6">
@@ -332,6 +401,19 @@ const Inventory = () => {
                                 <p className="text-gray-600 mt-1">Manage your battery stock and products</p>
                             </div>
                         </div>
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={exportInventory}
+                                disabled={isExporting || filteredBatteries.length === 0}
+                                className="flex items-center gap-2 px-4 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {isExporting ? (
+                                    <Loader2 size={18} className="animate-spin" />
+                                ) : (
+                                    <Download size={18} />
+                                )}
+                                Export
+                            </button>
                         <button
                             onClick={() => {
                                 setIsNavigating(true);
@@ -347,6 +429,7 @@ const Inventory = () => {
                             )}
                             {isNavigating ? 'Loading...' : 'Add New Battery'}
                         </button>
+                        </div>
                     </div>
                 </div>
 
@@ -505,7 +588,7 @@ const Inventory = () => {
                             {filteredBatteries.map((battery) => {
                                 const purchaseDate = new Date(battery.purchaseDate);
                                 const expiryDate = new Date(purchaseDate);
-                                expiryDate.setMonth(expiryDate.getMonth() + (battery.shelfLifeMonths || 12));
+                                expiryDate.setMonth(expiryDate.getMonth() + (battery.shelfLifeMonths || BUSINESS_DEFAULTS.DEFAULT_SHELF_LIFE_MONTHS));
                                 const today = new Date();
                                 const oneMonthFromNow = new Date();
                                 oneMonthFromNow.setMonth(oneMonthFromNow.getMonth() + 1);
@@ -577,7 +660,7 @@ const Inventory = () => {
                                             )}
                                             {(() => {
                                                 const expDate = new Date(battery.purchaseDate);
-                                                expDate.setMonth(expDate.getMonth() + (battery.shelfLifeMonths || 12));
+                                                expDate.setMonth(expDate.getMonth() + (battery.shelfLifeMonths || BUSINESS_DEFAULTS.DEFAULT_SHELF_LIFE_MONTHS));
                                                 const isExp = expDate < new Date();
                                                 return isExp && !battery.isReturned && (
                                                     <button
@@ -617,39 +700,39 @@ const Inventory = () => {
                         */}
                         <div className="hidden md:block bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
                             <div className="overflow-x-auto">
-                                <table className="w-full">
-                                    <thead>
-                                        <tr className="bg-gradient-to-r from-blue-500 to-indigo-600">
+                            <table className="w-full">
+                                <thead>
+                                    <tr className="bg-gradient-to-r from-blue-500 to-indigo-600">
                                             {/* ALWAYS VISIBLE */}
                                             <th onClick={() => handleSort('serialNumber')} className="px-3 py-3 text-left text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-600 whitespace-nowrap">
-                                                Serial # {sortConfig.key === 'serialNumber' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
-                                            </th>
+                                            Serial # {sortConfig.key === 'serialNumber' && (sortConfig.direction === 'asc' ? '?' : '?')}
+                                        </th>
                                             {/* Hidden below lg */}
                                             <th className="hidden lg:table-cell px-3 py-3 text-left text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Barcode</th>
                                             {/* ALWAYS VISIBLE */}
                                             <th onClick={() => handleSort('brand')} className="px-3 py-3 text-left text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-600 whitespace-nowrap">
-                                                Brand {sortConfig.key === 'brand' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
-                                            </th>
+                                            Brand {sortConfig.key === 'brand' && (sortConfig.direction === 'asc' ? '?' : '?')}
+                                        </th>
                                             {/* ALWAYS VISIBLE */}
                                             <th onClick={() => handleSort('model')} className="px-3 py-3 text-left text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-600 whitespace-nowrap">
-                                                Model {sortConfig.key === 'model' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
-                                            </th>
+                                            Model {sortConfig.key === 'model' && (sortConfig.direction === 'asc' ? '?' : '?')}
+                                        </th>
                                             {/* Hidden below xl */}
                                             <th onClick={() => handleSort('capacity')} className="hidden xl:table-cell px-3 py-3 text-left text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-600 whitespace-nowrap">
-                                                Capacity {sortConfig.key === 'capacity' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
-                                            </th>
+                                            Capacity {sortConfig.key === 'capacity' && (sortConfig.direction === 'asc' ? '?' : '?')}
+                                        </th>
                                             {/* Hidden below xl */}
                                             <th onClick={() => handleSort('voltage')} className="hidden xl:table-cell px-3 py-3 text-left text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-600 whitespace-nowrap">
-                                                Voltage {sortConfig.key === 'voltage' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
-                                            </th>
+                                            Voltage {sortConfig.key === 'voltage' && (sortConfig.direction === 'asc' ? '?' : '?')}
+                                        </th>
                                             {/* Hidden below xl */}
                                             <th onClick={() => handleSort('sellingPrice')} className="hidden xl:table-cell px-3 py-3 text-left text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-600 whitespace-nowrap">
-                                                Price {sortConfig.key === 'sellingPrice' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
-                                            </th>
+                                            Price {sortConfig.key === 'sellingPrice' && (sortConfig.direction === 'asc' ? '?' : '?')}
+                                        </th>
                                             {/* Hidden below lg */}
                                             <th onClick={() => handleSort('purchaseDate')} className="hidden lg:table-cell px-3 py-3 text-left text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-600 whitespace-nowrap">
-                                                Purchase {sortConfig.key === 'purchaseDate' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
-                                            </th>
+                                                Purchase {sortConfig.key === 'purchaseDate' && (sortConfig.direction === 'asc' ? '?' : '?')}
+                                        </th>
                                             {/* ALWAYS VISIBLE */}
                                             <th className="px-3 py-3 text-left text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Expiry</th>
                                             {/* ALWAYS VISIBLE */}
@@ -662,21 +745,21 @@ const Inventory = () => {
                                             <th className="px-3 py-3 text-left text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Status</th>
                                             {/* ALWAYS VISIBLE */}
                                             <th className="px-3 py-3 text-right text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {filteredBatteries.map((battery) => {
-                                            const purchaseDate = new Date(battery.purchaseDate);
-                                            const expiryDate = new Date(purchaseDate);
-                                            expiryDate.setMonth(expiryDate.getMonth() + (battery.shelfLifeMonths || 12));
-                                            const today = new Date();
-                                            const oneMonthFromNow = new Date();
-                                            oneMonthFromNow.setMonth(oneMonthFromNow.getMonth() + 1);
-                                            const isExpiringSoon = expiryDate <= oneMonthFromNow && expiryDate > today;
-                                            const isExpired = expiryDate <= today;
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredBatteries.map((battery) => {
+                                        const purchaseDate = new Date(battery.purchaseDate);
+                                        const expiryDate = new Date(purchaseDate);
+                                        expiryDate.setMonth(expiryDate.getMonth() + (battery.shelfLifeMonths || BUSINESS_DEFAULTS.DEFAULT_SHELF_LIFE_MONTHS));
+                                        const today = new Date();
+                                        const oneMonthFromNow = new Date();
+                                        oneMonthFromNow.setMonth(oneMonthFromNow.getMonth() + 1);
+                                        const isExpiringSoon = expiryDate <= oneMonthFromNow && expiryDate > today;
+                                        const isExpired = expiryDate <= today;
 
-                                            return (
-                                                <tr key={battery.id} className={`border-b border-gray-200 transition-colors ${isExpiringSoon || isExpired ? 'bg-red-50 hover:bg-red-100' : 'hover:bg-blue-50'}`}>
+                                        return (
+                                            <tr key={battery.id} className={`border-b border-gray-200 transition-colors ${isExpiringSoon || isExpired ? 'bg-red-50 hover:bg-red-100' : 'hover:bg-blue-50'}`}>
                                                     {/* ALWAYS VISIBLE */}
                                                     <td className="px-3 py-3 text-gray-800 text-sm font-medium">{battery.serialNumber}</td>
                                                     {/* Hidden below lg */}
@@ -690,31 +773,31 @@ const Inventory = () => {
                                                     {/* Hidden below xl */}
                                                     <td className="hidden xl:table-cell px-3 py-3 text-gray-800 text-sm">{battery.voltage}V</td>
                                                     {/* Hidden below xl */}
-                                                    <td className="hidden xl:table-cell px-3 py-3 text-gray-800 text-sm whitespace-nowrap">LKR {battery.sellingPrice?.toLocaleString()}</td>
+                                                    <td className="hidden xl:table-cell px-3 py-3 text-gray-800 text-sm whitespace-nowrap">{APP_CONFIG.CURRENCY} {battery.sellingPrice?.toLocaleString()}</td>
                                                     {/* Hidden below lg */}
                                                     <td className="hidden lg:table-cell px-3 py-3 text-sm text-gray-700 whitespace-nowrap">
                                                         {new Date(battery.purchaseDate).toLocaleDateString()}
-                                                    </td>
+                                                </td>
                                                     {/* ALWAYS VISIBLE */}
                                                     <td className="px-3 py-3">
                                                         <div className="flex flex-col">
                                                             <span className={`text-sm font-medium whitespace-nowrap ${isExpired ? 'text-red-700 font-bold' : isExpiringSoon ? 'text-orange-600 font-bold' : 'text-gray-700'}`}>
-                                                                {expiryDate.toLocaleDateString()}
-                                                            </span>
-                                                            {isExpired && <span className="text-xs text-red-600 font-bold">EXPIRED</span>}
+                                                            {expiryDate.toLocaleDateString()}
+                                                        </span>
+                                                        {isExpired && <span className="text-xs text-red-600 font-bold">EXPIRED</span>}
                                                             {isExpiringSoon && !isExpired && <span className="text-xs text-orange-600 font-bold">EXPIRING</span>}
-                                                        </div>
-                                                    </td>
+                                                    </div>
+                                                </td>
                                                     {/* ALWAYS VISIBLE */}
                                                     <td className="px-3 py-3 text-gray-800 text-sm text-center">{battery.stockQuantity}</td>
                                                     {/* Hidden below 2xl */}
                                                     <td className="hidden 2xl:table-cell px-3 py-3 text-gray-700 text-sm">
-                                                        {battery.salesRep || '-'}
-                                                    </td>
+                                                    {battery.salesRep || '-'}
+                                                </td>
                                                     {/* Hidden below 2xl */}
                                                     <td className="hidden 2xl:table-cell px-3 py-3 text-gray-600 font-mono text-xs">
-                                                        {battery.invoiceNumber || '-'}
-                                                    </td>
+                                                    {battery.invoiceNumber || '-'}
+                                                </td>
                                                     {/* ALWAYS VISIBLE */}
                                                     <td className="px-3 py-3">
                                                         {(() => {
@@ -740,7 +823,7 @@ const Inventory = () => {
                                                             )}
                                                             {(() => {
                                                                 const expDate = new Date(battery.purchaseDate);
-                                                                expDate.setMonth(expDate.getMonth() + (battery.shelfLifeMonths || 12));
+                                                                expDate.setMonth(expDate.getMonth() + (battery.shelfLifeMonths || BUSINESS_DEFAULTS.DEFAULT_SHELF_LIFE_MONTHS));
                                                                 const isExp = expDate < new Date();
                                                                 return isExp && !battery.isReturned && (
                                                                     <button
@@ -752,27 +835,27 @@ const Inventory = () => {
                                                                     </button>
                                                                 );
                                                             })()}
-                                                            <button
-                                                                onClick={() => openModal(battery)}
-                                                                className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-all"
-                                                                title="Edit"
-                                                            >
+                                                        <button
+                                                            onClick={() => openModal(battery)}
+                                                            className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-all"
+                                                            title="Edit"
+                                                        >
                                                                 <Edit2 size={16} />
-                                                            </button>
-                                                            <button
-                                                                onClick={() => handleDelete(battery.id)}
-                                                                className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-all"
-                                                                title="Delete"
-                                                            >
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDelete(battery.id)}
+                                                            className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-all"
+                                                            title="Delete"
+                                                        >
                                                                 <Trash2 size={16} />
-                                                            </button>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
                             </div>
                         </div>
 
@@ -1042,7 +1125,7 @@ const Inventory = () => {
                                     <div>
                                         <p className="text-sm text-gray-500">Refund Amount</p>
                                         <p className="text-2xl font-bold text-green-600">
-                                            LKR {viewingReturn.moneyAmount?.toLocaleString() || '0'}
+                                            {APP_CONFIG.CURRENCY} {viewingReturn.moneyAmount?.toLocaleString() || '0'}
                                         </p>
                                     </div>
                                 )}

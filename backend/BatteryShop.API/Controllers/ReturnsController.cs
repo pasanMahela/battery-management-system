@@ -14,11 +14,13 @@ public class ReturnsController : ControllerBase
 {
     private readonly BatteryReturnService _returnService;
     private readonly BatteryService _batteryService;
+    private readonly ActivityLogService _log;
 
-    public ReturnsController(BatteryReturnService returnService, BatteryService batteryService)
+    public ReturnsController(BatteryReturnService returnService, BatteryService batteryService, ActivityLogService activityLogService)
     {
         _returnService = returnService;
         _batteryService = batteryService;
+        _log = activityLogService;
     }
 
     [HttpGet]
@@ -84,11 +86,15 @@ public class ReturnsController : ControllerBase
                     dto.ReplacementInvoiceNumber
                 );
                 
+                var uid = User.FindFirst("id")?.Value;
+                _log.Log("Created", "Return", batteryReturn.Id, $"Return with replacement for {batteryReturn.Brand} {batteryReturn.Model} (SN: {batteryReturn.SerialNumber})", uid, username);
                 return CreatedAtAction(nameof(GetById), new { id = batteryReturn.Id }, batteryReturn);
             }
             else
             {
                 var batteryReturn = await _returnService.CreateAsync(dto, username);
+                var uid = User.FindFirst("id")?.Value;
+                _log.Log("Created", "Return", batteryReturn.Id, $"Return ({dto.CompensationType}) for {batteryReturn.Brand} {batteryReturn.Model} (SN: {batteryReturn.SerialNumber})", uid, username);
                 return CreatedAtAction(nameof(GetById), new { id = batteryReturn.Id }, batteryReturn);
             }
         }

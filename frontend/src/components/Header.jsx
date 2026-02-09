@@ -1,8 +1,10 @@
 ﻿import { useContext, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
-import { Home, Package, ShoppingCart, BarChart3, LogOut, User, Zap, ChevronDown, Plus, List, Users, History, Menu, X } from 'lucide-react';
+import { Home, Package, ShoppingCart, BarChart3, LogOut, User, Zap, ChevronDown, Plus, List, Users, History, Menu, X, ScrollText } from 'lucide-react';
 import { APP_CONFIG } from '../constants/constants';
+import NotificationBell from './NotificationBell';
+import ScannerStatusIndicator from './ScannerStatusIndicator';
 
 const Header = () => {
     const { user, logout } = useContext(AuthContext);
@@ -135,6 +137,7 @@ const Header = () => {
                                 <NavButton path="/sales" icon={BarChart3} label="Sales" />
                                 <NavButton path="/customers" icon={Users} label="Customers" />
                                 <NavButton path="/users" icon={Users} label="Users" />
+                                <NavButton path="/activity-log" icon={ScrollText} label="Logs" />
                             </>
                         )}
 
@@ -143,6 +146,12 @@ const Header = () => {
 
                     {/* Right Side - User & Mobile Menu */}
                     <div className="flex items-center gap-2 sm:gap-3">
+                        {/* Phone Scanner Connect / Status */}
+                        <ScannerStatusIndicator />
+
+                        {/* Notification Bell */}
+                        <NotificationBell />
+                        
                         {/* User Dropdown - Desktop */}
                         <div className="relative hidden md:block"
                             onMouseEnter={() => setShowUserDropdown(true)}
@@ -212,6 +221,7 @@ const Header = () => {
                                     <MobileNavItem path="/sales" icon={BarChart3} label="Sales Reports" />
                                     <MobileNavItem path="/customers" icon={Users} label="Customers" />
                                     <MobileNavItem path="/users" icon={Users} label="User Management" />
+                                    <MobileNavItem path="/activity-log" icon={ScrollText} label="Activity Log" />
                                 </>
                             )}
                             <MobileNavItem path="/pos" icon={ShoppingCart} label="Point of Sale" />

@@ -1,5 +1,6 @@
 import Header from './Header';
 import Footer from './Footer';
+import RemoteScannerModal from './RemoteScannerModal';
 
 const Layout = ({ children }) => {
     return (
@@ -9,6 +10,7 @@ const Layout = ({ children }) => {
                 {children}
             </main>
             <Footer />
+            <RemoteScannerModal />
         </div>
     );
 };

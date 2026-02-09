@@ -1,4 +1,6 @@
+using BatteryShop.API.Constants;
 using BatteryShop.API.Dtos;
+using BatteryShop.API.Exceptions;
 using BatteryShop.API.Models;
 using MongoDB.Driver;
 
@@ -11,35 +13,50 @@ public class BatteryReturnService
 
     public BatteryReturnService(MongoDbService mongoDbService)
     {
-        _returns = mongoDbService.Database.GetCollection<BatteryReturn>("BatteryReturns");
-        _batteries = mongoDbService.Database.GetCollection<Battery>("Batteries");
+        _returns = mongoDbService.Database.GetCollection<BatteryReturn>(AppConstants.Collections.BatteryReturns);
+        _batteries = mongoDbService.Database.GetCollection<Battery>(AppConstants.Collections.Batteries);
     }
 
-    public async Task<List<BatteryReturn>> GetAllAsync()
+    public async Task<List<BatteryReturn>> GetAllAsync(int page = 1, int pageSize = AppConstants.Defaults.PageSize)
     {
-        return await _returns.Find(_ => true).ToListAsync();
+        var skip = (page - 1) * pageSize;
+        return await _returns
+            .Find(r => !r.IsDeleted)
+            .SortByDescending(r => r.ReturnDate)
+            .Skip(skip)
+            .Limit(pageSize)
+            .ToListAsync();
+    }
+
+    public async Task<long> GetCountAsync()
+    {
+        return await _returns.CountDocumentsAsync(r => !r.IsDeleted);
     }
 
     public async Task<BatteryReturn?> GetByIdAsync(string id)
     {
-        return await _returns.Find(r => r.Id == id).FirstOrDefaultAsync();
+        return await _returns.Find(r => r.Id == id && !r.IsDeleted).FirstOrDefaultAsync();
+    }
+
+    public async Task<BatteryReturn?> GetByBatteryIdAsync(string batteryId)
+    {
+        return await _returns.Find(r => r.BatteryId == batteryId && !r.IsDeleted).FirstOrDefaultAsync();
     }
 
     public async Task<BatteryReturn> CreateAsync(BatteryReturnCreateDto dto, string username)
     {
         // Get the battery being returned
-        var battery = await _batteries.Find(b => b.Id == dto.BatteryId).FirstOrDefaultAsync();
+        var battery = await _batteries.Find(b => b.Id == dto.BatteryId && !b.IsDeleted).FirstOrDefaultAsync();
         if (battery == null)
-            throw new Exception("Battery not found");
+            throw new NotFoundException("Battery", dto.BatteryId);
 
         if (battery.IsReturned)
-            throw new Exception("Battery has already been returned");
+            throw new AlreadyReturnedException(dto.BatteryId);
 
         // Calculate expiry date
         var expiryDate = battery.PurchaseDate.AddMonths(battery.ShelfLifeMonths);
 
         // Create return record - set status based on compensation type
-        // Money returns are completed immediately, Replacement returns wait for battery to be added
         var batteryReturn = new BatteryReturn
         {
             BatteryId = dto.BatteryId,
@@ -51,8 +68,9 @@ public class BatteryReturnService
             CompensationType = dto.CompensationType,
             MoneyAmount = dto.MoneyAmount,
             ReturnedBy = username,
-            Status = dto.CompensationType == "Money" ? "Completed" : "Pending",
-            Notes = dto.Notes
+            Status = dto.CompensationType == AppConstants.ReturnTypes.Money ? AppConstants.ReturnStatuses.Completed : AppConstants.ReturnStatuses.Pending,
+            Notes = dto.Notes,
+            CreatedAt = DateTime.UtcNow
         };
 
         await _returns.InsertOneAsync(batteryReturn);
@@ -61,31 +79,41 @@ public class BatteryReturnService
         var updateBattery = Builders<Battery>.Update
             .Set(b => b.IsReturned, true)
             .Set(b => b.ReturnId, batteryReturn.Id)
-            .Set(b => b.StockQuantity, 0);
+            .Set(b => b.StockQuantity, 0)
+            .Set(b => b.UpdatedAt, DateTime.UtcNow);
         await _batteries.UpdateOneAsync(b => b.Id == dto.BatteryId, updateBattery);
 
         return batteryReturn;
     }
 
-    public async Task<bool> UpdateStatusAsync(string id, BatteryReturnUpdateDto dto)
+    public async Task<bool> UpdateStatusAsync(string id, BatteryReturnUpdateDto dto, string? updatedBy = null)
     {
         var update = Builders<BatteryReturn>.Update
             .Set(r => r.Status, dto.Status)
-            .Set(r => r.Notes, dto.Notes);
+            .Set(r => r.Notes, dto.Notes)
+            .Set(r => r.UpdatedAt, DateTime.UtcNow)
+            .Set(r => r.UpdatedBy, updatedBy);
 
-        var result = await _returns.UpdateOneAsync(r => r.Id == id, update);
+        var result = await _returns.UpdateOneAsync(r => r.Id == id && !r.IsDeleted, update);
         return result.ModifiedCount > 0;
     }
 
-    public async Task<bool> DeleteAsync(string id)
+    public async Task<bool> DeleteAsync(string id, string? deletedBy = null)
     {
-        var result = await _returns.DeleteOneAsync(r => r.Id == id);
-        return result.DeletedCount > 0;
+        var update = Builders<BatteryReturn>.Update
+            .Set(r => r.IsDeleted, true)
+            .Set(r => r.DeletedAt, DateTime.UtcNow)
+            .Set(r => r.DeletedBy, deletedBy);
+
+        var result = await _returns.UpdateOneAsync(r => r.Id == id && !r.IsDeleted, update);
+        return result.ModifiedCount > 0;
     }
 
     public async Task<bool> SetReplacementBatteryIdAsync(string returnId, string batteryId)
     {
-        var update = Builders<BatteryReturn>.Update.Set(r => r.ReplacementBatteryId, batteryId);
+        var update = Builders<BatteryReturn>.Update
+            .Set(r => r.ReplacementBatteryId, batteryId)
+            .Set(r => r.UpdatedAt, DateTime.UtcNow);
         var result = await _returns.UpdateOneAsync(r => r.Id == returnId, update);
         return result.ModifiedCount > 0;
     }
@@ -96,7 +124,9 @@ public class BatteryReturnService
             .Set(r => r.ReplacementBatteryId, batteryId)
             .Set(r => r.ReplacementSerialNumber, serialNumber)
             .Set(r => r.ReplacementSalesRep, salesRep)
-            .Set(r => r.ReplacementInvoiceNumber, invoiceNumber);
+            .Set(r => r.ReplacementInvoiceNumber, invoiceNumber)
+            .Set(r => r.Status, AppConstants.ReturnStatuses.Completed)
+            .Set(r => r.UpdatedAt, DateTime.UtcNow);
         var result = await _returns.UpdateOneAsync(r => r.Id == returnId, update);
         return result.ModifiedCount > 0;
     }

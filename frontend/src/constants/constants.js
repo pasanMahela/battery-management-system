@@ -8,7 +8,12 @@ export const APP_CONFIG = {
     SHOP_NAME: 'Ruhunu Tyre House',
 
     // API Configuration - Uses environment variable in production
-    API_BASE_URL: import.meta.env.VITE_API_URL || 'http://localhost:5038/api',
+    API_BASE_URL: import.meta.env.VITE_API_URL || `http://${window.location.hostname}:5038/api`,
+
+    // SignalR Hub URL
+    HUB_BASE_URL: import.meta.env.VITE_API_URL
+        ? import.meta.env.VITE_API_URL.replace(/\/api$/, '')
+        : `http://${window.location.hostname}:5038`,
 
     // Currency
     CURRENCY: 'LKR',
@@ -71,6 +76,7 @@ export const API_ENDPOINTS = {
     AUTH: `${APP_CONFIG.API_BASE_URL}/Auth`,
     REGISTER: `${APP_CONFIG.API_BASE_URL}/Auth/register`,
     RETURN: `${APP_CONFIG.API_BASE_URL}/Returns`,
+    ACTIVITY_LOG: `${APP_CONFIG.API_BASE_URL}/ActivityLog`,
 };
 
 // UI Constants
@@ -97,6 +103,24 @@ export const STATUS_LABELS = {
         EXPIRING_SOON: 'Expiring Soon',
         VALID: 'Valid',
     },
+};
+
+// Locale Configuration
+export const LOCALE_CONFIG = {
+    locale: 'en-US',
+};
+
+// Timer / Chart Configuration
+export const TIMER_CONFIG = {
+    DEFAULT_CHART_DAYS: 7,
+};
+
+// Business Default Values
+export const BUSINESS_DEFAULTS = {
+    MIN_PASSWORD_LENGTH: 6,
+    DEFAULT_VOLTAGE: 12,
+    DEFAULT_WARRANTY_MONTHS: 12,
+    DEFAULT_SHELF_LIFE_MONTHS: 24,
 };
 
 export default APP_CONFIG;

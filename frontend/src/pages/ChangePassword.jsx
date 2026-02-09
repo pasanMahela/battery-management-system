@@ -4,7 +4,7 @@ import axios from 'axios';
 import AuthContext from '../context/AuthContext';
 import Dialog from '../components/Dialog';
 import { Lock, Eye, EyeOff, CheckCircle, AlertCircle, ArrowLeft } from 'lucide-react';
-import { API_ENDPOINTS } from '../constants/constants';
+import { API_ENDPOINTS, BUSINESS_DEFAULTS } from '../constants/constants';
 
 const ChangePassword = () => {
     const { user } = useContext(AuthContext);
@@ -22,10 +22,10 @@ const ChangePassword = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const validatePassword = () => {
-        if (newPassword.length < 6) {
+        if (newPassword.length < BUSINESS_DEFAULTS.MIN_PASSWORD_LENGTH) {
             setDialog({
                 type: 'error',
-                message: 'New password must be at least 6 characters long'
+                message: `New password must be at least ${BUSINESS_DEFAULTS.MIN_PASSWORD_LENGTH} characters long`
             });
             return false;
         }

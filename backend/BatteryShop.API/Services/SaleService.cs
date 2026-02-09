@@ -1,4 +1,6 @@
+using BatteryShop.API.Constants;
 using BatteryShop.API.Dtos;
+using BatteryShop.API.Exceptions;
 using BatteryShop.API.Models;
 using MongoDB.Driver;
 
@@ -8,62 +10,127 @@ public class SaleService
 {
     private readonly IMongoCollection<Sale> _sales;
     private readonly IMongoCollection<Battery> _batteries;
+    private readonly IMongoCollection<Counter> _counters;
+    private readonly IMongoClient _client;
 
     public SaleService(MongoDbService mongoDbService)
     {
-        _sales = mongoDbService.Database.GetCollection<Sale>("Sales");
-        _batteries = mongoDbService.Database.GetCollection<Battery>("Batteries");
+        _sales = mongoDbService.Database.GetCollection<Sale>(AppConstants.Collections.Sales);
+        _batteries = mongoDbService.Database.GetCollection<Battery>(AppConstants.Collections.Batteries);
+        _counters = mongoDbService.Database.GetCollection<Counter>(AppConstants.Collections.Counters);
+        _client = mongoDbService.Client;
+        
+        // Ensure counter exists
+        EnsureInvoiceCounter().Wait();
     }
 
-    public async Task<List<Sale>> GetAllAsync()
+    private async Task EnsureInvoiceCounter()
     {
-        return await _sales.Find(_ => true).SortByDescending(s => s.Date).ToListAsync();
+        var today = DateTime.UtcNow.ToString("yyyyMMdd");
+        var counterId = $"invoice_{today}";
+        
+        var exists = await _counters.Find(c => c.Id == counterId).AnyAsync();
+        if (!exists)
+        {
+            try
+            {
+                await _counters.InsertOneAsync(new Counter { Id = counterId, Value = 0 });
+            }
+            catch (MongoWriteException)
+            {
+                // Counter already exists, ignore
+            }
+        }
+    }
+
+    private async Task<string> GetNextInvoiceNumber()
+    {
+        var today = DateTime.UtcNow.ToString("yyyyMMdd");
+        var counterId = $"invoice_{today}";
+
+        // Atomic increment using FindOneAndUpdate
+        var update = Builders<Counter>.Update.Inc(c => c.Value, 1);
+        var options = new FindOneAndUpdateOptions<Counter>
+        {
+            IsUpsert = true,
+            ReturnDocument = ReturnDocument.After
+        };
+
+        var counter = await _counters.FindOneAndUpdateAsync(
+            c => c.Id == counterId,
+            update,
+            options
+        );
+
+        return $"{AppConstants.Defaults.InvoicePrefix}-{today}-{counter.Value:D4}";
+    }
+
+    public async Task<List<Sale>> GetAllAsync(int page = 1, int pageSize = AppConstants.Defaults.PageSize)
+    {
+        var skip = (page - 1) * pageSize;
+        return await _sales
+            .Find(s => !s.IsDeleted)
+            .SortByDescending(s => s.Date)
+            .Skip(skip)
+            .Limit(pageSize)
+            .ToListAsync();
+    }
+
+    public async Task<long> GetCountAsync()
+    {
+        return await _sales.CountDocumentsAsync(s => !s.IsDeleted);
     }
 
     public async Task<Sale?> GetByIdAsync(string id)
     {
-        return await _sales.Find(s => s.Id == id).FirstOrDefaultAsync();
+        return await _sales.Find(s => s.Id == id && !s.IsDeleted).FirstOrDefaultAsync();
     }
 
     public async Task<List<Sale>> SearchByCustomerIdAsync(string searchTerm)
     {
-        var filter = Builders<Sale>.Filter.Regex(s => s.CustomerId, new MongoDB.Bson.BsonRegularExpression(searchTerm, "i"));
+        var filter = Builders<Sale>.Filter.And(
+            Builders<Sale>.Filter.Regex(s => s.CustomerId, new MongoDB.Bson.BsonRegularExpression(searchTerm, "i")),
+            Builders<Sale>.Filter.Eq(s => s.IsDeleted, false)
+        );
         return await _sales.Find(filter)
             .SortByDescending(s => s.Date)
-            .Limit(10)
+            .Limit(AppConstants.Defaults.SearchLimit)
             .ToListAsync();
     }
 
     public async Task<List<Sale>> SearchByPhoneAsync(string phoneNumber)
     {
-        var filter = Builders<Sale>.Filter.Regex(s => s.CustomerPhone, new MongoDB.Bson.BsonRegularExpression(phoneNumber, "i"));
+        var filter = Builders<Sale>.Filter.And(
+            Builders<Sale>.Filter.Regex(s => s.CustomerPhone, new MongoDB.Bson.BsonRegularExpression(phoneNumber, "i")),
+            Builders<Sale>.Filter.Eq(s => s.IsDeleted, false)
+        );
         return await _sales.Find(filter)
             .SortByDescending(s => s.Date)
-            .Limit(10)
+            .Limit(AppConstants.Defaults.SearchLimit)
             .ToListAsync();
     }
 
     public async Task<Sale> CreateAsync(SaleCreateDto dto, string cashierId, string cashierName)
     {
-        // Fetch all required batteries in ONE query instead of one-by-one
+        // Fetch all required batteries in ONE query
         var batteryIds = dto.Items.Select(i => i.BatteryId).ToList();
-        var batteries = await _batteries.Find(b => batteryIds.Contains(b.Id)).ToListAsync();
+        var batteries = await _batteries.Find(b => b.Id != null && batteryIds.Contains(b.Id) && !b.IsDeleted).ToListAsync();
         var batteryDict = batteries.ToDictionary(b => b.Id!);
 
+        // Validate all items before processing
         var saleItems = new List<SaleItem>();
         decimal totalAmount = 0;
 
-        // Process items
         foreach (var item in dto.Items)
         {
             if (!batteryDict.TryGetValue(item.BatteryId, out var battery))
             {
-                throw new InvalidOperationException($"Battery {item.BatteryId} not found");
+                throw new NotFoundException("Battery", item.BatteryId);
             }
 
             if (battery.StockQuantity < item.Quantity)
             {
-                throw new InvalidOperationException($"Insufficient stock for {battery.Brand} {battery.Model}");
+                throw new InsufficientStockException(item.BatteryId, item.Quantity, battery.StockQuantity);
             }
 
             var subtotal = battery.SellingPrice * item.Quantity;
@@ -78,6 +145,7 @@ public class SaleService
                 Model = battery.Model,
                 Quantity = item.Quantity,
                 UnitPrice = battery.SellingPrice,
+                PurchasePrice = battery.PurchasePrice, // Store for accurate profit calculation
                 Subtotal = subtotal,
                 WarrantyPeriodMonths = battery.WarrantyPeriodMonths,
                 WarrantyStartDate = warrantyStartDate,
@@ -86,19 +154,8 @@ public class SaleService
             totalAmount += subtotal;
         }
 
-        // Update stock for all items in parallel (batch operations)
-        var stockUpdateTasks = dto.Items.Select(item =>
-        {
-            var updateStock = Builders<Battery>.Update.Inc(b => b.StockQuantity, -item.Quantity);
-            return _batteries.UpdateOneAsync(b => b.Id == item.BatteryId, updateStock);
-        });
-        await Task.WhenAll(stockUpdateTasks);
-
-        // Generate unique invoice number
-        var today = DateTime.UtcNow.Date;
-        var tomorrow = today.AddDays(1);
-        var todaySalesCount = await _sales.CountDocumentsAsync(s => s.Date >= today && s.Date < tomorrow);
-        var invoiceNumber = $"INV-{DateTime.UtcNow:yyyyMMdd}-{(todaySalesCount + 1):D4}";
+        // Generate invoice number atomically
+        var invoiceNumber = await GetNextInvoiceNumber();
 
         var sale = new Sale
         {
@@ -111,10 +168,50 @@ public class SaleService
             Discount = dto.Discount,
             CashierId = cashierId,
             CashierName = cashierName,
-            Items = saleItems
+            Items = saleItems,
+            CreatedAt = DateTime.UtcNow
         };
 
-        await _sales.InsertOneAsync(sale);
+        // Use session for transaction (if replica set is available)
+        using var session = await _client.StartSessionAsync();
+        
+        try
+        {
+            session.StartTransaction();
+
+            // Update stock with atomic operations to prevent overselling
+            foreach (var item in dto.Items)
+            {
+                var filter = Builders<Battery>.Filter.And(
+                    Builders<Battery>.Filter.Eq(b => b.Id, item.BatteryId),
+                    Builders<Battery>.Filter.Gte(b => b.StockQuantity, item.Quantity)
+                );
+                var update = Builders<Battery>.Update.Inc(b => b.StockQuantity, -item.Quantity);
+                
+                var result = await _batteries.UpdateOneAsync(session, filter, update);
+                
+                if (result.ModifiedCount == 0)
+                {
+                    throw new InsufficientStockException(item.BatteryId, item.Quantity, 0);
+                }
+            }
+
+            await _sales.InsertOneAsync(session, sale);
+            await session.CommitTransactionAsync();
+        }
+        catch
+        {
+            await session.AbortTransactionAsync();
+            throw;
+        }
+
         return sale;
     }
+}
+
+// Counter model for atomic invoice numbers
+public class Counter
+{
+    public string Id { get; set; } = null!;
+    public int Value { get; set; }
 }

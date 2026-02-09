@@ -12,10 +12,12 @@ namespace BatteryShop.API.Controllers;
 public class SaleController : ControllerBase
 {
     private readonly SaleService _saleService;
+    private readonly ActivityLogService _log;
 
-    public SaleController(SaleService saleService)
+    public SaleController(SaleService saleService, ActivityLogService activityLogService)
     {
         _saleService = saleService;
+        _log = activityLogService;
     }
 
     [HttpGet]
@@ -83,6 +85,7 @@ public class SaleController : ControllerBase
         try
         {
             var sale = await _saleService.CreateAsync(dto, cashierId, cashierName);
+            _log.Log("Created", "Sale", sale.Id, $"Sale {sale.InvoiceNumber} to {dto.CustomerName} ({dto.CustomerPhone}) — LKR {sale.TotalAmount}", cashierId, cashierName);
             return CreatedAtAction(nameof(GetById), new { id = sale.Id }, sale);
         }
         catch (InvalidOperationException ex)

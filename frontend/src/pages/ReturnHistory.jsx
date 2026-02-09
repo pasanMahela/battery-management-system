@@ -5,7 +5,7 @@ import AuthContext from '../context/AuthContext';
 import Toast from '../components/Toast';
 import Dialog from '../components/Dialog';
 import { RotateCcw, Search, Calendar, Filter, Eye, X, DollarSign, Package, Loader2, History } from 'lucide-react';
-import { API_ENDPOINTS } from '../constants/constants';
+import { API_ENDPOINTS, APP_CONFIG } from '../constants/constants';
 
 const ReturnHistory = () => {
     const { user } = useContext(AuthContext);
@@ -292,7 +292,7 @@ const ReturnHistory = () => {
                                                     </p>
                                                     {returnItem.compensationType === 'Money' ? (
                                                         <p className="font-bold text-green-600">
-                                                            LKR {returnItem.moneyAmount?.toLocaleString() || '0'}
+                                                            {APP_CONFIG.CURRENCY} {returnItem.moneyAmount?.toLocaleString() || '0'}
                                                         </p>
                                                     ) : (
                                                         <p className="font-medium text-blue-600 text-sm">
@@ -366,7 +366,7 @@ const ReturnHistory = () => {
                                                         <td className="px-6 py-4">
                                                             {returnItem.compensationType === 'Money' ? (
                                                                 <span className="font-bold text-green-600">
-                                                                    LKR {returnItem.moneyAmount?.toLocaleString() || '0'}
+                                                                    {APP_CONFIG.CURRENCY} {returnItem.moneyAmount?.toLocaleString() || '0'}
                                                                 </span>
                                                             ) : (
                                                                 <span className="text-blue-600 font-medium">
@@ -487,7 +487,7 @@ const ReturnHistory = () => {
                                     <div>
                                         <p className="text-sm text-gray-500">Refund Amount</p>
                                         <p className="text-2xl font-bold text-green-600">
-                                            LKR {selectedReturn.moneyAmount?.toLocaleString() || '0'}
+                                            {APP_CONFIG.CURRENCY} {selectedReturn.moneyAmount?.toLocaleString() || '0'}
                                         </p>
                                     </div>
                                 )}

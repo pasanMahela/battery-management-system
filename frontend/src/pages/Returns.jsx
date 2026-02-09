@@ -4,7 +4,7 @@ import axios from 'axios';
 import AuthContext from '../context/AuthContext';
 import Toast from '../components/Toast';
 import { ArrowLeft, RotateCcw, DollarSign, Package, Loader2, AlertTriangle } from 'lucide-react';
-import { API_ENDPOINTS } from '../constants/constants';
+import { API_ENDPOINTS, APP_CONFIG, BUSINESS_DEFAULTS } from '../constants/constants';
 
 const Returns = () => {
     const { user } = useContext(AuthContext);
@@ -25,12 +25,12 @@ const Returns = () => {
         brand: '',
         model: '',
         capacity: '',
-        voltage: '12',
+        voltage: String(BUSINESS_DEFAULTS.DEFAULT_VOLTAGE),
         purchasePrice: '',
         sellingPrice: '',
         stockQuantity: '1',
-        warrantyPeriodMonths: '12',
-        shelfLifeMonths: '24',
+        warrantyPeriodMonths: String(BUSINESS_DEFAULTS.DEFAULT_WARRANTY_MONTHS),
+        shelfLifeMonths: String(BUSINESS_DEFAULTS.DEFAULT_SHELF_LIFE_MONTHS),
         salesRep: '',
         invoiceNumber: ''
     });
@@ -116,13 +116,13 @@ const Returns = () => {
                     replacementBrand: replacementBattery.brand,
                     replacementModel: replacementBattery.model,
                     replacementCapacity: replacementBattery.capacity,
-                    replacementVoltage: parseFloat(replacementBattery.voltage) || 12,
+                    replacementVoltage: parseFloat(replacementBattery.voltage) || BUSINESS_DEFAULTS.DEFAULT_VOLTAGE,
                     replacementPurchasePrice: parseFloat(replacementBattery.purchasePrice) || 0,
                     replacementSellingPrice: parseFloat(replacementBattery.sellingPrice) || 0,
                     replacementPurchaseDate: new Date().toISOString(),
                     replacementStockQuantity: parseInt(replacementBattery.stockQuantity) || 1,
-                    replacementWarrantyPeriodMonths: parseInt(replacementBattery.warrantyPeriodMonths) || 12,
-                    replacementShelfLifeMonths: parseInt(replacementBattery.shelfLifeMonths) || 24,
+                    replacementWarrantyPeriodMonths: parseInt(replacementBattery.warrantyPeriodMonths) || BUSINESS_DEFAULTS.DEFAULT_WARRANTY_MONTHS,
+                    replacementShelfLifeMonths: parseInt(replacementBattery.shelfLifeMonths) || BUSINESS_DEFAULTS.DEFAULT_SHELF_LIFE_MONTHS,
                     replacementSalesRep: replacementBattery.salesRep || '',
                     replacementInvoiceNumber: replacementBattery.invoiceNumber || ''
                 })
@@ -210,11 +210,11 @@ const Returns = () => {
                             </div>
                             <div>
                                 <p className="text-xs sm:text-sm text-gray-500 font-medium">Purchase Price</p>
-                                <p className="text-sm sm:text-lg font-bold text-gray-800">LKR {battery.purchasePrice?.toLocaleString()}</p>
+                                <p className="text-sm sm:text-lg font-bold text-gray-800">{APP_CONFIG.CURRENCY} {battery.purchasePrice?.toLocaleString()}</p>
                             </div>
                             <div>
                                 <p className="text-xs sm:text-sm text-gray-500 font-medium">Selling Price</p>
-                                <p className="text-sm sm:text-lg font-bold text-gray-800">LKR {battery.sellingPrice?.toLocaleString()}</p>
+                                <p className="text-sm sm:text-lg font-bold text-gray-800">{APP_CONFIG.CURRENCY} {battery.sellingPrice?.toLocaleString()}</p>
                             </div>
                         </div>
                     </div>
@@ -281,7 +281,7 @@ const Returns = () => {
                         {compensationType === 'Money' && (
                             <div className="mb-8 p-6 bg-green-50 rounded-xl border-2 border-green-200">
                                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                    Refund Amount (LKR) <span className="text-red-500">*</span>
+                                    Refund Amount ({APP_CONFIG.CURRENCY}) <span className="text-red-500">*</span>
                                 </label>
                                 <input
                                     type="number"
@@ -435,7 +435,7 @@ const Returns = () => {
                                     {/* Purchase Price */}
                                     <div>
                                         <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                            Purchase Price (LKR)
+                                            Purchase Price ({APP_CONFIG.CURRENCY})
                                         </label>
                                         <input
                                             type="number"
@@ -450,7 +450,7 @@ const Returns = () => {
                                     {/* Selling Price */}
                                     <div>
                                         <label className="block text-sm font-semibold text-gray-700 mb-2">
-                                            Selling Price (LKR)
+                                            Selling Price ({APP_CONFIG.CURRENCY})
                                         </label>
                                         <input
                                             type="number"

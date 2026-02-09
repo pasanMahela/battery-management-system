@@ -2,13 +2,16 @@ import { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import AuthContext from '../context/AuthContext';
 import PrintableBill from '../components/PrintableBill';
-import { Search, Calendar, DollarSign, User, Phone, Package, ArrowUpDown, Filter, Download, FileText, Eye, Loader2, X } from 'lucide-react';
-import { API_ENDPOINTS } from '../constants/constants';
+import { Search, Calendar, DollarSign, User, Phone, Package, ArrowUpDown, Filter, Download, FileText, Eye, Loader2, X, BarChart2 } from 'lucide-react';
+import { API_ENDPOINTS, APP_CONFIG } from '../constants/constants';
+import SalesChart from '../components/SalesChart';
 
 const Sales = () => {
     const { user } = useContext(AuthContext);
     const [sales, setSales] = useState([]);
     const [filteredSales, setFilteredSales] = useState([]);
+    const [isExporting, setIsExporting] = useState(false);
+    const [showChart, setShowChart] = useState(true);
 
     // Filters
     const [searchTerm, setSearchTerm] = useState('');
@@ -130,18 +133,96 @@ const Sales = () => {
     const totalSalesToday = periodSales.length;
     const totalRevenueToday = periodSales.reduce((sum, sale) => sum + sale.totalAmount, 0);
 
-    // Calculate profit (Revenue - Cost)
-    // Assuming each item has purchasePrice in the battery data
+    // Calculate profit (Revenue - Cost) using stored purchasePrice
     const totalProfitToday = periodSales.reduce((sum, sale) => {
         const saleProfit = sale.items?.reduce((itemSum, item) => {
             // Profit = (selling price - purchase price) * quantity
-            const itemProfit = (item.unitPrice - (item.purchasePrice || item.unitPrice * 0.7)) * item.quantity;
+            // purchasePrice is now stored in SaleItem for accurate calculation
+            const purchasePrice = item.purchasePrice || 0;
+            const itemProfit = (item.unitPrice - purchasePrice) * item.quantity;
             return itemSum + itemProfit;
         }, 0) || 0;
         return sum + saleProfit;
     }, 0);
 
     const totalRevenue = filteredSales.reduce((sum, sale) => sum + sale.totalAmount, 0);
+
+    // Export to CSV function
+    const exportToCSV = () => {
+        setIsExporting(true);
+        try {
+            // Define CSV headers
+            const headers = [
+                'Invoice Number',
+                'Date',
+                'Time',
+                'Customer Name',
+                'Customer Phone',
+                'Customer ID',
+                'Items',
+                'Subtotal',
+                'Discount',
+                'Total Amount',
+                'Cashier',
+                'Profit'
+            ];
+
+            // Create CSV rows
+            const rows = filteredSales.map(sale => {
+                const itemsList = sale.items.map(item => 
+                    `${item.brand} ${item.model} x${item.quantity}`
+                ).join('; ');
+                
+                const subtotal = sale.items.reduce((sum, item) => 
+                    sum + (item.unitPrice * item.quantity), 0
+                );
+                
+                const profit = sale.items.reduce((sum, item) => {
+                    const purchasePrice = item.purchasePrice || 0;
+                    return sum + ((item.unitPrice - purchasePrice) * item.quantity);
+                }, 0);
+
+                return [
+                    sale.invoiceNumber || 'N/A',
+                    new Date(sale.date).toLocaleDateString(),
+                    new Date(sale.date).toLocaleTimeString(),
+                    `"${sale.customerName}"`,
+                    sale.customerPhone,
+                    sale.customerId || '',
+                    `"${itemsList}"`,
+                    subtotal.toFixed(2),
+                    sale.discount.toFixed(2),
+                    sale.totalAmount.toFixed(2),
+                    sale.cashierName || 'Unknown',
+                    profit.toFixed(2)
+                ];
+            });
+
+            // Combine headers and rows
+            const csvContent = [
+                headers.join(','),
+                ...rows.map(row => row.join(','))
+            ].join('\n');
+
+            // Create and download file
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `sales_export_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } catch (error) {
+            // Handle export error silently in production
+            if (process.env.NODE_ENV === 'development') {
+                console.error('Export error:', error);
+            }
+        } finally {
+            setIsExporting(false);
+        }
+    };
 
     return (
         <div className="p-6 bg-gray-50 min-h-screen font-sans">
@@ -153,9 +234,20 @@ const Sales = () => {
                         <h1 className="text-3xl font-extrabold text-gray-900">Sales History</h1>
                         <p className="text-gray-500 mt-1">Track and manage your transaction records</p>
                     </div>
-                    {/* Placeholder for Export Button */}
-                    <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 shadow-sm transition-colors">
-                        <Download size={18} /> Export CSV
+                    <button 
+                        onClick={exportToCSV}
+                        disabled={isExporting || filteredSales.length === 0}
+                        className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {isExporting ? (
+                            <>
+                                <Loader2 size={18} className="animate-spin" /> Exporting...
+                            </>
+                        ) : (
+                            <>
+                                <Download size={18} /> Export CSV
+                            </>
+                        )}
                     </button>
                 </div>
 
@@ -213,7 +305,7 @@ const Sales = () => {
                                 <p className="text-sm font-semibold text-green-700 uppercase tracking-wider">
                                     Total Revenue {timePeriod === 'today' ? 'Today' : timePeriod === 'week' ? 'This Week' : 'This Month'}
                                 </p>
-                                <h3 className="text-4xl font-extrabold text-green-900 mt-2">LKR {totalRevenueToday.toLocaleString()}</h3>
+                                <h3 className="text-4xl font-extrabold text-green-900 mt-2">{APP_CONFIG.CURRENCY} {totalRevenueToday.toLocaleString()}</h3>
                                 <p className="text-xs text-green-600 mt-1">Total earnings</p>
                             </div>
                             <div className="p-4 bg-green-600 text-white rounded-xl">
@@ -226,7 +318,7 @@ const Sales = () => {
                                 <p className="text-sm font-semibold text-purple-700 uppercase tracking-wider">
                                     Total Profit {timePeriod === 'today' ? 'Today' : timePeriod === 'week' ? 'This Week' : 'This Month'}
                                 </p>
-                                <h3 className="text-4xl font-extrabold text-purple-900 mt-2">LKR {totalProfitToday.toLocaleString()}</h3>
+                                <h3 className="text-4xl font-extrabold text-purple-900 mt-2">{APP_CONFIG.CURRENCY} {totalProfitToday.toLocaleString()}</h3>
                                 <p className="text-xs text-purple-600 mt-1">Net earnings</p>
                             </div>
                             <div className="p-4 bg-purple-600 text-white rounded-xl">
@@ -235,6 +327,36 @@ const Sales = () => {
                         </div>
                     </div>
                 </div>
+
+                {/* Sales Trend Chart */}
+                {showChart && sales.length > 0 && (
+                    <div className="mb-6">
+                        <div className="flex items-center justify-between mb-3">
+                            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                                <BarChart2 size={20} className="text-blue-600" />
+                                Sales Analytics
+                            </h3>
+                            <button
+                                onClick={() => setShowChart(false)}
+                                className="text-gray-400 hover:text-gray-600 p-1"
+                                title="Hide chart"
+                            >
+                                <X size={18} />
+                            </button>
+                        </div>
+                        <SalesChart sales={sales} days={7} />
+                    </div>
+                )}
+
+                {!showChart && sales.length > 0 && (
+                    <button
+                        onClick={() => setShowChart(true)}
+                        className="mb-6 flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium text-sm"
+                    >
+                        <BarChart2 size={16} />
+                        Show Sales Chart
+                    </button>
+                )}
 
                 {/* Filters Section */}
                 <div className="bg-white rounded-xl shadow-sm p-5 mb-6 border border-gray-200">
@@ -307,15 +429,16 @@ const Sales = () => {
                             </div>
                             <div className="bg-white/10 backdrop-blur rounded-lg p-4 border border-white/20">
                                 <p className="text-xs font-semibold text-blue-100 uppercase tracking-wider mb-1">Total Revenue</p>
-                                <h4 className="text-3xl font-extrabold">LKR {totalRevenue.toLocaleString()}</h4>
+                                <h4 className="text-3xl font-extrabold">{APP_CONFIG.CURRENCY} {totalRevenue.toLocaleString()}</h4>
                                 <p className="text-xs text-blue-100 mt-1">Total earnings</p>
                             </div>
                             <div className="bg-white/10 backdrop-blur rounded-lg p-4 border border-white/20">
                                 <p className="text-xs font-semibold text-blue-100 uppercase tracking-wider mb-1">Total Profit</p>
-                                <h4 className="text-3xl font-extrabold">LKR {(() => {
+                                <h4 className="text-3xl font-extrabold">{APP_CONFIG.CURRENCY} {(() => {
                                     const filteredProfit = filteredSales.reduce((sum, sale) => {
                                         const saleProfit = sale.items?.reduce((itemSum, item) => {
-                                            const itemProfit = (item.unitPrice - (item.purchasePrice || item.unitPrice * 0.7)) * item.quantity;
+                                            const purchasePrice = item.purchasePrice || 0;
+                                            const itemProfit = (item.unitPrice - purchasePrice) * item.quantity;
                                             return itemSum + itemProfit;
                                         }, 0) || 0;
                                         return sum + saleProfit;
@@ -431,7 +554,7 @@ const Sales = () => {
                                                 <div className="font-extrabold text-gray-900 text-lg">
                                                     {sale.totalAmount.toLocaleString()}
                                                 </div>
-                                                <div className="text-[10px] text-gray-400 uppercase font-bold">LKR</div>
+                                                <div className="text-[10px] text-gray-400 uppercase font-bold">{APP_CONFIG.CURRENCY}</div>
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <div className="text-sm font-medium text-gray-600 bg-gray-100 px-2 py-1 rounded inline-block">

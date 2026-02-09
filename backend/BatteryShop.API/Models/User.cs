@@ -14,4 +14,12 @@ public class User
     public string PasswordHash { get; set; } = null!;
 
     public string Role { get; set; } = null!; // "Admin" or "Cashier"
+    
+    // Soft delete
+    public bool IsDeleted { get; set; } = false;
+    public DateTime? DeletedAt { get; set; }
+    
+    // Audit fields
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? LastLoginAt { get; set; }
 }

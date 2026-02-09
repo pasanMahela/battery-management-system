@@ -1,4 +1,5 @@
 using MongoDB.Driver;
+using BatteryShop.API.Constants;
 using BatteryShop.API.Models;
 
 namespace BatteryShop.API;
@@ -19,10 +20,10 @@ public class CreateFirstAdmin
 
         var client = new MongoClient(connectionString);
         var database = client.GetDatabase(databaseName);
-        var users = database.GetCollection<User>("Users");
+        var users = database.GetCollection<User>(AppConstants.Collections.Users);
 
         // Check if admin already exists
-        var existingAdmin = await users.Find(u => u.Role == "Admin").FirstOrDefaultAsync();
+        var existingAdmin = await users.Find(u => u.Role == AppConstants.Roles.Admin).FirstOrDefaultAsync();
         if (existingAdmin != null)
         {
             Console.WriteLine("⚠️  An admin user already exists!");
@@ -52,7 +53,7 @@ public class CreateFirstAdmin
         {
             Username = username,
             PasswordHash = passwordHash,
-            Role = "Admin"
+            Role = AppConstants.Roles.Admin
         };
 
         await users.InsertOneAsync(adminUser);

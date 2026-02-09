@@ -3,14 +3,26 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import AuthContext from '../context/AuthContext';
 import Toast from '../components/Toast';
-import { ArrowLeft, Save, Package, Loader2 } from 'lucide-react';
+import { ArrowLeft, Save, Package, Loader2, ScanBarcode, Focus } from 'lucide-react';
 import { API_ENDPOINTS } from '../constants/constants';
+import ScannerContext from '../context/ScannerContext';
 
 const AddBattery = () => {
     const { user } = useContext(AuthContext);
+    const { setScanCallback, status: scannerStatus } = useContext(ScannerContext);
     const navigate = useNavigate();
+
+    // Register scan callback for phone scanner
+    useEffect(() => {
+        if (scannerStatus === 'connected') {
+            setScanCallback((barcode) => setFormData(prev => ({ ...prev, barcode })));
+        }
+    }, [scannerStatus, setScanCallback]);
+
     const [toast, setToast] = useState(null);
     const serialNumberRef = useRef(null);
+    const barcodeRef = useRef(null);
+    const [scanMode, setScanMode] = useState(false);
     const [formData, setFormData] = useState({
         serialNumber: '',
         barcode: '',
@@ -32,6 +44,21 @@ const AddBattery = () => {
     const [showBrandDropdown, setShowBrandDropdown] = useState(false);
     const [showModelDropdown, setShowModelDropdown] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Handle barcode scanner input — scanners type fast and press Enter
+    const handleBarcodeKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault(); // Prevent form submission
+            // Move focus to next field after scan
+            setScanMode(false);
+        }
+    };
+
+    const activateScanMode = () => {
+        setScanMode(true);
+        barcodeRef.current?.focus();
+        barcodeRef.current?.select();
+    };
 
     // Fetch existing batteries for autocomplete
     useEffect(() => {
@@ -103,8 +130,12 @@ const AddBattery = () => {
                 invoiceNumber: ''
             });
 
-            // Focus on serial number field
-            serialNumberRef.current?.focus();
+            // Focus on barcode field for continuous scanning, or serial number
+            if (scanMode) {
+                barcodeRef.current?.focus();
+            } else {
+                serialNumberRef.current?.focus();
+            }
         } catch (error) {
             console.error('Error adding battery:', error);
             // Handle duplicate serial number error
@@ -172,16 +203,46 @@ const AddBattery = () => {
                                 />
                             </div>
 
-                            {/* Barcode */}
+                            {/* Barcode with Scanner Support */}
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">Barcode</label>
-                                <input
-                                    type="text"
-                                    value={formData.barcode}
-                                    onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
-                                    className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:bg-white outline-none transition-all"
-                                    placeholder="Optional"
-                                />
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    Barcode
+                                    {scanMode && (
+                                        <span className="ml-2 inline-flex items-center gap-1 text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full animate-pulse">
+                                            <Focus size={12} /> Ready to scan
+                                        </span>
+                                    )}
+                                </label>
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        ref={barcodeRef}
+                                        value={formData.barcode}
+                                        onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
+                                        onKeyDown={handleBarcodeKeyDown}
+                                        onFocus={() => setScanMode(true)}
+                                        onBlur={() => setScanMode(false)}
+                                        className={`flex-1 px-4 py-3 border-2 rounded-xl focus:bg-white outline-none transition-all ${
+                                            scanMode
+                                                ? 'bg-green-50 border-green-400 ring-2 ring-green-200'
+                                                : 'bg-gray-50 border-gray-200 focus:border-blue-500'
+                                        }`}
+                                        placeholder={scanMode ? 'Scan barcode now...' : 'Click scan or type barcode'}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={activateScanMode}
+                                        className={`px-4 py-3 rounded-xl font-medium transition-all flex items-center gap-2 ${
+                                            scanMode
+                                                ? 'bg-green-500 text-white shadow-lg shadow-green-200'
+                                                : 'bg-gray-100 text-gray-600 hover:bg-blue-50 hover:text-blue-600 border-2 border-gray-200'
+                                        }`}
+                                        title="Click to activate barcode scanner"
+                                    >
+                                        <ScanBarcode size={20} />
+                                    </button>
+
+                                </div>
                             </div>
 
                             {/* Brand with Autocomplete */}
@@ -267,6 +328,22 @@ const AddBattery = () => {
                                     value={formData.capacity}
                                     onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
                                     className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:bg-white outline-none transition-all"
+                                    required
+                                />
+                            </div>
+
+                            {/* Voltage */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                    Voltage (V) <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="number"
+                                    step="0.1"
+                                    value={formData.voltage}
+                                    onChange={(e) => setFormData({ ...formData, voltage: e.target.value })}
+                                    className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:bg-white outline-none transition-all"
+                                    placeholder="e.g., 12"
                                     required
                                 />
                             </div>

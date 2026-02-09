@@ -26,7 +26,17 @@ const Login = () => {
             navigate('/');
         } catch (err) {
             console.error(err);
-            setError(err.response?.data || 'Invalid credentials. Please check your username and password.');
+            const msg = err.response?.data;
+            // Only show short, user-friendly messages — never raw stack traces
+            if (typeof msg === 'string' && msg.length < 200) {
+                setError(msg);
+            } else if (err.response?.status === 503) {
+                setError('Server is temporarily unavailable. Please try again in a moment.');
+            } else if (err.response?.status >= 500) {
+                setError('Something went wrong. Please try again later.');
+            } else {
+                setError('Invalid credentials. Please check your username and password.');
+            }
         } finally {
             setIsLoading(false);
         }

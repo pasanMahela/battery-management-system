@@ -30,4 +30,14 @@ public class BatteryReturn
     public string ReturnedBy { get; set; } = null!; // Admin username
     public string Status { get; set; } = "Pending"; // "Pending", "Completed"
     public string? Notes { get; set; }
+    
+    // Soft delete
+    public bool IsDeleted { get; set; } = false;
+    public DateTime? DeletedAt { get; set; }
+    public string? DeletedBy { get; set; }
+    
+    // Audit fields
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? UpdatedAt { get; set; }
+    public string? UpdatedBy { get; set; }
 }

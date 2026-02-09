@@ -2,6 +2,7 @@ using BatteryShop.API.Dtos;
 using BatteryShop.API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace BatteryShop.API.Controllers;
 
@@ -11,11 +12,16 @@ namespace BatteryShop.API.Controllers;
 public class BatteryController : ControllerBase
 {
     private readonly BatteryService _batteryService;
+    private readonly ActivityLogService _log;
 
-    public BatteryController(BatteryService batteryService)
+    public BatteryController(BatteryService batteryService, ActivityLogService activityLogService)
     {
         _batteryService = batteryService;
+        _log = activityLogService;
     }
+
+    private string UserId => User.FindFirst("id")?.Value ?? "";
+    private string Username => User.FindFirst(ClaimTypes.Name)?.Value ?? "Unknown";
 
     [HttpGet]
     [Authorize(Roles = "Admin,Cashier")] // Allow both Admin and Cashier to read
@@ -56,7 +62,8 @@ public class BatteryController : ControllerBase
             });
         }
 
-        var battery = await _batteryService.CreateAsync(dto);
+        var battery = await _batteryService.CreateAsync(dto, Username);
+        _log.Log("Created", "Battery", battery.Id, $"Added battery {dto.Brand} {dto.Model} (SN: {dto.SerialNumber})", UserId, Username);
         return CreatedAtAction(nameof(GetById), new { id = battery.Id }, battery);
     }
 
@@ -85,8 +92,9 @@ public class BatteryController : ControllerBase
             }
         }
 
-        var success = await _batteryService.UpdateAsync(id, dto);
+        var success = await _batteryService.UpdateAsync(id, dto, Username);
         if (!success) return NotFound();
+        _log.Log("Updated", "Battery", id, $"Updated battery {dto.Brand} {dto.Model} (SN: {dto.SerialNumber})", UserId, Username);
         return NoContent();
     }
 
@@ -94,8 +102,10 @@ public class BatteryController : ControllerBase
     [Authorize(Roles = "Admin")] // Only Admin can delete
     public async Task<IActionResult> Delete(string id)
     {
-        var success = await _batteryService.DeleteAsync(id);
+        var battery = await _batteryService.GetByIdAsync(id);
+        var success = await _batteryService.DeleteAsync(id, Username);
         if (!success) return NotFound();
+        _log.Log("Deleted", "Battery", id, $"Deleted battery {battery?.Brand} {battery?.Model} (SN: {battery?.SerialNumber})", UserId, Username);
         return NoContent();
     }
 }

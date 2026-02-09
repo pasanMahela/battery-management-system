@@ -1,26 +1,38 @@
+using BatteryShop.API.Hubs;
 using BatteryShop.API.Services;
 using BatteryShop.API.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.Configure<MongoDBSettings>(builder.Configuration.GetSection("MongoDB"));
 builder.Services.AddSingleton<MongoDbService>();
-builder.Services.AddSingleton<AuthService>();
-builder.Services.AddSingleton<BatteryService>();
-builder.Services.AddSingleton<SaleService>();
-builder.Services.AddSingleton<BatteryReturnService>();
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<BatteryService>();
+builder.Services.AddScoped<SaleService>();
+builder.Services.AddScoped<BatteryReturnService>();
+builder.Services.AddScoped<ActivityLogService>();
 
 builder.Services.AddControllers();
+builder.Services.AddSignalR();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// JWT Configuration
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var secretKey = jwtSettings["SecretKey"];
-var key = Encoding.ASCII.GetBytes(secretKey ?? "super_secret_key_that_is_long_enough_for_hmac_sha256");
+
+if (string.IsNullOrEmpty(secretKey))
+{
+    throw new InvalidOperationException("JWT SecretKey is not configured. Set it in appsettings.json or environment variables.");
+}
+
+var key = Encoding.ASCII.GetBytes(secretKey);
 
 builder.Services.AddAuthentication(x =>
 {
@@ -36,17 +48,53 @@ builder.Services.AddAuthentication(x =>
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(key),
         ValidateIssuer = false,
-        ValidateAudience = false
+        ValidateAudience = false,
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero
     };
 });
 
+// CORS Configuration - Restrict to allowed origins
+var corsSettings = builder.Configuration.GetSection("Cors");
+var allowedOrigins = corsSettings["AllowedOrigins"]?.Split(',', StringSplitOptions.RemoveEmptyEntries) 
+    ?? new[] { "http://localhost:5173" };
+
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", builder =>
+    options.AddPolicy("AllowedOrigins", policy =>
     {
-        builder.AllowAnyOrigin()
-               .AllowAnyMethod()
-               .AllowAnyHeader();
+        policy.WithOrigins(allowedOrigins)
+              .AllowAnyMethod()
+              .AllowAnyHeader()
+              .AllowCredentials();
+    });
+});
+
+// Rate Limiting Configuration
+var rateLimitSettings = builder.Configuration.GetSection("RateLimiting");
+var permitLimit = rateLimitSettings.GetValue<int>("PermitLimit", 5);
+var windowSeconds = rateLimitSettings.GetValue<int>("WindowSeconds", 60);
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    
+    // Fixed window rate limiter for login attempts
+    options.AddFixedWindowLimiter("auth", limiterOptions =>
+    {
+        limiterOptions.PermitLimit = permitLimit;
+        limiterOptions.Window = TimeSpan.FromSeconds(windowSeconds);
+        limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        limiterOptions.QueueLimit = 0;
+    });
+    
+    // General API rate limiter
+    options.AddFixedWindowLimiter("api", limiterOptions =>
+    {
+        limiterOptions.PermitLimit = 100;
+        limiterOptions.Window = TimeSpan.FromMinutes(1);
+        limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        limiterOptions.QueueLimit = 2;
     });
 });
 
@@ -59,11 +107,13 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseCors("AllowAll");
+app.UseRateLimiter();
+app.UseCors("AllowedOrigins");
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<BarcodeScannerHub>("/barcodehub");
 
 app.Run();

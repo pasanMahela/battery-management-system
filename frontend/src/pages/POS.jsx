@@ -3,11 +3,13 @@ import axios from 'axios';
 import AuthContext from '../context/AuthContext';
 import Dialog from '../components/Dialog';
 import PrintableBill from '../components/PrintableBill';
-import { ShoppingCart, Trash2, Search, Plus, Minus, CheckCircle, Battery, User, Phone, Edit2, X, ChevronRight, Filter, Loader2 } from 'lucide-react';
+import { ShoppingCart, Trash2, Search, Plus, Minus, CheckCircle, Battery, User, Phone, Edit2, X, ChevronRight, Filter, Loader2, ScanBarcode } from 'lucide-react';
 import { API_ENDPOINTS } from '../constants/constants';
+import ScannerContext from '../context/ScannerContext';
 
 const POS = () => {
     const { user } = useContext(AuthContext);
+    const { setScanCallback, status: scannerStatus } = useContext(ScannerContext);
     const [batteries, setBatteries] = useState([]);
     const [cart, setCart] = useState([]);
 
@@ -62,6 +64,115 @@ const POS = () => {
     // Loading States
     const [isAddingToCart, setIsAddingToCart] = useState(false);
     const [isProcessingSale, setIsProcessingSale] = useState(false);
+
+    // Barcode Scanner State
+    const [scannerBuffer, setScannerBuffer] = useState('');
+    const [showScanIndicator, setShowScanIndicator] = useState(false);
+    const scannerBufferRef = useRef('');
+    const scannerTimeoutRef = useRef(null);
+    const lastKeyTimeRef = useRef(0);
+
+    // Global barcode scanner listener
+    // USB barcode scanners type characters very fast (<50ms between keys) and end with Enter
+    useEffect(() => {
+        const handleScannerInput = (e) => {
+            // Skip if a modal is open or user is typing in an input field
+            const isInputFocused = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName);
+            
+            // If the search input is focused, let the existing search handle it
+            if (isInputFocused && document.activeElement !== document.body) {
+                // But still detect fast scanner input in the search field
+                const now = Date.now();
+                const timeDiff = now - lastKeyTimeRef.current;
+                lastKeyTimeRef.current = now;
+
+                // Scanner types fast (< 50ms between chars)
+                if (timeDiff < 50 && e.key.length === 1) {
+                    scannerBufferRef.current += e.key;
+                    clearTimeout(scannerTimeoutRef.current);
+                    scannerTimeoutRef.current = setTimeout(() => {
+                        scannerBufferRef.current = '';
+                    }, 200);
+                } else if (e.key === 'Enter' && scannerBufferRef.current.length >= 3) {
+                    // Scanner finished — look up the barcode
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const scanned = scannerBufferRef.current;
+                    scannerBufferRef.current = '';
+                    lookupBarcode(scanned);
+                } else if (timeDiff >= 50) {
+                    scannerBufferRef.current = e.key.length === 1 ? e.key : '';
+                }
+                return;
+            }
+
+            // Global scanner detection (no input focused)
+            const now = Date.now();
+            const timeDiff = now - lastKeyTimeRef.current;
+            lastKeyTimeRef.current = now;
+
+            if (e.key.length === 1 && timeDiff < 50) {
+                scannerBufferRef.current += e.key;
+                setShowScanIndicator(true);
+                clearTimeout(scannerTimeoutRef.current);
+                scannerTimeoutRef.current = setTimeout(() => {
+                    scannerBufferRef.current = '';
+                    setShowScanIndicator(false);
+                }, 200);
+            } else if (e.key === 'Enter' && scannerBufferRef.current.length >= 3) {
+                e.preventDefault();
+                const scanned = scannerBufferRef.current;
+                scannerBufferRef.current = '';
+                setShowScanIndicator(false);
+                lookupBarcode(scanned);
+            } else if (e.key.length === 1) {
+                // First char or slow typing — start fresh buffer
+                scannerBufferRef.current = e.key;
+                clearTimeout(scannerTimeoutRef.current);
+                scannerTimeoutRef.current = setTimeout(() => {
+                    scannerBufferRef.current = '';
+                }, 200);
+            }
+        };
+
+        document.addEventListener('keydown', handleScannerInput, true);
+        return () => {
+            document.removeEventListener('keydown', handleScannerInput, true);
+            clearTimeout(scannerTimeoutRef.current);
+        };
+    }, [batteries, showItemModal]);
+
+    // Register scan callback for phone scanner
+    useEffect(() => {
+        if (scannerStatus === 'connected') {
+            setScanCallback((barcode) => lookupBarcode(barcode));
+        }
+    }, [scannerStatus, batteries, showItemModal]);
+
+    const lookupBarcode = (barcode) => {
+        if (showItemModal) return; // Don't open another modal if one is open
+        const match = batteries.find(
+            b => b.barcode && b.barcode.toLowerCase() === barcode.toLowerCase()
+        );
+        if (match) {
+            openItemModal(match);
+        } else {
+            // Also try matching by serial number
+            const snMatch = batteries.find(
+                b => b.serialNumber.toLowerCase() === barcode.toLowerCase()
+            );
+            if (snMatch) {
+                openItemModal(snMatch);
+            } else {
+                setDialog({
+                    isOpen: true,
+                    title: 'Barcode Not Found',
+                    message: `No battery found with barcode or serial number: ${barcode}`,
+                    type: 'warning'
+                });
+            }
+        }
+    };
 
     // Load persisted cart data on mount
     useEffect(() => {
@@ -403,13 +514,51 @@ const POS = () => {
         return Math.max(0, calculateSubtotal() - calculateItemDiscounts() - calculateOverallDiscount());
     };
 
+    // Validate stock before checkout
+    const validateStock = async () => {
+        try {
+            const res = await axios.get(API_ENDPOINTS.BATTERY, {
+                headers: { Authorization: `Bearer ${user.token}` }
+            });
+            const currentStock = res.data;
+            const stockMap = {};
+            currentStock.forEach(b => { stockMap[b.id] = b.stockQuantity; });
+
+            const outOfStockItems = [];
+            for (const item of cart) {
+                const currentQty = stockMap[item.batteryId] || 0;
+                if (currentQty < item.quantity) {
+                    outOfStockItems.push({
+                        name: `${item.brand} ${item.model}`,
+                        requested: item.quantity,
+                        available: currentQty
+                    });
+                }
+            }
+
+            return outOfStockItems;
+        } catch (err) {
+            // If stock check fails, proceed but log error
+            if (process.env.NODE_ENV === 'development') {
+                console.error('Stock validation error:', err);
+            }
+            return [];
+        }
+    };
+
     const handleCheckout = async () => {
         // Validate phone number
         const phoneValidationError = customerPhone ? (/^0\d{9}$/.test(customerPhone) ? '' : 'Phone must be 10 digits starting with 0') : 'Phone number is required';
         setPhoneError(phoneValidationError);
 
-        // Validate ID (optional field)
-        const idValidationError = customerId ? ((/^\d{12}$/.test(customerId) || /^\d{9}[vV]$/.test(customerId)) ? '' : 'ID must be 12 digits or 9 digits ending with V') : '';
+        // Validate ID (optional field) - supports multiple formats
+        // Sri Lankan NIC: 12 digits OR 9 digits + V/v
+        // Passport: 6-20 alphanumeric characters
+        const idValidationError = customerId 
+            ? ((/^\d{12}$/.test(customerId) || /^\d{9}[vVxX]$/.test(customerId) || /^[A-Za-z0-9]{6,20}$/.test(customerId)) 
+                ? '' 
+                : 'ID must be valid NIC (12 digits or 9 digits + V) or passport (6-20 alphanumeric)') 
+            : '';
         setIdError(idValidationError);
 
         if (!customerName || !customerPhone) {
@@ -429,8 +578,25 @@ const POS = () => {
 
         if (isProcessingSale) return;
 
+        // Validate stock before processing
+        setIsProcessingSale(true);
+        const outOfStockItems = await validateStock();
+        
+        if (outOfStockItems.length > 0) {
+            const itemList = outOfStockItems.map(i => 
+                `• ${i.name}: Requested ${i.requested}, Available ${i.available}`
+            ).join('\n');
+            setDialog({ 
+                isOpen: true, 
+                title: 'Insufficient Stock', 
+                message: `The following items have insufficient stock:\n\n${itemList}\n\nPlease update the cart and try again.`, 
+                type: 'error' 
+            });
+            setIsProcessingSale(false);
+            return;
+        }
+
         try {
-            setIsProcessingSale(true);
             const payload = {
                 customerName,
                 customerPhone,
@@ -493,6 +659,14 @@ const POS = () => {
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-gray-800">
+            {/* Barcode Scan Indicator Overlay */}
+            {showScanIndicator && (
+                <div className="fixed top-4 right-4 z-[9999] bg-green-500 text-white px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 animate-pulse">
+                    <ScanBarcode size={20} />
+                    <span className="font-medium">Scanning...</span>
+                </div>
+            )}
+
             <div className="flex-1 max-w-6xl mx-auto w-full p-4 lg:p-6 space-y-6">
 
                 {/* 1. TOP BAR */}
@@ -509,7 +683,13 @@ const POS = () => {
 
                 {/* 2. SEARCH BAR & RESULTS */}
                 <div className="bg-white p-6 rounded-2xl shadow-sm border-2 border-gray-400 relative z-30" ref={searchRef}>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Search Products</label>
+                    <div className="flex items-center justify-between mb-2">
+                        <label className="block text-sm font-semibold text-gray-700">Search Products</label>
+                        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                            <ScanBarcode size={14} className="text-blue-500" />
+                            Barcode scanner ready
+                        </span>
+                    </div>
                     <div className="relative">
                         <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={24} />
                         <input
@@ -688,10 +868,10 @@ const POS = () => {
                                             value={customerId}
                                             onChange={(e) => {
                                                 setCustomerId(e.target.value);
-                                                // Validate on change
+                                                // Validate on change - supports NIC and passport formats
                                                 const val = e.target.value;
-                                                if (val && !/^\d{12}$/.test(val) && !/^\d{9}[vV]$/.test(val)) {
-                                                    setIdError('ID must be 12 digits or 9 digits ending with V');
+                                                if (val && !/^\d{12}$/.test(val) && !/^\d{9}[vVxX]$/.test(val) && !/^[A-Za-z0-9]{6,20}$/.test(val)) {
+                                                    setIdError('ID must be valid NIC or passport');
                                                 } else {
                                                     setIdError('');
                                                 }
@@ -939,6 +1119,7 @@ const POS = () => {
                     />
                 )
             }
+
         </div >
     );
 };

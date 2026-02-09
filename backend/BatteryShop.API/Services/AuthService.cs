@@ -1,3 +1,4 @@
+using BatteryShop.API.Constants;
 using BatteryShop.API.Dtos;
 using BatteryShop.API.Models;
 using Microsoft.Extensions.Configuration;
@@ -16,22 +17,21 @@ public class AuthService
 
     public AuthService(MongoDbService mongoDbService, IConfiguration configuration)
     {
-        _users = mongoDbService.Database.GetCollection<User>("Users");
+        _users = mongoDbService.Database.GetCollection<User>(AppConstants.Collections.Users);
         _configuration = configuration;
-        // Optionally ensure indexes here or in a separate startup task
     }
 
     public async Task<User?> RegisterAsync(UserRegisterDto dto)
     {
-        var existing = await _users.Find(u => u.Username == dto.Username).FirstOrDefaultAsync();
+        var existing = await _users.Find(u => u.Username == dto.Username && !u.IsDeleted).FirstOrDefaultAsync();
         if (existing != null) return null;
 
         var user = new User
         {
             Username = dto.Username,
-            // Use work factor of 10 for faster hashing while maintaining security
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password, workFactor: 10),
-            Role = dto.Role
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password, workFactor: AppConstants.Defaults.BcryptWorkFactor),
+            Role = dto.Role,
+            CreatedAt = DateTime.UtcNow
         };
         await _users.InsertOneAsync(user);
         return user;
@@ -39,11 +39,15 @@ public class AuthService
 
     public async Task<string?> LoginAsync(UserLoginDto dto)
     {
-        var user = await _users.Find(u => u.Username == dto.Username).FirstOrDefaultAsync();
+        var user = await _users.Find(u => u.Username == dto.Username && !u.IsDeleted).FirstOrDefaultAsync();
         if (user == null || !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
         {
             return null;
         }
+
+        // Update last login time
+        var update = Builders<User>.Update.Set(u => u.LastLoginAt, DateTime.UtcNow);
+        await _users.UpdateOneAsync(u => u.Id == user.Id, update);
 
         return GenerateJwtToken(user);
     }
@@ -52,7 +56,14 @@ public class AuthService
     {
         var jwtSettings = _configuration.GetSection("JwtSettings");
         var secretKey = jwtSettings["SecretKey"];
-        var key = Encoding.ASCII.GetBytes(secretKey ?? "super_secret_key_that_is_long_enough_for_hmac_sha256");
+        
+        if (string.IsNullOrEmpty(secretKey))
+        {
+            throw new InvalidOperationException("JWT SecretKey is not configured.");
+        }
+        
+        var key = Encoding.ASCII.GetBytes(secretKey);
+        var expiryDays = jwtSettings.GetValue<int>("ExpiryDays", AppConstants.Defaults.DefaultJwtExpiryDays);
 
         var tokenHandler = new JwtSecurityTokenHandler();
         var tokenDescriptor = new SecurityTokenDescriptor
@@ -63,7 +74,7 @@ public class AuthService
                 new Claim("role", user.Role),
                 new Claim("id", user.Id!)
             }),
-            Expires = DateTime.UtcNow.AddDays(7),
+            Expires = DateTime.UtcNow.AddDays(expiryDays),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
         };
         var token = tokenHandler.CreateToken(tokenDescriptor);
@@ -72,20 +83,18 @@ public class AuthService
 
     public async Task<bool> ChangePasswordAsync(string userId, string currentPassword, string newPassword)
     {
-        var user = await _users.Find(u => u.Id == userId).FirstOrDefaultAsync();
+        var user = await _users.Find(u => u.Id == userId && !u.IsDeleted).FirstOrDefaultAsync();
         if (user == null)
         {
             return false;
         }
 
-        // Verify current password
         if (!BCrypt.Net.BCrypt.Verify(currentPassword, user.PasswordHash))
         {
             return false;
         }
 
-        // Hash and update new password (work factor 10 for performance)
-        var newPasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword, workFactor: 10);
+        var newPasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword, workFactor: AppConstants.Defaults.BcryptWorkFactor);
         var update = Builders<User>.Update.Set(u => u.PasswordHash, newPasswordHash);
         await _users.UpdateOneAsync(u => u.Id == userId, update);
 
@@ -94,12 +103,16 @@ public class AuthService
 
     public async Task<List<User>> GetAllUsersAsync()
     {
-        return await _users.Find(_ => true).ToListAsync();
+        return await _users.Find(u => !u.IsDeleted).ToListAsync();
     }
 
     public async Task<bool> DeleteUserAsync(string userId)
     {
-        var result = await _users.DeleteOneAsync(u => u.Id == userId);
-        return result.DeletedCount > 0;
+        // Soft delete
+        var update = Builders<User>.Update
+            .Set(u => u.IsDeleted, true)
+            .Set(u => u.DeletedAt, DateTime.UtcNow);
+        var result = await _users.UpdateOneAsync(u => u.Id == userId && !u.IsDeleted, update);
+        return result.ModifiedCount > 0;
     }
 }

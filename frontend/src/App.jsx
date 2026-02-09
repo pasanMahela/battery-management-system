@@ -12,6 +12,9 @@ import ChangePassword from './pages/ChangePassword';
 import Customers from './pages/Customers';
 import Returns from './pages/Returns';
 import ReturnHistory from './pages/ReturnHistory';
+import ActivityLog from './pages/ActivityLog';
+import ScannerPage from './pages/Scanner';
+import { ScannerProvider } from './context/ScannerContext';
 import { useContext, useState, useEffect } from 'react';
 import AuthContext from './context/AuthContext';
 import { Package, ShoppingCart, BarChart3, TrendingUp, DollarSign, Battery } from 'lucide-react';
@@ -277,8 +280,10 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
+        <ScannerProvider>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/scanner/:sessionId" element={<ScannerPage />} />
           <Route path="/" element={
             <RoleBasedRoute allowedRoles={[USER_ROLES.ADMIN]}>
               <Layout>
@@ -361,7 +366,17 @@ function App() {
               </Layout>
             </RoleBasedRoute>
           } />
+          <Route path="/activity-log" element={
+            <PrivateRoute>
+              <RoleBasedRoute allowedRoles={[USER_ROLES.ADMIN]}>
+                <Layout>
+                  <ActivityLog />
+                </Layout>
+              </RoleBasedRoute>
+            </PrivateRoute>
+          } />
         </Routes>
+        </ScannerProvider>
       </BrowserRouter>
     </AuthProvider>
   );

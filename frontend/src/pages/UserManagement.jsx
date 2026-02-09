@@ -4,7 +4,7 @@ import axios from 'axios';
 import AuthContext from '../context/AuthContext';
 import Dialog from '../components/Dialog';
 import { UserPlus, Lock, User, Loader2, Users, Shield, Trash2 } from 'lucide-react';
-import { API_ENDPOINTS, USER_ROLES, PAGE_TITLES } from '../constants/constants';
+import { API_ENDPOINTS, USER_ROLES, PAGE_TITLES, BUSINESS_DEFAULTS } from '../constants/constants';
 
 const UserManagement = () => {
     const { user } = useContext(AuthContext);
@@ -93,11 +93,11 @@ const UserManagement = () => {
             return;
         }
 
-        if (formData.password.length < 6) {
+        if (formData.password.length < BUSINESS_DEFAULTS.MIN_PASSWORD_LENGTH) {
             setDialog({
                 isOpen: true,
                 title: 'Error',
-                message: 'Password must be at least 6 characters long!',
+                message: `Password must be at least ${BUSINESS_DEFAULTS.MIN_PASSWORD_LENGTH} characters long!`,
                 type: 'error'
             });
             return;
