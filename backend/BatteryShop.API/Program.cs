@@ -107,8 +107,29 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseRateLimiter();
+// CORS must be first so headers are added even on error responses
 app.UseCors("AllowedOrigins");
+
+// Global error handler — sits after CORS so error responses still get CORS headers
+app.Use(async (context, next) =>
+{
+    try
+    {
+        await next(context);
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Unhandled exception: {ex}");
+        if (!context.Response.HasStarted)
+        {
+            context.Response.StatusCode = 500;
+            context.Response.ContentType = "application/json";
+            await context.Response.WriteAsJsonAsync(new { error = "An unexpected error occurred." });
+        }
+    }
+});
+
+app.UseRateLimiter();
 
 app.UseAuthentication();
 app.UseAuthorization();

@@ -17,8 +17,8 @@ FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /app
 COPY --from=publish /app/publish .
 
-# Expose port (Render uses PORT environment variable)
-EXPOSE 8080
-ENV ASPNETCORE_URLS=http://+:8080
+# Render sets PORT env var; default to 10000 (Render's default for Docker)
+EXPOSE 10000
+ENV ASPNETCORE_HTTP_PORTS=10000
 
 ENTRYPOINT ["dotnet", "BatteryShop.API.dll"]
