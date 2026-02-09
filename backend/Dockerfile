@@ -20,5 +20,7 @@ COPY --from=publish /app/publish .
 # Render sets PORT env var; default to 10000 (Render's default for Docker)
 EXPOSE 10000
 ENV ASPNETCORE_HTTP_PORTS=10000
+# Disable file watchers - Render's container has limited inotify instances
+ENV DOTNET_hostBuilder__reloadConfigOnChange=false
 
 ENTRYPOINT ["dotnet", "BatteryShop.API.dll"]
