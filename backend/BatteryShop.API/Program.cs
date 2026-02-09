@@ -137,4 +137,32 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapHub<BarcodeScannerHub>("/barcodehub");
 
+// Health check endpoint for diagnosing deployment issues
+app.MapGet("/health", async (MongoDbService mongo, IConfiguration config) =>
+{
+    var result = new Dictionary<string, object>();
+    
+    // Check if MongoDB connection string is configured
+    var connStr = config["MongoDB:ConnectionString"];
+    result["mongoConfigured"] = !string.IsNullOrEmpty(connStr);
+    result["mongoConnStringLength"] = connStr?.Length ?? 0;
+    result["mongoConnStringStart"] = connStr?.Length > 15 ? connStr[..15] + "..." : "(empty)";
+    result["jwtConfigured"] = !string.IsNullOrEmpty(config["JwtSettings:SecretKey"]);
+    
+    // Try to ping MongoDB
+    try
+    {
+        var db = mongo.Database;
+        var pingResult = await db.RunCommandAsync<MongoDB.Bson.BsonDocument>(new MongoDB.Bson.BsonDocument("ping", 1));
+        result["mongoConnected"] = true;
+    }
+    catch (Exception ex)
+    {
+        result["mongoConnected"] = false;
+        result["mongoError"] = ex.Message;
+    }
+    
+    return Results.Json(result);
+});
+
 app.Run();
