@@ -12,11 +12,25 @@ public class MongoDbService
 
     public MongoDbService(IOptions<MongoDBSettings> settings)
     {
-        _client = new MongoClient(settings.Value.ConnectionString);
+        var connectionString = settings.Value.ConnectionString;
+        
+        // Add server selection timeout so app doesn't hang if MongoDB is unreachable
+        var mongoSettings = MongoClientSettings.FromConnectionString(connectionString);
+        mongoSettings.ServerSelectionTimeout = TimeSpan.FromSeconds(10);
+        mongoSettings.ConnectTimeout = TimeSpan.FromSeconds(10);
+        
+        _client = new MongoClient(mongoSettings);
         _database = _client.GetDatabase(settings.Value.DatabaseName);
         
-        // Create indexes asynchronously
-        CreateIndexesAsync().Wait();
+        // Create indexes asynchronously with timeout
+        try
+        {
+            CreateIndexesAsync().Wait(TimeSpan.FromSeconds(30));
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Warning: Index creation failed during startup: {ex.Message}");
+        }
     }
 
     public IMongoDatabase Database => _database;
