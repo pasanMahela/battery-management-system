@@ -76,32 +76,35 @@ const SalesChart = ({ sales, days = TIMER_CONFIG.DEFAULT_CHART_DAYS }) => {
             </div>
 
             {/* Bar Chart */}
-            <div className="flex items-end gap-2 h-40">
+            <div className="flex gap-2 h-40">
                 {chartData.map((day, index) => {
                     const height = maxRevenue > 0 ? (day.revenue / maxRevenue * 100) : 0;
                     const isToday = index === chartData.length - 1;
                     
                     return (
-                        <div key={index} className="flex-1 flex flex-col items-center gap-2 group">
-                            {/* Tooltip */}
-                            <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-gray-900 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap z-10">
-                                <p className="font-bold">{day.fullDate}</p>
-                                <p>Revenue: {APP_CONFIG.CURRENCY} {day.revenue.toLocaleString()}</p>
-                                <p>Sales: {day.count}</p>
+                        <div key={index} className="flex-1 flex flex-col items-center group relative">
+                            {/* Bar area - fills remaining space */}
+                            <div className="flex-1 w-full flex items-end relative">
+                                {/* Tooltip */}
+                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-900 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap z-10 pointer-events-none">
+                                    <p className="font-bold">{day.fullDate}</p>
+                                    <p>Revenue: {APP_CONFIG.CURRENCY} {day.revenue.toLocaleString()}</p>
+                                    <p>Sales: {day.count}</p>
+                                </div>
+                                
+                                {/* Bar */}
+                                <div 
+                                    className={`w-full rounded-t-lg transition-all cursor-pointer ${
+                                        isToday 
+                                            ? 'bg-gradient-to-t from-blue-600 to-blue-400' 
+                                            : 'bg-gradient-to-t from-blue-400 to-blue-300 hover:from-blue-500 hover:to-blue-400'
+                                    }`}
+                                    style={{ height: `${Math.max(height, 4)}%` }}
+                                />
                             </div>
                             
-                            {/* Bar */}
-                            <div 
-                                className={`w-full rounded-t-lg transition-all cursor-pointer ${
-                                    isToday 
-                                        ? 'bg-gradient-to-t from-blue-600 to-blue-400' 
-                                        : 'bg-gradient-to-t from-blue-400 to-blue-300 hover:from-blue-500 hover:to-blue-400'
-                                }`}
-                                style={{ height: `${Math.max(height, 4)}%` }}
-                            />
-                            
                             {/* Label */}
-                            <span className={`text-xs font-medium ${isToday ? 'text-blue-600' : 'text-gray-500'}`}>
+                            <span className={`text-xs font-medium mt-1 ${isToday ? 'text-blue-600' : 'text-gray-500'}`}>
                                 {day.label}
                             </span>
                         </div>

@@ -6,6 +6,7 @@ import Dialog from '../components/Dialog';
 import Toast from '../components/Toast';
 import { Plus, Edit2, Trash2, X, Package, Loader2, RotateCcw, Eye, Download } from 'lucide-react';
 import { API_ENDPOINTS, BUSINESS_DEFAULTS, APP_CONFIG } from '../constants/constants';
+import PageHeader from '../components/PageHeader';
 
 const Inventory = () => {
     const { user } = useContext(AuthContext);
@@ -385,51 +386,44 @@ const Inventory = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8">
-            <div className="container mx-auto px-6">
+        <div className="min-h-screen bg-gray-100">
+            <div className="w-full max-w-[1400px] mx-auto p-2 sm:p-3 space-y-3">
                 {/* Header */}
-                <div className="mb-8">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
-                                <Package className="w-8 h-8 text-white" />
-                            </div>
-                            <div>
-                                <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                                    Battery Inventory
-                                </h1>
-                                <p className="text-gray-600 mt-1">Manage your battery stock and products</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <button
-                                onClick={exportInventory}
-                                disabled={isExporting || filteredBatteries.length === 0}
-                                className="flex items-center gap-2 px-4 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {isExporting ? (
-                                    <Loader2 size={18} className="animate-spin" />
-                                ) : (
-                                    <Download size={18} />
-                                )}
-                                Export
-                            </button>
+                <PageHeader title="Battery Inventory" />
+
+                {/* Action Bar */}
+                <div className="flex items-center justify-between bg-white border border-gray-300 rounded shadow-sm p-3">
+                    <div className="text-sm text-gray-600">
+                        Manage your battery stock and products
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={exportInventory}
+                            disabled={isExporting || filteredBatteries.length === 0}
+                            className="flex items-center gap-1.5 px-4 py-2 bg-white border-2 border-gray-400 text-gray-700 rounded hover:bg-gray-50 transition-colors text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {isExporting ? (
+                                <Loader2 size={16} className="animate-spin" />
+                            ) : (
+                                <Download size={16} />
+                            )}
+                            Export
+                        </button>
                         <button
                             onClick={() => {
                                 setIsNavigating(true);
                                 navigate('/inventory/add');
                             }}
                             disabled={isNavigating}
-                            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl hover:from-blue-600 hover:to-indigo-700 transition-all shadow-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex items-center gap-1.5 px-4 py-2 bg-[#2563eb] text-white rounded hover:bg-[#1d4ed8] transition-colors text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isNavigating ? (
-                                <Loader2 size={20} className="animate-spin" />
+                                <Loader2 size={16} className="animate-spin" />
                             ) : (
-                                <Plus size={20} />
+                                <Plus size={16} />
                             )}
                             {isNavigating ? 'Loading...' : 'Add New Battery'}
                         </button>
-                        </div>
                     </div>
                 </div>
 
@@ -444,8 +438,8 @@ const Inventory = () => {
                 ) : (
                     <>
                         {/* Search and Filters */}
-                        <div className="bg-white rounded-xl shadow-md border border-gray-100 p-6 mb-6">
-                            <div className="flex justify-between items-center mb-4">
+                        <div className="bg-white border border-gray-300 rounded shadow-sm p-4">
+                            <div className="flex justify-between items-center mb-3">
                                 <h3 className="text-lg font-bold text-gray-800">Filters</h3>
                                 <button
                                     onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
@@ -599,7 +593,7 @@ const Inventory = () => {
                                 return (
                                     <div
                                         key={battery.id}
-                                        className={`bg-white rounded-xl shadow-md border p-4 ${isExpiringSoon || isExpired ? 'border-red-300 bg-red-50' : 'border-gray-200'
+                                        className={`bg-white rounded shadow-sm border p-4 ${isExpiringSoon || isExpired ? 'border-red-300 bg-red-50' : 'border-gray-200'
                                             }`}
                                     >
                                         {/* Header with Serial & Status */}
@@ -672,7 +666,7 @@ const Inventory = () => {
                                                 );
                                             })()}
                                             <button
-                                                onClick={() => openModal(battery)}
+                                                onClick={() => navigate(`/inventory/edit?id=${battery.id}`)}
                                                 className="flex items-center gap-1 px-3 py-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-all text-sm font-medium"
                                             >
                                                 <Edit2 size={16} /> Edit
@@ -698,57 +692,57 @@ const Inventory = () => {
                             - Hidden on large (lg): Barcode, Purchase Date, Price
                             - All visible on xl+
                         */}
-                        <div className="hidden md:block bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+                        {/* Table View */}
+                        <div className="hidden md:block bg-white border border-gray-300 rounded shadow-sm overflow-hidden">
                             <div className="overflow-x-auto">
-                            <table className="w-full">
+                            <table className="w-full text-sm border-collapse">
                                 <thead>
-                                    <tr className="bg-gradient-to-r from-blue-500 to-indigo-600">
-                                            {/* ALWAYS VISIBLE */}
-                                            <th onClick={() => handleSort('serialNumber')} className="px-3 py-3 text-left text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-600 whitespace-nowrap">
+                                    <tr className="bg-[#2563eb] text-white text-left">
+                                            <th onClick={() => handleSort('serialNumber')} className="px-3 py-2 text-left text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-700 whitespace-nowrap">
                                             Serial # {sortConfig.key === 'serialNumber' && (sortConfig.direction === 'asc' ? '?' : '?')}
                                         </th>
                                             {/* Hidden below lg */}
-                                            <th className="hidden lg:table-cell px-3 py-3 text-left text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Barcode</th>
+                                            <th className="hidden lg:table-cell px-3 py-2 text-left text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Barcode</th>
                                             {/* ALWAYS VISIBLE */}
-                                            <th onClick={() => handleSort('brand')} className="px-3 py-3 text-left text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-600 whitespace-nowrap">
+                                            <th onClick={() => handleSort('brand')} className="px-3 py-2 text-left text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-700 whitespace-nowrap">
                                             Brand {sortConfig.key === 'brand' && (sortConfig.direction === 'asc' ? '?' : '?')}
                                         </th>
                                             {/* ALWAYS VISIBLE */}
-                                            <th onClick={() => handleSort('model')} className="px-3 py-3 text-left text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-600 whitespace-nowrap">
+                                            <th onClick={() => handleSort('model')} className="px-3 py-2 text-left text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-700 whitespace-nowrap">
                                             Model {sortConfig.key === 'model' && (sortConfig.direction === 'asc' ? '?' : '?')}
                                         </th>
                                             {/* Hidden below xl */}
-                                            <th onClick={() => handleSort('capacity')} className="hidden xl:table-cell px-3 py-3 text-left text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-600 whitespace-nowrap">
+                                            <th onClick={() => handleSort('capacity')} className="hidden xl:table-cell px-3 py-2 text-left text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-700 whitespace-nowrap">
                                             Capacity {sortConfig.key === 'capacity' && (sortConfig.direction === 'asc' ? '?' : '?')}
                                         </th>
                                             {/* Hidden below xl */}
-                                            <th onClick={() => handleSort('voltage')} className="hidden xl:table-cell px-3 py-3 text-left text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-600 whitespace-nowrap">
+                                            <th onClick={() => handleSort('voltage')} className="hidden xl:table-cell px-3 py-2 text-left text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-700 whitespace-nowrap">
                                             Voltage {sortConfig.key === 'voltage' && (sortConfig.direction === 'asc' ? '?' : '?')}
                                         </th>
                                             {/* Hidden below xl */}
-                                            <th onClick={() => handleSort('sellingPrice')} className="hidden xl:table-cell px-3 py-3 text-left text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-600 whitespace-nowrap">
+                                            <th onClick={() => handleSort('sellingPrice')} className="hidden xl:table-cell px-3 py-2 text-left text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-700 whitespace-nowrap">
                                             Price {sortConfig.key === 'sellingPrice' && (sortConfig.direction === 'asc' ? '?' : '?')}
                                         </th>
                                             {/* Hidden below lg */}
-                                            <th onClick={() => handleSort('purchaseDate')} className="hidden lg:table-cell px-3 py-3 text-left text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-600 whitespace-nowrap">
+                                            <th onClick={() => handleSort('purchaseDate')} className="hidden lg:table-cell px-3 py-2 text-left text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-700 whitespace-nowrap">
                                                 Purchase {sortConfig.key === 'purchaseDate' && (sortConfig.direction === 'asc' ? '?' : '?')}
                                         </th>
                                             {/* ALWAYS VISIBLE */}
-                                            <th className="px-3 py-3 text-left text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Expiry</th>
+                                            <th className="px-3 py-2 text-left text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Expiry</th>
                                             {/* ALWAYS VISIBLE */}
-                                            <th className="px-3 py-3 text-left text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Stock</th>
+                                            <th className="px-3 py-2 text-left text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Stock</th>
                                             {/* Hidden below 2xl */}
-                                            <th className="hidden 2xl:table-cell px-3 py-3 text-left text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Sales Rep</th>
+                                            <th className="hidden 2xl:table-cell px-3 py-2 text-left text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Sales Rep</th>
                                             {/* Hidden below 2xl */}
-                                            <th className="hidden 2xl:table-cell px-3 py-3 text-left text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Invoice #</th>
+                                            <th className="hidden 2xl:table-cell px-3 py-2 text-left text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Invoice #</th>
                                             {/* ALWAYS VISIBLE */}
-                                            <th className="px-3 py-3 text-left text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Status</th>
+                                            <th className="px-3 py-2 text-left text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Status</th>
                                             {/* ALWAYS VISIBLE */}
-                                            <th className="px-3 py-3 text-right text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Actions</th>
+                                            <th className="px-3 py-2 text-right text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {filteredBatteries.map((battery) => {
+                                    {filteredBatteries.map((battery, index) => {
                                         const purchaseDate = new Date(battery.purchaseDate);
                                         const expiryDate = new Date(purchaseDate);
                                         expiryDate.setMonth(expiryDate.getMonth() + (battery.shelfLifeMonths || BUSINESS_DEFAULTS.DEFAULT_SHELF_LIFE_MONTHS));
@@ -759,7 +753,7 @@ const Inventory = () => {
                                         const isExpired = expiryDate <= today;
 
                                         return (
-                                            <tr key={battery.id} className={`border-b border-gray-200 transition-colors ${isExpiringSoon || isExpired ? 'bg-red-50 hover:bg-red-100' : 'hover:bg-blue-50'}`}>
+                                            <tr key={battery.id} className={`border-b border-gray-200 transition-colors ${isExpiringSoon || isExpired ? 'bg-red-50 hover:bg-red-100' : index % 2 === 0 ? 'bg-blue-50 hover:bg-blue-100' : 'bg-white hover:bg-blue-50'}`}>
                                                     {/* ALWAYS VISIBLE */}
                                                     <td className="px-3 py-3 text-gray-800 text-sm font-medium">{battery.serialNumber}</td>
                                                     {/* Hidden below lg */}
@@ -836,7 +830,7 @@ const Inventory = () => {
                                                                 );
                                                             })()}
                                                         <button
-                                                            onClick={() => openModal(battery)}
+                                                            onClick={() => navigate(`/inventory/edit?id=${battery.id}`)}
                                                             className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-all"
                                                             title="Edit"
                                                         >
@@ -861,13 +855,13 @@ const Inventory = () => {
 
                         {showModal && (
                             <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-                                <div className="bg-white rounded-xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-200">
-                                    <div className="flex justify-between items-center mb-4">
-                                        <h2 className="text-2xl font-bold text-gray-800">
+                                <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-300">
+                                    <div className="flex justify-between items-center mb-4 pb-3 border-b border-gray-200">
+                                        <h2 className="text-xl font-bold text-gray-800">
                                             {editingBattery ? 'Edit Battery' : 'Add New Battery'}
                                         </h2>
                                         <button onClick={closeModal} className="text-gray-500 hover:text-gray-700">
-                                            <X size={24} />
+                                            <X size={20} />
                                         </button>
                                     </div>
 
@@ -1011,7 +1005,7 @@ const Inventory = () => {
                                             </button>
                                             <button
                                                 type="submit"
-                                                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors shadow-md"
+                                                className="px-4 py-2 bg-[#2563eb] text-white rounded hover:bg-[#1d4ed8] transition-colors font-bold text-sm"
                                             >
                                                 {editingBattery ? 'Update' : 'Create'}
                                             </button>
@@ -1046,9 +1040,9 @@ const Inventory = () => {
             {/* View Return Modal */}
             {viewingReturn && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-                        <div className="sticky top-0 bg-gradient-to-r from-orange-500 to-red-600 p-6 flex justify-between items-center">
-                            <h2 className="text-2xl font-bold text-white">Return Details</h2>
+                    <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-300">
+                        <div className="sticky top-0 bg-[#2563eb] p-4 flex justify-between items-center">
+                            <h2 className="text-lg font-bold text-white">Return Details</h2>
                             <button
                                 onClick={() => setViewingReturn(null)}
                                 className="text-white hover:bg-white/20 p-2 rounded-lg transition-colors"
@@ -1059,7 +1053,7 @@ const Inventory = () => {
 
                         <div className="p-6 space-y-6">
                             {/* Battery Info */}
-                            <div className="bg-gray-50 rounded-xl p-4">
+                            <div className="bg-gray-50 rounded p-4">
                                 <h3 className="font-bold text-lg text-gray-800 mb-3">Battery Information</h3>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
@@ -1084,7 +1078,7 @@ const Inventory = () => {
                             </div>
 
                             {/* Return Info */}
-                            <div className="bg-orange-50 rounded-xl p-4">
+                            <div className="bg-orange-50 rounded p-4">
                                 <h3 className="font-bold text-lg text-gray-800 mb-3">Return Information</h3>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
@@ -1114,7 +1108,7 @@ const Inventory = () => {
                             </div>
 
                             {/* Compensation Info */}
-                            <div className={`rounded-xl p-4 ${viewingReturn.compensationType === 'Money' ? 'bg-green-50' : 'bg-blue-50'}`}>
+                            <div className={`rounded p-4 ${viewingReturn.compensationType === 'Money' ? 'bg-green-50' : 'bg-blue-50'}`}>
                                 <h3 className="font-bold text-lg text-gray-800 mb-3">Compensation Details</h3>
                                 <div className="flex items-center gap-3 mb-3">
                                     <span className={`text-xl font-bold ${viewingReturn.compensationType === 'Money' ? 'text-green-600' : 'text-blue-600'}`}>
@@ -1153,7 +1147,7 @@ const Inventory = () => {
 
                             {/* Notes */}
                             {viewingReturn.notes && (
-                                <div className="bg-gray-50 rounded-xl p-4">
+                                <div className="bg-gray-50 rounded p-4">
                                     <h3 className="font-bold text-lg text-gray-800 mb-2">Notes</h3>
                                     <p className="text-gray-600">{viewingReturn.notes}</p>
                                 </div>
@@ -1163,7 +1157,7 @@ const Inventory = () => {
                         <div className="p-6 border-t border-gray-200">
                             <button
                                 onClick={() => setViewingReturn(null)}
-                                className="w-full px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-colors"
+                                className="w-full px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded font-medium transition-colors"
                             >
                                 Close
                             </button>

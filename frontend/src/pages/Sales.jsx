@@ -4,14 +4,13 @@ import AuthContext from '../context/AuthContext';
 import PrintableBill from '../components/PrintableBill';
 import { Search, Calendar, DollarSign, User, Phone, Package, ArrowUpDown, Filter, Download, FileText, Eye, Loader2, X, BarChart2 } from 'lucide-react';
 import { API_ENDPOINTS, APP_CONFIG } from '../constants/constants';
-import SalesChart from '../components/SalesChart';
+import PageHeader from '../components/PageHeader';
 
 const Sales = () => {
     const { user } = useContext(AuthContext);
     const [sales, setSales] = useState([]);
     const [filteredSales, setFilteredSales] = useState([]);
     const [isExporting, setIsExporting] = useState(false);
-    const [showChart, setShowChart] = useState(true);
 
     // Filters
     const [searchTerm, setSearchTerm] = useState('');
@@ -225,41 +224,37 @@ const Sales = () => {
     };
 
     return (
-        <div className="p-6 bg-gray-50 min-h-screen font-sans">
-            <div className="container mx-auto max-w-7xl">
+        <div className="min-h-screen bg-gray-100">
+            <div className="w-full max-w-[1400px] mx-auto p-2 sm:p-3 space-y-3">
 
                 {/* Page Header */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-                    <div>
-                        <h1 className="text-3xl font-extrabold text-gray-900">Sales History</h1>
-                        <p className="text-gray-500 mt-1">Track and manage your transaction records</p>
-                    </div>
+                <PageHeader title="Sales History" />
+
+                {/* Action Bar */}
+                <div className="flex items-center justify-between bg-white border border-gray-300 rounded shadow-sm p-3">
+                    <div className="text-sm text-gray-600">Track and manage your transaction records</div>
                     <button 
                         onClick={exportToCSV}
                         disabled={isExporting || filteredSales.length === 0}
-                        className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="flex items-center gap-1.5 px-4 py-2 bg-white border-2 border-gray-400 text-gray-700 rounded hover:bg-gray-50 transition-colors text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {isExporting ? (
-                            <>
-                                <Loader2 size={18} className="animate-spin" /> Exporting...
-                            </>
+                            <><Loader2 size={16} className="animate-spin" /> Exporting...</>
                         ) : (
-                            <>
-                                <Download size={18} /> Export CSV
-                            </>
+                            <><Download size={16} /> Export CSV</>
                         )}
                     </button>
                 </div>
 
                 {/* Stats Cards */}
-                <div className="bg-white rounded-xl shadow-sm p-5 mb-6 border border-gray-200">
-                    <div className="flex items-center justify-between mb-4">
-                        <h2 className="text-lg font-bold text-gray-900">Sales Overview</h2>
-                        <div className="flex gap-2">
+                <div className="bg-white border border-gray-300 rounded shadow-sm p-4">
+                    <div className="flex items-center justify-between mb-3">
+                        <h2 className="text-sm font-bold text-gray-800">Sales Overview</h2>
+                        <div className="flex gap-1">
                             <button
                                 onClick={() => setTimePeriod('today')}
-                                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${timePeriod === 'today'
-                                    ? 'bg-blue-600 text-white'
+                                className={`px-3 py-1 rounded text-xs font-bold transition-colors ${timePeriod === 'today'
+                                    ? 'bg-[#2563eb] text-white'
                                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                     }`}
                             >
@@ -267,8 +262,8 @@ const Sales = () => {
                             </button>
                             <button
                                 onClick={() => setTimePeriod('week')}
-                                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${timePeriod === 'week'
-                                    ? 'bg-blue-600 text-white'
+                                className={`px-3 py-1 rounded text-xs font-bold transition-colors ${timePeriod === 'week'
+                                    ? 'bg-[#2563eb] text-white'
                                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                     }`}
                             >
@@ -276,8 +271,8 @@ const Sales = () => {
                             </button>
                             <button
                                 onClick={() => setTimePeriod('month')}
-                                className={`px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${timePeriod === 'month'
-                                    ? 'bg-blue-600 text-white'
+                                className={`px-3 py-1 rounded text-xs font-bold transition-colors ${timePeriod === 'month'
+                                    ? 'bg-[#2563eb] text-white'
                                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                     }`}
                             >
@@ -286,90 +281,60 @@ const Sales = () => {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-xl border border-blue-200 flex items-center justify-between">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div className="bg-blue-50 p-4 rounded border border-blue-200 flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-semibold text-blue-700 uppercase tracking-wider">
+                                <p className="text-xs font-bold text-blue-700 uppercase tracking-wider">
                                     Total Sales {timePeriod === 'today' ? 'Today' : timePeriod === 'week' ? 'This Week' : 'This Month'}
                                 </p>
-                                <h3 className="text-4xl font-extrabold text-blue-900 mt-2">{totalSalesToday}</h3>
-                                <p className="text-xs text-blue-600 mt-1">Transactions</p>
+                                <h3 className="text-2xl font-extrabold text-blue-900 mt-1">{totalSalesToday}</h3>
+                                <p className="text-xs text-blue-600">Transactions</p>
                             </div>
-                            <div className="p-4 bg-blue-600 text-white rounded-xl">
-                                <FileText size={28} />
+                            <div className="p-3 bg-[#2563eb] text-white rounded">
+                                <FileText size={20} />
                             </div>
                         </div>
 
-                        <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-xl border border-green-200 flex items-center justify-between">
+                        <div className="bg-green-50 p-4 rounded border border-green-200 flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-semibold text-green-700 uppercase tracking-wider">
+                                <p className="text-xs font-bold text-green-700 uppercase tracking-wider">
                                     Total Revenue {timePeriod === 'today' ? 'Today' : timePeriod === 'week' ? 'This Week' : 'This Month'}
                                 </p>
-                                <h3 className="text-4xl font-extrabold text-green-900 mt-2">{APP_CONFIG.CURRENCY} {totalRevenueToday.toLocaleString()}</h3>
-                                <p className="text-xs text-green-600 mt-1">Total earnings</p>
+                                <h3 className="text-2xl font-extrabold text-green-900 mt-1">{APP_CONFIG.CURRENCY} {totalRevenueToday.toLocaleString()}</h3>
+                                <p className="text-xs text-green-600">Total earnings</p>
                             </div>
-                            <div className="p-4 bg-green-600 text-white rounded-xl">
-                                <DollarSign size={28} />
+                            <div className="p-3 bg-green-600 text-white rounded">
+                                <DollarSign size={20} />
                             </div>
                         </div>
 
-                        <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-xl border border-purple-200 flex items-center justify-between">
+                        <div className="bg-purple-50 p-4 rounded border border-purple-200 flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-semibold text-purple-700 uppercase tracking-wider">
+                                <p className="text-xs font-bold text-purple-700 uppercase tracking-wider">
                                     Total Profit {timePeriod === 'today' ? 'Today' : timePeriod === 'week' ? 'This Week' : 'This Month'}
                                 </p>
-                                <h3 className="text-4xl font-extrabold text-purple-900 mt-2">{APP_CONFIG.CURRENCY} {totalProfitToday.toLocaleString()}</h3>
-                                <p className="text-xs text-purple-600 mt-1">Net earnings</p>
+                                <h3 className="text-2xl font-extrabold text-purple-900 mt-1">{APP_CONFIG.CURRENCY} {totalProfitToday.toLocaleString()}</h3>
+                                <p className="text-xs text-purple-600">Net earnings</p>
                             </div>
-                            <div className="p-4 bg-purple-600 text-white rounded-xl">
-                                <Package size={28} />
+                            <div className="p-3 bg-purple-600 text-white rounded">
+                                <Package size={20} />
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Sales Trend Chart */}
-                {showChart && sales.length > 0 && (
-                    <div className="mb-6">
-                        <div className="flex items-center justify-between mb-3">
-                            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                                <BarChart2 size={20} className="text-blue-600" />
-                                Sales Analytics
-                            </h3>
-                            <button
-                                onClick={() => setShowChart(false)}
-                                className="text-gray-400 hover:text-gray-600 p-1"
-                                title="Hide chart"
-                            >
-                                <X size={18} />
-                            </button>
-                        </div>
-                        <SalesChart sales={sales} days={7} />
-                    </div>
-                )}
-
-                {!showChart && sales.length > 0 && (
-                    <button
-                        onClick={() => setShowChart(true)}
-                        className="mb-6 flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium text-sm"
-                    >
-                        <BarChart2 size={16} />
-                        Show Sales Chart
-                    </button>
-                )}
-
                 {/* Filters Section */}
-                <div className="bg-white rounded-xl shadow-sm p-5 mb-6 border border-gray-200">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+                <div className="bg-white border border-gray-300 rounded shadow-sm p-4">
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
                         <div className="md:col-span-5 relative">
                             <label className="block text-xs font-bold text-gray-500 uppercase mb-1">Search</label>
-                            <Search className="absolute left-3 top-[34px] text-gray-400" size={18} />
+                            <Search className="absolute left-3 top-[30px] text-gray-400" size={16} />
                             <input
                                 type="text"
                                 placeholder="Search customer, phone, battery brand, model..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-10 pr-3 py-2.5 border-2 border-gray-200 rounded-lg focus:border-blue-500 outline-none transition-all"
+                                className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded focus:border-[#2563eb] outline-none transition-all text-sm"
                             />
                         </div>
                         <div className="md:col-span-3">
@@ -378,7 +343,7 @@ const Sales = () => {
                                 type="date"
                                 value={startDate}
                                 onChange={(e) => setStartDate(e.target.value)}
-                                className="w-full px-3 py-2.5 border-2 border-gray-200 rounded-lg focus:border-blue-500 outline-none transition-all"
+                                className="w-full px-3 py-2 border border-gray-300 rounded focus:border-[#2563eb] outline-none transition-all text-sm"
                             />
                         </div>
                         <div className="md:col-span-3">
@@ -387,7 +352,7 @@ const Sales = () => {
                                 type="date"
                                 value={endDate}
                                 onChange={(e) => setEndDate(e.target.value)}
-                                className="w-full px-3 py-2.5 border-2 border-gray-200 rounded-lg focus:border-blue-500 outline-none transition-all"
+                                className="w-full px-3 py-2 border border-gray-300 rounded focus:border-[#2563eb] outline-none transition-all text-sm"
                             />
                         </div>
                         <div className="md:col-span-1">
@@ -397,7 +362,7 @@ const Sales = () => {
                                     setStartDate('');
                                     setEndDate('');
                                 }}
-                                className="w-full px-3 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors flex items-center justify-center"
+                                className="w-full px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded font-medium transition-colors flex items-center justify-center"
                                 title="Clear Filters"
                             >
                                 <X size={18} />
@@ -406,13 +371,13 @@ const Sales = () => {
                     </div>
                 </div>
 
-                {/* Filtered Results Summary - Dynamic based on search and date filters */}
+                {/* Filtered Results Summary */}
                 {(searchTerm || startDate || endDate) && (
-                    <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl shadow-lg p-5 mb-6 text-white">
-                        <div className="flex items-center justify-between mb-4">
+                    <div className="bg-[#2563eb] rounded shadow-sm p-4 text-white">
+                        <div className="flex items-center justify-between mb-3">
                             <div>
-                                <h3 className="text-lg font-bold">Filtered Results</h3>
-                                <p className="text-sm text-blue-100">
+                                <h3 className="text-sm font-bold">Filtered Results</h3>
+                                <p className="text-xs text-blue-100">
                                     {searchTerm && `Search: "${searchTerm}"`}
                                     {(searchTerm && (startDate || endDate)) && ' • '}
                                     {startDate && `From: ${new Date(startDate).toLocaleDateString()}`}
@@ -421,20 +386,20 @@ const Sales = () => {
                                 </p>
                             </div>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div className="bg-white/10 backdrop-blur rounded-lg p-4 border border-white/20">
-                                <p className="text-xs font-semibold text-blue-100 uppercase tracking-wider mb-1">Total Sales</p>
-                                <h4 className="text-3xl font-extrabold">{filteredSales.length}</h4>
-                                <p className="text-xs text-blue-100 mt-1">Transactions</p>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div className="bg-white/10 rounded p-3 border border-white/20">
+                                <p className="text-xs font-bold text-blue-100 uppercase tracking-wider mb-1">Total Sales</p>
+                                <h4 className="text-2xl font-extrabold">{filteredSales.length}</h4>
+                                <p className="text-xs text-blue-100">Transactions</p>
                             </div>
-                            <div className="bg-white/10 backdrop-blur rounded-lg p-4 border border-white/20">
-                                <p className="text-xs font-semibold text-blue-100 uppercase tracking-wider mb-1">Total Revenue</p>
-                                <h4 className="text-3xl font-extrabold">{APP_CONFIG.CURRENCY} {totalRevenue.toLocaleString()}</h4>
-                                <p className="text-xs text-blue-100 mt-1">Total earnings</p>
+                            <div className="bg-white/10 rounded p-3 border border-white/20">
+                                <p className="text-xs font-bold text-blue-100 uppercase tracking-wider mb-1">Total Revenue</p>
+                                <h4 className="text-2xl font-extrabold">{APP_CONFIG.CURRENCY} {totalRevenue.toLocaleString()}</h4>
+                                <p className="text-xs text-blue-100">Total earnings</p>
                             </div>
-                            <div className="bg-white/10 backdrop-blur rounded-lg p-4 border border-white/20">
-                                <p className="text-xs font-semibold text-blue-100 uppercase tracking-wider mb-1">Total Profit</p>
-                                <h4 className="text-3xl font-extrabold">{APP_CONFIG.CURRENCY} {(() => {
+                            <div className="bg-white/10 rounded p-3 border border-white/20">
+                                <p className="text-xs font-bold text-blue-100 uppercase tracking-wider mb-1">Total Profit</p>
+                                <h4 className="text-2xl font-extrabold">{APP_CONFIG.CURRENCY} {(() => {
                                     const filteredProfit = filteredSales.reduce((sum, sale) => {
                                         const saleProfit = sale.items?.reduce((itemSum, item) => {
                                             const purchasePrice = item.purchasePrice || 0;
@@ -445,129 +410,119 @@ const Sales = () => {
                                     }, 0);
                                     return filteredProfit.toLocaleString();
                                 })()}</h4>
-                                <p className="text-xs text-blue-100 mt-1">Net earnings</p>
+                                <p className="text-xs text-blue-100">Net earnings</p>
                             </div>
                         </div>
                     </div>
                 )}
 
                 {/* Sales Table */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div className="bg-white border border-gray-300 rounded shadow-sm overflow-hidden">
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
-                            <thead className="bg-gray-50 border-b border-gray-200">
-                                <tr>
-                                    <th onClick={() => handleSort('date')} className="px-6 py-4 text-xs font-bold text-gray-500 uppercase cursor-pointer hover:bg-gray-100 select-none">
-                                        <div className="flex items-center gap-1">Date <ArrowUpDown size={14} /></div>
+                        <table className="w-full text-sm border-collapse">
+                            <thead>
+                                <tr className="bg-[#2563eb] text-white text-left">
+                                    <th onClick={() => handleSort('date')} className="px-3 py-2 text-xs font-bold text-white uppercase cursor-pointer hover:bg-blue-700 select-none">
+                                        <div className="flex items-center gap-1">Date <ArrowUpDown size={12} /></div>
                                     </th>
-                                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Invoice #</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Customer</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase">Items</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase text-right">Discount</th>
-                                    <th onClick={() => handleSort('totalAmount')} className="px-6 py-4 text-xs font-bold text-gray-500 uppercase cursor-pointer hover:bg-gray-100 select-none text-right">
-                                        <div className="flex items-center justify-end gap-1">Total <ArrowUpDown size={14} /></div>
+                                    <th className="px-3 py-2 text-xs font-bold text-white uppercase">Invoice #</th>
+                                    <th className="px-3 py-2 text-xs font-bold text-white uppercase">Customer</th>
+                                    <th className="px-3 py-2 text-xs font-bold text-white uppercase">Items</th>
+                                    <th className="px-3 py-2 text-xs font-bold text-white uppercase text-right">Discount</th>
+                                    <th onClick={() => handleSort('totalAmount')} className="px-3 py-2 text-xs font-bold text-white uppercase cursor-pointer hover:bg-blue-700 select-none text-right">
+                                        <div className="flex items-center justify-end gap-1">Total <ArrowUpDown size={12} /></div>
                                     </th>
-                                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase text-right">Cashier</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase text-center">Actions</th>
+                                    <th className="px-3 py-2 text-xs font-bold text-white uppercase text-right">Cashier</th>
+                                    <th className="px-3 py-2 text-xs font-bold text-white uppercase text-center">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-100">
+                            <tbody>
                                 {isLoading ? (
                                     <tr>
-                                        <td colSpan="7" className="px-6 py-16 text-center">
-                                            <div className="flex flex-col items-center justify-center gap-3">
-                                                <Loader2 size={48} className="text-blue-500 animate-spin" />
-                                                <p className="text-gray-500 font-medium text-lg">Loading sales data...</p>
+                                        <td colSpan="8" className="px-3 py-10 text-center">
+                                            <div className="flex flex-col items-center justify-center gap-2">
+                                                <Loader2 size={32} className="text-[#2563eb] animate-spin" />
+                                                <p className="text-gray-500 font-medium text-sm">Loading sales data...</p>
                                             </div>
                                         </td>
                                     </tr>
                                 ) : filteredSales.length === 0 ? (
                                     <tr>
-                                        <td colSpan="8" className="px-6 py-16 text-center">
-                                            <div className="flex flex-col items-center gap-3">
-                                                <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
-                                                    <Filter className="text-gray-400" size={32} />
-                                                </div>
-                                                <div>
-                                                    <p className="text-gray-600 font-bold text-lg">No records found</p>
-                                                    <p className="text-gray-500 text-sm mt-1">Try adjusting your search or date filters.</p>
-                                                </div>
+                                        <td colSpan="8" className="px-3 py-10 text-center">
+                                            <div className="flex flex-col items-center gap-2">
+                                                <Filter className="text-gray-400" size={24} />
+                                                <p className="text-gray-600 font-bold text-sm">No records found</p>
+                                                <p className="text-gray-400 text-xs">Try adjusting your search or date filters.</p>
                                             </div>
                                         </td>
                                     </tr>
                                 ) : (
-                                    filteredSales.map((sale) => (
-                                        <tr key={sale.id} className="hover:bg-blue-50/50 transition-colors group">
-                                            <td className="px-6 py-4">
-                                                <div className="font-bold text-gray-900">{new Date(sale.date).toLocaleDateString()}</div>
+                                    filteredSales.map((sale, index) => (
+                                        <tr key={sale.id} className={`${index % 2 === 0 ? 'bg-white' : 'bg-blue-50'} hover:bg-blue-100 transition-colors border-b border-gray-200`}>
+                                            <td className="px-3 py-2">
+                                                <div className="font-bold text-gray-900 text-sm">{new Date(sale.date).toLocaleDateString()}</div>
                                                 <div className="text-xs text-gray-500 font-mono">{new Date(sale.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
                                             </td>
-                                            <td className="px-6 py-4">
+                                            <td className="px-3 py-2">
                                                 <div className="font-mono text-sm text-gray-900 font-bold">{sale.invoiceNumber || 'N/A'}</div>
                                             </td>
-                                            <td className="px-6 py-4">
-                                                <div className="flex items-start gap-3">
-                                                    <div className="p-2 bg-gray-100 rounded-full text-gray-500 group-hover:bg-white group-hover:text-blue-500 transition-colors">
-                                                        <User size={16} />
-                                                    </div>
-                                                    <div>
-                                                        <div className="font-bold text-gray-900 text-sm">{sale.customerName}</div>
-                                                        <div className="text-xs text-gray-500 flex flex-col">
-                                                            <span>{sale.customerPhone}</span>
-                                                            <span className="font-mono text-[10px] bg-gray-100 px-1 rounded w-fit mt-0.5">ID: {sale.customerId}</span>
-                                                        </div>
+                                            <td className="px-3 py-2">
+                                                <div>
+                                                    <div className="font-bold text-gray-900 text-sm">{sale.customerName}</div>
+                                                    <div className="text-xs text-gray-500">
+                                                        <span>{sale.customerPhone}</span>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4">
+                                            <td className="px-3 py-2">
                                                 <div className="space-y-1">
                                                     {sale.items.map((item, idx) => (
-                                                        <div key={idx} className="text-sm border-b border-gray-100 pb-2 last:border-b-0">
-                                                            <div className="flex justify-between items-center gap-4">
+                                                        <div key={idx} className="text-xs border-b border-gray-100 pb-1 last:border-b-0">
+                                                            <div className="flex justify-between items-center gap-2">
                                                                 <span className="text-gray-700">{item.brand} {item.model}</span>
                                                                 <span className="text-xs font-bold text-gray-400">x{item.quantity}</span>
                                                             </div>
                                                             {item.warrantyExpiryDate && (
-                                                                <div className="text-xs mt-1">
-                                                                    <span className={`px-2 py-0.5 rounded font-medium ${new Date(item.warrantyExpiryDate) > new Date() ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
+                                                                <div className="text-[10px] mt-0.5">
+                                                                    <span className={`px-1.5 py-0.5 rounded font-medium ${new Date(item.warrantyExpiryDate) > new Date() ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'}`}>
                                                                         {new Date(item.warrantyExpiryDate) > new Date() ? '✓' : '✗'} Warranty: {new Date(item.warrantyExpiryDate).toLocaleDateString()}
                                                                     </span>
                                                                 </div>
                                                             )}
                                                         </div>
                                                     ))}
-                                                    <div className="text-xs text-gray-400 pt-1 border-t border-dashed border-gray-200 mt-1">
-                                                        {sale.items.length} items total
+                                                    <div className="text-[10px] text-gray-400 pt-0.5 border-t border-dashed border-gray-200">
+                                                        {sale.items.length} item(s)
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4 text-right">
+                                            <td className="px-3 py-2 text-right">
                                                 {sale.discount > 0 ? (
-                                                    <span className="px-2 py-1 bg-red-50 text-red-600 rounded text-xs font-bold">
+                                                    <span className="px-1.5 py-0.5 bg-red-50 text-red-600 rounded text-xs font-bold">
                                                         - {sale.discount.toLocaleString()}
                                                     </span>
                                                 ) : (
                                                     <span className="text-gray-300">-</span>
                                                 )}
                                             </td>
-                                            <td className="px-6 py-4 text-right">
-                                                <div className="font-extrabold text-gray-900 text-lg">
+                                            <td className="px-3 py-2 text-right">
+                                                <div className="font-extrabold text-gray-900 text-sm">
                                                     {sale.totalAmount.toLocaleString()}
                                                 </div>
                                                 <div className="text-[10px] text-gray-400 uppercase font-bold">{APP_CONFIG.CURRENCY}</div>
                                             </td>
-                                            <td className="px-6 py-4 text-right">
-                                                <div className="text-sm font-medium text-gray-600 bg-gray-100 px-2 py-1 rounded inline-block">
+                                            <td className="px-3 py-2 text-right">
+                                                <span className="text-xs font-medium text-gray-600">
                                                     {sale.cashierName || 'Unknown'}
-                                                </div>
+                                                </span>
                                             </td>
-                                            <td className="px-6 py-4 text-center">
+                                            <td className="px-3 py-2 text-center">
                                                 <button
                                                     onClick={() => setPrintingSale(sale)}
-                                                    className="inline-flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors font-medium text-sm"
+                                                    className="inline-flex items-center gap-1 px-2 py-1 bg-[#2563eb] text-white rounded hover:bg-[#1d4ed8] transition-colors font-bold text-xs"
                                                     title="View Receipt"
                                                 >
-                                                    <Eye size={16} /> View
+                                                    <Eye size={14} /> View
                                                 </button>
                                             </td>
                                         </tr>

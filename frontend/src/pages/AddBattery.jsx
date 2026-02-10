@@ -6,6 +6,7 @@ import Toast from '../components/Toast';
 import { ArrowLeft, Save, Package, Loader2, ScanBarcode, Focus } from 'lucide-react';
 import { API_ENDPOINTS } from '../constants/constants';
 import ScannerContext from '../context/ScannerContext';
+import PageHeader from '../components/PageHeader';
 
 const AddBattery = () => {
     const { user } = useContext(AuthContext);
@@ -155,38 +156,30 @@ const AddBattery = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8">
-            <div className="container mx-auto px-4 max-w-4xl">
+        <div className="min-h-screen bg-gray-100">
+            <div className="w-full max-w-[1400px] mx-auto p-2 sm:p-3 space-y-3">
                 {/* Header */}
-                <div className="mb-8">
+                <PageHeader title="Add New Battery" />
+
+                {/* Back Button */}
+                <div className="flex items-center justify-between bg-white border border-gray-300 rounded shadow-sm p-3">
                     <button
                         onClick={() => navigate('/inventory/view')}
-                        className="flex items-center gap-2 text-gray-600 hover:text-blue-600 mb-4 font-medium transition-colors"
+                        className="flex items-center gap-1.5 text-gray-600 hover:text-[#2563eb] font-bold text-sm transition-colors"
                     >
-                        <ArrowLeft size={20} />
+                        <ArrowLeft size={16} />
                         Back to Inventory
                     </button>
-                    <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
-                            <Package className="w-8 h-8 text-white" />
-                        </div>
-                        <div>
-                            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                                Add New Battery
-                            </h1>
-                            <p className="text-gray-600 mt-1">Enter battery details to add to inventory</p>
-                        </div>
-                    </div>
+                    <div className="text-sm text-gray-500">Fill in all required fields</div>
                 </div>
 
                 {/* Form Card */}
-                <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-                    <div className="bg-gradient-to-r from-blue-500 to-indigo-600 px-8 py-6">
-                        <h2 className="text-xl font-bold text-white">Battery Information</h2>
-                        <p className="text-blue-100 text-sm mt-1">Fill in all required fields</p>
+                <div className="bg-white border border-gray-300 rounded shadow-sm overflow-hidden">
+                    <div className="bg-[#2563eb] px-4 py-3">
+                        <h2 className="text-base font-bold text-white">Battery Information</h2>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="p-8">
+                    <form onSubmit={handleSubmit} className="p-4 sm:p-6">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Serial Number */}
                             <div>
@@ -198,7 +191,7 @@ const AddBattery = () => {
                                     ref={serialNumberRef}
                                     value={formData.serialNumber}
                                     onChange={(e) => setFormData({ ...formData, serialNumber: e.target.value })}
-                                    className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:bg-white outline-none transition-all"
+                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded focus:border-[#2563eb] focus:bg-white outline-none transition-all text-sm"
                                     required
                                 />
                             </div>
@@ -222,24 +215,24 @@ const AddBattery = () => {
                                         onKeyDown={handleBarcodeKeyDown}
                                         onFocus={() => setScanMode(true)}
                                         onBlur={() => setScanMode(false)}
-                                        className={`flex-1 px-4 py-3 border-2 rounded-xl focus:bg-white outline-none transition-all ${
+                                        className={`flex-1 px-3 py-2 border rounded focus:bg-white outline-none transition-all text-sm ${
                                             scanMode
-                                                ? 'bg-green-50 border-green-400 ring-2 ring-green-200'
-                                                : 'bg-gray-50 border-gray-200 focus:border-blue-500'
+                                                ? 'bg-green-50 border-green-400 ring-1 ring-green-200'
+                                                : 'bg-gray-50 border-gray-300 focus:border-[#2563eb]'
                                         }`}
                                         placeholder={scanMode ? 'Scan barcode now...' : 'Click scan or type barcode'}
                                     />
                                     <button
                                         type="button"
                                         onClick={activateScanMode}
-                                        className={`px-4 py-3 rounded-xl font-medium transition-all flex items-center gap-2 ${
+                                        className={`px-3 py-2 rounded font-medium transition-all flex items-center gap-1 text-sm ${
                                             scanMode
-                                                ? 'bg-green-500 text-white shadow-lg shadow-green-200'
-                                                : 'bg-gray-100 text-gray-600 hover:bg-blue-50 hover:text-blue-600 border-2 border-gray-200'
+                                                ? 'bg-green-500 text-white'
+                                                : 'bg-gray-100 text-gray-600 hover:bg-blue-50 hover:text-[#2563eb] border border-gray-300'
                                         }`}
                                         title="Click to activate barcode scanner"
                                     >
-                                        <ScanBarcode size={20} />
+                                        <ScanBarcode size={16} />
                                     </button>
 
                                 </div>
@@ -259,12 +252,12 @@ const AddBattery = () => {
                                     }}
                                     onFocus={() => setShowBrandDropdown(true)}
                                     onBlur={() => setTimeout(() => setShowBrandDropdown(false), 200)}
-                                    className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:bg-white outline-none transition-all"
+                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded focus:border-[#2563eb] focus:bg-white outline-none transition-all text-sm"
                                     required
                                     placeholder="Type or select brand"
                                 />
                                 {showBrandDropdown && filteredBrands.length > 0 && formData.brand && (
-                                    <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-xl border border-gray-200 max-h-48 overflow-y-auto z-10">
+                                    <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded shadow-lg border border-gray-200 max-h-48 overflow-y-auto z-10">
                                         {filteredBrands.map((brand, index) => (
                                             <div
                                                 key={index}
@@ -295,12 +288,12 @@ const AddBattery = () => {
                                     }}
                                     onFocus={() => setShowModelDropdown(true)}
                                     onBlur={() => setTimeout(() => setShowModelDropdown(false), 200)}
-                                    className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:bg-white outline-none transition-all"
+                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded focus:border-[#2563eb] focus:bg-white outline-none transition-all text-sm"
                                     required
                                     placeholder="Type or select model"
                                 />
                                 {showModelDropdown && filteredModels.length > 0 && formData.model && (
-                                    <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-xl border border-gray-200 max-h-48 overflow-y-auto z-10">
+                                    <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded shadow-lg border border-gray-200 max-h-48 overflow-y-auto z-10">
                                         {filteredModels.map((model, index) => (
                                             <div
                                                 key={index}
@@ -327,7 +320,7 @@ const AddBattery = () => {
                                     step="0.01"
                                     value={formData.capacity}
                                     onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
-                                    className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:bg-white outline-none transition-all"
+                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded focus:border-[#2563eb] focus:bg-white outline-none transition-all text-sm"
                                     required
                                 />
                             </div>
@@ -342,7 +335,7 @@ const AddBattery = () => {
                                     step="0.1"
                                     value={formData.voltage}
                                     onChange={(e) => setFormData({ ...formData, voltage: e.target.value })}
-                                    className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:bg-white outline-none transition-all"
+                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded focus:border-[#2563eb] focus:bg-white outline-none transition-all text-sm"
                                     placeholder="e.g., 12"
                                     required
                                 />
@@ -358,7 +351,7 @@ const AddBattery = () => {
                                     step="0.01"
                                     value={formData.purchasePrice}
                                     onChange={(e) => setFormData({ ...formData, purchasePrice: e.target.value })}
-                                    className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:bg-white outline-none transition-all"
+                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded focus:border-[#2563eb] focus:bg-white outline-none transition-all text-sm"
                                     required
                                 />
                             </div>
@@ -373,7 +366,7 @@ const AddBattery = () => {
                                     step="0.01"
                                     value={formData.sellingPrice}
                                     onChange={(e) => setFormData({ ...formData, sellingPrice: e.target.value })}
-                                    className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:bg-white outline-none transition-all"
+                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded focus:border-[#2563eb] focus:bg-white outline-none transition-all text-sm"
                                     required
                                 />
                             </div>
@@ -387,7 +380,7 @@ const AddBattery = () => {
                                     type="date"
                                     value={formData.purchaseDate}
                                     onChange={(e) => setFormData({ ...formData, purchaseDate: e.target.value })}
-                                    className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:bg-white outline-none transition-all"
+                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded focus:border-[#2563eb] focus:bg-white outline-none transition-all text-sm"
                                     required
                                 />
                             </div>
@@ -401,7 +394,7 @@ const AddBattery = () => {
                                     type="number"
                                     value={formData.stockQuantity}
                                     onChange={(e) => setFormData({ ...formData, stockQuantity: e.target.value })}
-                                    className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:bg-white outline-none transition-all"
+                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded focus:border-[#2563eb] focus:bg-white outline-none transition-all text-sm"
                                     required
                                 />
                             </div>
@@ -415,7 +408,7 @@ const AddBattery = () => {
                                     type="number"
                                     value={formData.warrantyPeriodMonths}
                                     onChange={(e) => setFormData({ ...formData, warrantyPeriodMonths: e.target.value })}
-                                    className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:bg-white outline-none transition-all"
+                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded focus:border-[#2563eb] focus:bg-white outline-none transition-all text-sm"
                                     required
                                 />
                             </div>
@@ -429,7 +422,7 @@ const AddBattery = () => {
                                     type="number"
                                     value={formData.shelfLifeMonths}
                                     onChange={(e) => setFormData({ ...formData, shelfLifeMonths: e.target.value })}
-                                    className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:bg-white outline-none transition-all"
+                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded focus:border-[#2563eb] focus:bg-white outline-none transition-all text-sm"
                                     placeholder="e.g., 6 or 12 months"
                                     required
                                 />
@@ -445,7 +438,7 @@ const AddBattery = () => {
                                     type="text"
                                     value={formData.salesRep}
                                     onChange={(e) => setFormData({ ...formData, salesRep: e.target.value })}
-                                    className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:bg-white outline-none transition-all"
+                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded focus:border-[#2563eb] focus:bg-white outline-none transition-all text-sm"
                                     placeholder="Sales representative name"
                                 />
                             </div>
@@ -459,25 +452,25 @@ const AddBattery = () => {
                                     type="text"
                                     value={formData.invoiceNumber}
                                     onChange={(e) => setFormData({ ...formData, invoiceNumber: e.target.value })}
-                                    className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:bg-white outline-none transition-all"
+                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded focus:border-[#2563eb] focus:bg-white outline-none transition-all text-sm"
                                     placeholder="Invoice number"
                                 />
                             </div>
                         </div>
 
                         {/* Action Buttons */}
-                        <div className="flex gap-4 justify-end mt-8 pt-6 border-t border-gray-200">
+                        <div className="flex gap-3 justify-end mt-6 pt-4 border-t border-gray-200">
                             <button
                                 type="button"
                                 onClick={() => navigate('/inventory/view')}
-                                className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 font-medium transition-colors"
+                                className="px-4 py-2 border-2 border-gray-400 text-gray-700 rounded hover:bg-gray-50 font-bold text-sm transition-colors"
                             >
                                 Cancel
                             </button>
                             <button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl hover:from-blue-600 hover:to-indigo-700 font-medium shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="flex items-center gap-1.5 px-4 py-2 bg-[#2563eb] text-white rounded hover:bg-[#1d4ed8] font-bold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {isSubmitting ? (
                                     <Loader2 size={20} className="animate-spin" />

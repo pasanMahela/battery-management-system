@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import AuthContext from '../context/AuthContext';
 import Dialog from '../components/Dialog';
+import PageHeader from '../components/PageHeader';
 import { UserPlus, Lock, User, Loader2, Users, Shield, Trash2 } from 'lucide-react';
 import { API_ENDPOINTS, USER_ROLES, PAGE_TITLES, BUSINESS_DEFAULTS } from '../constants/constants';
 
@@ -149,77 +150,65 @@ const UserManagement = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-8">
-            <div className="container mx-auto px-6 max-w-6xl">
+        <div className="min-h-screen bg-gray-100">
+            <div className="w-full max-w-[1400px] mx-auto p-2 sm:p-3 space-y-3">
                 {/* Header */}
-                <div className="mb-8">
-                    <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
-                            <UserPlus className="w-8 h-8 text-white" />
-                        </div>
-                        <div>
-                            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                                {PAGE_TITLES.USER_MANAGEMENT}
-                            </h1>
-                            <p className="text-gray-600 mt-1">{PAGE_TITLES.USER_MANAGEMENT_SUBTITLE}</p>
-                        </div>
-                    </div>
-                </div>
+                <PageHeader title={PAGE_TITLES.USER_MANAGEMENT} />
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
                     {/* Existing Users List */}
-                    <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
-                        <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-                            <Users size={24} className="text-blue-600" />
+                    <div className="bg-white rounded shadow-sm border border-gray-300 p-4">
+                        <h2 className="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2">
+                            <Users size={16} className="text-[#2563eb]" />
                             Existing Users
                         </h2>
 
                         {isLoadingUsers ? (
-                            <div className="flex items-center justify-center py-12">
-                                <Loader2 size={48} className="animate-spin text-blue-600" />
+                            <div className="flex items-center justify-center py-8">
+                                <Loader2 size={32} className="animate-spin text-[#2563eb]" />
                             </div>
                         ) : users.length === 0 ? (
-                            <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 text-gray-500 text-center">
-                                <Users size={48} className="mx-auto mb-2 text-gray-400" />
-                                <p className="font-medium">No users found</p>
-                                <p className="text-sm mt-1">Create a new user to get started</p>
+                            <div className="bg-gray-50 border border-gray-200 rounded p-4 text-gray-500 text-center">
+                                <Users size={32} className="mx-auto mb-2 text-gray-400" />
+                                <p className="font-bold text-sm">No users found</p>
+                                <p className="text-xs mt-1">Create a new user to get started</p>
                             </div>
                         ) : (
-                            <div className="space-y-3">
+                            <div className="space-y-2">
                                 {users.map((userItem) => (
                                     <div
                                         key={userItem.id}
-                                        className="flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 rounded-xl border border-gray-200 transition-colors"
+                                        className="flex items-center justify-between p-3 bg-blue-50 hover:bg-blue-100 rounded border border-gray-200 transition-colors"
                                     >
                                         <div className="flex items-center gap-3">
-                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold ${userItem.role === 'Admin'
-                                                ? 'bg-gradient-to-br from-purple-500 to-pink-500'
-                                                : 'bg-gradient-to-br from-blue-500 to-indigo-500'
+                                            <div className={`w-9 h-9 rounded flex items-center justify-center text-white font-bold text-sm ${userItem.role === 'Admin'
+                                                ? 'bg-purple-600'
+                                                : 'bg-[#2563eb]'
                                                 }`}>
                                                 {userItem.username.charAt(0).toUpperCase()}
                                             </div>
                                             <div>
-                                                <p className="font-semibold text-gray-900">{userItem.username}</p>
-                                                <p className="text-xs text-gray-500">ID: {userItem.id}</p>
+                                                <p className="font-bold text-gray-900 text-sm">{userItem.username}</p>
+                                                <p className="text-[10px] text-gray-500">ID: {userItem.id}</p>
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2">
                                             {userItem.role === 'Admin' ? (
-                                                <span className="flex items-center gap-1 px-3 py-1 bg-purple-100 text-purple-700 rounded-lg text-sm font-medium">
-                                                    <Shield size={14} />
+                                                <span className="flex items-center gap-1 px-2 py-0.5 bg-purple-100 text-purple-700 rounded text-xs font-bold">
+                                                    <Shield size={12} />
                                                     Admin
                                                 </span>
                                             ) : (
-                                                <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm font-medium">
+                                                <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-bold">
                                                     Cashier
                                                 </span>
                                             )}
                                             <button
                                                 onClick={() => handleDeleteUser(userItem.id, userItem.username)}
-                                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
                                                 title="Delete user"
                                             >
-                                                <Trash2 size={18} />
+                                                <Trash2 size={16} />
                                             </button>
                                         </div>
                                     </div>
@@ -229,25 +218,25 @@ const UserManagement = () => {
                     </div>
 
                     {/* Add User Form */}
-                    <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
-                        <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-                            <UserPlus size={24} className="text-blue-600" />
+                    <div className="bg-white rounded shadow-sm border border-gray-300 p-4">
+                        <h2 className="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2">
+                            <UserPlus size={16} className="text-[#2563eb]" />
                             Add New User
                         </h2>
 
-                        <form onSubmit={handleSubmit} className="space-y-6">
+                        <form onSubmit={handleSubmit} className="space-y-4">
                             {/* Username */}
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
                                     Username <span className="text-red-500">*</span>
                                 </label>
                                 <div className="relative">
-                                    <User className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
                                     <input
                                         type="text"
                                         value={formData.username}
                                         onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                                        className="w-full pl-12 pr-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:bg-white outline-none transition-all"
+                                        className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded focus:border-[#2563eb] outline-none transition-all text-sm"
                                         placeholder="Enter username"
                                         required
                                     />
@@ -256,36 +245,36 @@ const UserManagement = () => {
 
                             {/* Password */}
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
                                     Password <span className="text-red-500">*</span>
                                 </label>
                                 <div className="relative">
-                                    <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
                                     <input
                                         type="password"
                                         value={formData.password}
                                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                        className="w-full pl-12 pr-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:bg-white outline-none transition-all"
+                                        className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded focus:border-[#2563eb] outline-none transition-all text-sm"
                                         placeholder="Enter password"
                                         required
                                         minLength={6}
                                     />
                                 </div>
-                                <p className="text-xs text-gray-500 mt-2">Minimum 6 characters</p>
+                                <p className="text-[10px] text-gray-500 mt-1">Minimum 6 characters</p>
                             </div>
 
                             {/* Confirm Password */}
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
                                     Confirm Password <span className="text-red-500">*</span>
                                 </label>
                                 <div className="relative">
-                                    <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
                                     <input
                                         type="password"
                                         value={formData.confirmPassword}
                                         onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                                        className="w-full pl-12 pr-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:bg-white outline-none transition-all"
+                                        className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded focus:border-[#2563eb] outline-none transition-all text-sm"
                                         placeholder="Confirm password"
                                         required
                                     />
@@ -294,19 +283,19 @@ const UserManagement = () => {
 
                             {/* Role */}
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1">
                                     User Role <span className="text-red-500">*</span>
                                 </label>
                                 <select
                                     value={formData.role}
                                     onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                                    className="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:bg-white outline-none transition-all"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded focus:border-[#2563eb] outline-none transition-all text-sm"
                                     required
                                 >
                                     <option value={USER_ROLES.CASHIER}>Cashier (POS Access Only)</option>
                                     <option value={USER_ROLES.ADMIN}>Admin (Full Access)</option>
                                 </select>
-                                <p className="text-xs text-gray-500 mt-2">
+                                <p className="text-[10px] text-gray-500 mt-1">
                                     {formData.role === USER_ROLES.CASHIER
                                         ? '✓ Can access POS system only'
                                         : '✓ Can access all features and manage users'}
@@ -314,29 +303,23 @@ const UserManagement = () => {
                             </div>
 
                             {/* Submit Buttons */}
-                            <div className="flex gap-4 pt-4">
+                            <div className="flex gap-3 pt-2">
                                 <button
                                     type="button"
                                     onClick={() => navigate('/')}
-                                    className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 font-medium transition-all"
+                                    className="flex-1 px-4 py-2 border-2 border-gray-400 text-gray-700 rounded hover:bg-gray-50 font-bold text-sm transition-all"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl hover:from-blue-600 hover:to-indigo-700 font-medium shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-[#2563eb] hover:bg-[#1d4ed8] text-white rounded font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {isSubmitting ? (
-                                        <>
-                                            <Loader2 size={20} className="animate-spin" />
-                                            Creating User...
-                                        </>
+                                        <><Loader2 size={16} className="animate-spin" /> Creating...</>
                                     ) : (
-                                        <>
-                                            <UserPlus size={20} />
-                                            Create User
-                                        </>
+                                        <><UserPlus size={16} /> Create User</>
                                     )}
                                 </button>
                             </div>

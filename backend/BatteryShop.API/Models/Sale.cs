@@ -21,6 +21,10 @@ public class Sale
     public string CashierName { get; set; } = null!;
     public List<SaleItem> Items { get; set; } = new();
     
+    // Payment tracking
+    public decimal? PaidAmount { get; set; }
+    public decimal? Balance { get; set; }
+    
     // Soft delete
     public bool IsDeleted { get; set; } = false;
     public DateTime? DeletedAt { get; set; }

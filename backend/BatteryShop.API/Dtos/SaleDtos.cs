@@ -17,6 +17,9 @@ public record SaleCreateDto(
     [Range(0, 10000000, ErrorMessage = "Discount must be a positive value")]
     decimal Discount,
     
+    decimal? PaidAmount,
+    decimal? Balance,
+    
     [Required(ErrorMessage = "At least one item is required")]
     [MinLength(1, ErrorMessage = "At least one item is required")]
     List<SaleItemDto> Items

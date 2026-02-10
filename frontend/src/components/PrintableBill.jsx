@@ -145,6 +145,19 @@ const PrintableBill = ({ saleData, showPreview = false, autoPrint = false, onClo
                                         <span>LKR {(saleData.totalAmount || 0).toLocaleString()}</span>
                                     </div>
                                     <div className="border-b-2 border-gray-800 my-2"></div>
+                                    {saleData.paidAmount > 0 && (
+                                        <>
+                                            <div className="flex justify-between">
+                                                <span className="font-bold">Paid Amount:</span>
+                                                <span>LKR {(saleData.paidAmount || 0).toLocaleString()}</span>
+                                            </div>
+                                            <div className={`flex justify-between font-extrabold ${(saleData.balance || 0) >= 0 ? 'text-green-700' : 'text-red-600'}`}>
+                                                <span>Balance:</span>
+                                                <span>LKR {(saleData.balance || 0).toLocaleString()}</span>
+                                            </div>
+                                            <div className="border-b-2 border-gray-800 my-2"></div>
+                                        </>
+                                    )}
                                 </div>
 
                                 {/* Footer */}
@@ -281,6 +294,19 @@ const PrintableBill = ({ saleData, showPreview = false, autoPrint = false, onClo
                             <span>LKR {(saleData.totalAmount || 0).toLocaleString()}</span>
                         </div>
                         <div className="divider-bold"></div>
+                        {saleData.paidAmount > 0 && (
+                            <>
+                                <div className="total-row">
+                                    <span>Paid Amount:</span>
+                                    <span>LKR {(saleData.paidAmount || 0).toLocaleString()}</span>
+                                </div>
+                                <div className="total-row grand-total">
+                                    <span>Balance:</span>
+                                    <span>LKR {(saleData.balance || 0).toLocaleString()}</span>
+                                </div>
+                                <div className="divider-bold"></div>
+                            </>
+                        )}
                     </div>
 
                     {/* Footer */}

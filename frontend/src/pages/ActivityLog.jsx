@@ -3,6 +3,7 @@ import axios from 'axios';
 import AuthContext from '../context/AuthContext';
 import { ScrollText, Search, Filter, ChevronLeft, ChevronRight, Activity, Battery, ShoppingCart, RotateCcw, Users, LogIn, RefreshCw, Calendar } from 'lucide-react';
 import { API_ENDPOINTS } from '../constants/constants';
+import PageHeader from '../components/PageHeader';
 
 const ActivityLog = () => {
     const { user } = useContext(AuthContext);
@@ -146,33 +147,21 @@ const ActivityLog = () => {
     const hasActiveFilters = entityType || action || searchTerm || startDate || endDate;
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 py-8">
-            <div className="container mx-auto px-4 max-w-7xl">
+        <div className="min-h-screen bg-gray-100">
+            <div className="w-full max-w-[1400px] mx-auto p-2 sm:p-3 space-y-3">
                 {/* Header */}
-                <div className="mb-8">
-                    <div className="flex items-center gap-4 mb-2">
-                        <div className="w-14 h-14 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
-                            <ScrollText className="w-7 h-7 text-white" />
-                        </div>
-                        <div>
-                            <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                                Activity Log
-                            </h1>
-                            <p className="text-gray-600 mt-1">Track all system activities and user actions</p>
-                        </div>
-                    </div>
-                </div>
+                <PageHeader title="Activity Log" />
 
                 {/* Stats Cards */}
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-                    <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
-                                <Activity size={20} className="text-indigo-600" />
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                    <div className="bg-white rounded border border-gray-300 p-3 shadow-sm">
+                        <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 bg-blue-50 rounded flex items-center justify-center">
+                                <Activity size={16} className="text-[#2563eb]" />
                             </div>
                             <div>
-                                <p className="text-2xl font-bold text-gray-900">{stats?.total || 0}</p>
-                                <p className="text-xs text-gray-500 font-medium">Total Logs</p>
+                                <p className="text-lg font-extrabold text-gray-900">{stats?.total || 0}</p>
+                                <p className="text-[10px] text-gray-500 font-bold uppercase">Total Logs</p>
                             </div>
                         </div>
                     </div>
@@ -182,15 +171,15 @@ const ActivityLog = () => {
                         { type: 'Return', icon: RotateCcw, color: 'orange' },
                         { type: 'Auth', icon: LogIn, color: 'purple' },
                     ].map(({ type, icon: Icon, color }) => (
-                        <div key={type} className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm cursor-pointer hover:shadow-md transition-shadow"
+                        <div key={type} className={`bg-white rounded border p-3 shadow-sm cursor-pointer hover:border-[#2563eb] transition-all ${entityType === type ? 'border-[#2563eb] bg-blue-50' : 'border-gray-300'}`}
                             onClick={() => { setEntityType(entityType === type ? '' : type); setPage(1); }}>
-                            <div className="flex items-center gap-3">
-                                <div className={`w-10 h-10 bg-${color}-100 rounded-lg flex items-center justify-center`}>
-                                    <Icon size={20} className={`text-${color}-600`} />
+                            <div className="flex items-center gap-2">
+                                <div className={`w-8 h-8 bg-${color}-50 rounded flex items-center justify-center`}>
+                                    <Icon size={16} className={`text-${color}-600`} />
                                 </div>
                                 <div>
-                                    <p className="text-2xl font-bold text-gray-900">{getStatCount(type)}</p>
-                                    <p className="text-xs text-gray-500 font-medium">{type}</p>
+                                    <p className="text-lg font-extrabold text-gray-900">{getStatCount(type)}</p>
+                                    <p className="text-[10px] text-gray-500 font-bold uppercase">{type}</p>
                                 </div>
                             </div>
                         </div>
@@ -198,45 +187,45 @@ const ActivityLog = () => {
                 </div>
 
                 {/* Search & Filters */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-200 mb-6 overflow-hidden">
-                    <div className="p-4 flex flex-col md:flex-row gap-3">
+                <div className="bg-white rounded shadow-sm border border-gray-300 overflow-hidden">
+                    <div className="p-3 flex flex-col md:flex-row gap-2">
                         <div className="relative flex-1">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
                             <input
                                 type="text"
                                 placeholder="Search activities by description, user, or ID..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2.5 border-2 border-gray-200 rounded-xl focus:border-indigo-500 outline-none transition-all text-sm"
+                                className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded focus:border-[#2563eb] outline-none transition-all text-sm"
                             />
                         </div>
                         <button
                             onClick={() => setShowFilters(!showFilters)}
-                            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 font-medium text-sm transition-all ${showFilters ? 'bg-indigo-50 border-indigo-300 text-indigo-700' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                            className={`flex items-center gap-1.5 px-3 py-2 rounded border font-bold text-xs transition-all ${showFilters ? 'bg-blue-50 border-[#2563eb] text-[#2563eb]' : 'border-gray-300 text-gray-600 hover:bg-gray-50'}`}
                         >
-                            <Filter size={16} />
+                            <Filter size={14} />
                             Filters
-                            {hasActiveFilters && <span className="w-2 h-2 bg-indigo-500 rounded-full"></span>}
+                            {hasActiveFilters && <span className="w-1.5 h-1.5 bg-[#2563eb] rounded-full"></span>}
                         </button>
                         <button
                             onClick={() => { fetchLogs(); fetchStats(); }}
-                            className="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-gray-200 text-gray-600 hover:bg-gray-50 font-medium text-sm transition-all"
+                            className="flex items-center gap-1.5 px-3 py-2 rounded border border-gray-300 text-gray-600 hover:bg-gray-50 font-bold text-xs transition-all"
                         >
-                            <RefreshCw size={16} />
+                            <RefreshCw size={14} />
                             Refresh
                         </button>
                     </div>
 
                     {/* Expandable Filters */}
                     {showFilters && (
-                        <div className="px-4 pb-4 border-t border-gray-100 pt-4">
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                        <div className="px-3 pb-3 border-t border-gray-200 pt-3">
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
                                 <div>
-                                    <label className="block text-xs font-semibold text-gray-500 mb-1 uppercase">Entity Type</label>
+                                    <label className="block text-xs font-bold text-gray-500 mb-1 uppercase">Entity Type</label>
                                     <select
                                         value={entityType}
                                         onChange={(e) => { setEntityType(e.target.value); setPage(1); }}
-                                        className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg text-sm focus:border-indigo-500 outline-none"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:border-[#2563eb] outline-none"
                                     >
                                         <option value="">All Types</option>
                                         <option value="Battery">Battery</option>
@@ -247,11 +236,11 @@ const ActivityLog = () => {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-semibold text-gray-500 mb-1 uppercase">Action</label>
+                                    <label className="block text-xs font-bold text-gray-500 mb-1 uppercase">Action</label>
                                     <select
                                         value={action}
                                         onChange={(e) => { setAction(e.target.value); setPage(1); }}
-                                        className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg text-sm focus:border-indigo-500 outline-none"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:border-[#2563eb] outline-none"
                                     >
                                         <option value="">All Actions</option>
                                         <option value="Created">Created</option>
@@ -263,28 +252,28 @@ const ActivityLog = () => {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-semibold text-gray-500 mb-1 uppercase">Start Date</label>
+                                    <label className="block text-xs font-bold text-gray-500 mb-1 uppercase">Start Date</label>
                                     <input
                                         type="date"
                                         value={startDate}
                                         onChange={(e) => { setStartDate(e.target.value); setPage(1); }}
-                                        className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg text-sm focus:border-indigo-500 outline-none"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:border-[#2563eb] outline-none"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-semibold text-gray-500 mb-1 uppercase">End Date</label>
+                                    <label className="block text-xs font-bold text-gray-500 mb-1 uppercase">End Date</label>
                                     <input
                                         type="date"
                                         value={endDate}
                                         onChange={(e) => { setEndDate(e.target.value); setPage(1); }}
-                                        className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg text-sm focus:border-indigo-500 outline-none"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:border-[#2563eb] outline-none"
                                     />
                                 </div>
                             </div>
                             {hasActiveFilters && (
                                 <button
                                     onClick={clearFilters}
-                                    className="mt-3 text-sm text-indigo-600 hover:text-indigo-800 font-medium"
+                                    className="mt-2 text-xs text-[#2563eb] hover:text-[#1d4ed8] font-bold"
                                 >
                                     Clear all filters
                                 </button>
@@ -294,72 +283,69 @@ const ActivityLog = () => {
                 </div>
 
                 {/* Log Table */}
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                <div className="bg-white rounded shadow-sm border border-gray-300 overflow-hidden">
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left">
-                            <thead className="bg-gray-50 border-b border-gray-200">
-                                <tr>
-                                    <th className="px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase">Time</th>
-                                    <th className="px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase">User</th>
-                                    <th className="px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase">Action</th>
-                                    <th className="px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase">Type</th>
-                                    <th className="px-6 py-3.5 text-xs font-semibold text-gray-500 uppercase">Description</th>
+                        <table className="w-full text-sm border-collapse">
+                            <thead>
+                                <tr className="bg-[#2563eb] text-white text-left">
+                                    <th className="px-3 py-2 text-xs font-bold uppercase">Time</th>
+                                    <th className="px-3 py-2 text-xs font-bold uppercase">User</th>
+                                    <th className="px-3 py-2 text-xs font-bold uppercase">Action</th>
+                                    <th className="px-3 py-2 text-xs font-bold uppercase">Type</th>
+                                    <th className="px-3 py-2 text-xs font-bold uppercase">Description</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-100">
+                            <tbody>
                                 {loading ? (
                                     <tr>
-                                        <td colSpan="5" className="py-16 text-center text-gray-400">
-                                            <div className="flex flex-col items-center gap-3">
-                                                <RefreshCw size={32} className="animate-spin text-indigo-400" />
-                                                <p className="font-medium">Loading activity logs...</p>
+                                        <td colSpan="5" className="py-10 text-center text-gray-400">
+                                            <div className="flex flex-col items-center gap-2">
+                                                <RefreshCw size={24} className="animate-spin text-[#2563eb]" />
+                                                <p className="font-bold text-sm">Loading activity logs...</p>
                                             </div>
                                         </td>
                                     </tr>
                                 ) : logs.length === 0 ? (
                                     <tr>
-                                        <td colSpan="5" className="py-16 text-center text-gray-400">
-                                            <div className="flex flex-col items-center gap-3">
-                                                <ScrollText size={40} className="opacity-30" />
-                                                <p className="font-medium">No activity logs found</p>
-                                                <p className="text-sm">Activities will appear here as users interact with the system</p>
+                                        <td colSpan="5" className="py-10 text-center text-gray-400">
+                                            <div className="flex flex-col items-center gap-2">
+                                                <ScrollText size={24} className="opacity-30" />
+                                                <p className="font-bold text-sm">No activity logs found</p>
+                                                <p className="text-xs">Activities will appear here as users interact with the system</p>
                                             </div>
                                         </td>
                                     </tr>
                                 ) : (
-                                    logs.map((log) => (
-                                        <tr key={log.id} className="hover:bg-gray-50 transition-colors">
-                                            <td className="px-6 py-3.5">
-                                                <div className="flex items-center gap-2">
-                                                    <Calendar size={14} className="text-gray-400" />
-                                                    <span className="text-sm text-gray-700 font-medium">{formatDate(log.timestamp)}</span>
-                                                </div>
-                                                <p className="text-xs text-gray-400 mt-0.5 ml-6">
+                                    logs.map((log, index) => (
+                                        <tr key={log.id} className={`${index % 2 === 0 ? 'bg-white' : 'bg-blue-50'} hover:bg-blue-100 transition-colors border-b border-gray-200`}>
+                                            <td className="px-3 py-2">
+                                                <span className="text-xs text-gray-700 font-bold">{formatDate(log.timestamp)}</span>
+                                                <p className="text-[10px] text-gray-400">
                                                     {new Date(log.timestamp).toLocaleString()}
                                                 </p>
                                             </td>
-                                            <td className="px-6 py-3.5">
-                                                <span className="text-sm font-semibold text-gray-800">
+                                            <td className="px-3 py-2">
+                                                <span className="text-xs font-bold text-gray-800">
                                                     {log.username || 'System'}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-3.5">
-                                                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${getActionBadge(log.action)}`}>
+                                            <td className="px-3 py-2">
+                                                <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold ${getActionBadge(log.action)}`}>
                                                     {log.action}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-3.5">
-                                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${getEntityBadge(log.entityType)}`}>
+                                            <td className="px-3 py-2">
+                                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold border ${getEntityBadge(log.entityType)}`}>
                                                     {getEntityIcon(log.entityType)}
                                                     {log.entityType}
                                                 </span>
                                             </td>
-                                            <td className="px-6 py-3.5">
-                                                <p className="text-sm text-gray-700 max-w-md truncate" title={log.description}>
+                                            <td className="px-3 py-2">
+                                                <p className="text-xs text-gray-700 max-w-md truncate" title={log.description}>
                                                     {log.description}
                                                 </p>
                                                 {log.entityId && (
-                                                    <p className="text-xs text-gray-400 font-mono mt-0.5">ID: {log.entityId}</p>
+                                                    <p className="text-[10px] text-gray-400 font-mono">ID: {log.entityId}</p>
                                                 )}
                                             </td>
                                         </tr>
@@ -371,22 +357,21 @@ const ActivityLog = () => {
 
                     {/* Pagination */}
                     {totalPages > 1 && (
-                        <div className="flex items-center justify-between px-6 py-4 border-t border-gray-200 bg-gray-50">
-                            <p className="text-sm text-gray-600">
-                                Showing <span className="font-semibold">{((page - 1) * PAGE_SIZE) + 1}</span> to{' '}
-                                <span className="font-semibold">{Math.min(page * PAGE_SIZE, totalCount)}</span> of{' '}
-                                <span className="font-semibold">{totalCount}</span> entries
+                        <div className="flex items-center justify-between px-3 py-3 border-t border-gray-200 bg-gray-50">
+                            <p className="text-xs text-gray-600">
+                                Showing <span className="font-bold">{((page - 1) * PAGE_SIZE) + 1}</span> to{' '}
+                                <span className="font-bold">{Math.min(page * PAGE_SIZE, totalCount)}</span> of{' '}
+                                <span className="font-bold">{totalCount}</span>
                             </p>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1">
                                 <button
                                     onClick={() => setPage(p => Math.max(1, p - 1))}
                                     disabled={page === 1}
-                                    className="flex items-center gap-1 px-3 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                    className="flex items-center gap-1 px-2 py-1.5 rounded border border-gray-300 text-xs font-bold text-gray-700 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                                 >
-                                    <ChevronLeft size={16} />
-                                    Previous
+                                    <ChevronLeft size={14} /> Prev
                                 </button>
-                                <div className="flex items-center gap-1">
+                                <div className="flex items-center gap-0.5">
                                     {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                                         let pageNum;
                                         if (totalPages <= 5) {
@@ -402,8 +387,8 @@ const ActivityLog = () => {
                                             <button
                                                 key={pageNum}
                                                 onClick={() => setPage(pageNum)}
-                                                className={`w-9 h-9 rounded-lg text-sm font-medium transition-all ${page === pageNum
-                                                    ? 'bg-indigo-600 text-white shadow-sm'
+                                                className={`w-8 h-8 rounded text-xs font-bold transition-all ${page === pageNum
+                                                    ? 'bg-[#2563eb] text-white'
                                                     : 'text-gray-600 hover:bg-white border border-transparent hover:border-gray-300'
                                                     }`}
                                             >
@@ -415,10 +400,9 @@ const ActivityLog = () => {
                                 <button
                                     onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                                     disabled={page === totalPages}
-                                    className="flex items-center gap-1 px-3 py-2 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                                    className="flex items-center gap-1 px-2 py-1.5 rounded border border-gray-300 text-xs font-bold text-gray-700 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                                 >
-                                    Next
-                                    <ChevronRight size={16} />
+                                    Next <ChevronRight size={14} />
                                 </button>
                             </div>
                         </div>

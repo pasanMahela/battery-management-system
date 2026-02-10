@@ -6,6 +6,7 @@ import Toast from '../components/Toast';
 import Dialog from '../components/Dialog';
 import { RotateCcw, Search, Calendar, Filter, Eye, X, DollarSign, Package, Loader2, History } from 'lucide-react';
 import { API_ENDPOINTS, APP_CONFIG } from '../constants/constants';
+import PageHeader from '../components/PageHeader';
 
 const ReturnHistory = () => {
     const { user } = useContext(AuthContext);
@@ -110,24 +111,10 @@ const ReturnHistory = () => {
     };
     
     return (
-        <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-red-50 py-8">
-            <div className="container mx-auto px-6">
+        <div className="min-h-screen bg-gray-100">
+            <div className="w-full max-w-[1400px] mx-auto p-2 sm:p-3 space-y-3">
                 {/* Header */}
-                <div className="mb-8">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 rounded-2xl flex items-center justify-center shadow-lg">
-                                <History className="w-8 h-8 text-white" />
-                            </div>
-                            <div>
-                                <h1 className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
-                                    Return History
-                                </h1>
-                                <p className="text-gray-600 mt-1">View and manage battery return records</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <PageHeader title="Return History" />
                 
                 {/* Loading State */}
                 {isLoading ? (
@@ -140,12 +127,12 @@ const ReturnHistory = () => {
                 ) : (
                     <>
                         {/* Search and Filters */}
-                        <div className="bg-white rounded-xl shadow-md border border-gray-100 p-6 mb-6">
-                            <div className="flex justify-between items-center mb-4">
-                                <h3 className="text-lg font-bold text-gray-800">Search & Filters</h3>
+                        <div className="bg-white border border-gray-300 rounded shadow-sm p-4">
+                            <div className="flex justify-between items-center mb-3">
+                                <h3 className="text-sm font-bold text-gray-800">Search & Filters</h3>
                                 <button
                                     onClick={() => setShowFilters(!showFilters)}
-                                    className="flex items-center gap-2 text-sm text-orange-600 hover:text-orange-700 font-medium"
+                                    className="flex items-center gap-1.5 text-sm text-[#2563eb] hover:text-[#1d4ed8] font-medium"
                                 >
                                     <Filter size={16} />
                                     {showFilters ? 'Hide Filters' : 'Show Filters'}
@@ -153,14 +140,14 @@ const ReturnHistory = () => {
                             </div>
                             
                             {/* Search */}
-                            <div className="relative mb-4">
-                                <Search size={20} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                            <div className="relative mb-3">
+                                <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                                 <input
                                     type="text"
                                     placeholder="Search by serial number, brand, model, or user..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-orange-500 outline-none transition-all"
+                                    className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded focus:border-[#2563eb] outline-none transition-all text-sm"
                                 />
                             </div>
                             
@@ -169,11 +156,11 @@ const ReturnHistory = () => {
                                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-4 border-t border-gray-200">
                                     {/* Status Filter */}
                                     <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-2">Status</label>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-1">Status</label>
                                         <select
                                             value={filterStatus}
                                             onChange={(e) => setFilterStatus(e.target.value)}
-                                            className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-orange-500 outline-none transition-all"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded focus:border-[#2563eb] outline-none transition-all text-sm"
                                         >
                                             <option value="all">All Statuses</option>
                                             <option value="Completed">Completed</option>
@@ -187,7 +174,7 @@ const ReturnHistory = () => {
                                         <select
                                             value={filterCompensationType}
                                             onChange={(e) => setFilterCompensationType(e.target.value)}
-                                            className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-orange-500 outline-none transition-all"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded focus:border-[#2563eb] outline-none transition-all text-sm"
                                         >
                                             <option value="all">All Types</option>
                                             <option value="Money">Money</option>
@@ -197,12 +184,12 @@ const ReturnHistory = () => {
                                     
                                     {/* Date From */}
                                     <div>
-                                        <label className="block text-sm font-semibold text-gray-700 mb-2">From Date</label>
+                                        <label className="block text-sm font-semibold text-gray-700 mb-1">From Date</label>
                                         <input
                                             type="date"
                                             value={dateFrom}
                                             onChange={(e) => setDateFrom(e.target.value)}
-                                            className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-orange-500 outline-none transition-all"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded focus:border-[#2563eb] outline-none transition-all text-sm"
                                         />
                                     </div>
                                     
@@ -213,7 +200,7 @@ const ReturnHistory = () => {
                                             type="date"
                                             value={dateTo}
                                             onChange={(e) => setDateTo(e.target.value)}
-                                            className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-orange-500 outline-none transition-all"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded focus:border-[#2563eb] outline-none transition-all text-sm"
                                         />
                                     </div>
                                 </div>
@@ -222,7 +209,7 @@ const ReturnHistory = () => {
                             {/* Results count & Clear */}
                             <div className="flex justify-between items-center mt-4">
                                 <div className="text-sm text-gray-600">
-                                    Showing <span className="font-bold text-orange-600">{filteredReturns.length}</span> of <span className="font-bold">{returns.length}</span> returns
+                                    Showing <span className="font-bold text-[#2563eb]">{filteredReturns.length}</span> of <span className="font-bold">{returns.length}</span> returns
                                 </div>
                                 {(searchQuery || filterStatus !== 'all' || filterCompensationType !== 'all' || dateFrom || dateTo) && (
                                     <button
@@ -238,7 +225,7 @@ const ReturnHistory = () => {
                         
                         {/* Returns - Empty State */}
                         {filteredReturns.length === 0 ? (
-                            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-12 text-center">
+                            <div className="bg-white border border-gray-300 rounded shadow-sm p-8 text-center">
                                 <RotateCcw size={48} className="text-gray-300 mx-auto mb-4" />
                                 <h3 className="text-xl font-bold text-gray-600 mb-2">No Returns Found</h3>
                                 <p className="text-gray-500">
@@ -250,9 +237,9 @@ const ReturnHistory = () => {
                         ) : (
                             <>
                                 {/* Mobile Card View */}
-                                <div className="lg:hidden space-y-4">
+                                <div className="lg:hidden space-y-3">
                                     {filteredReturns.map((returnItem) => (
-                                        <div key={returnItem.id} className="bg-white rounded-xl shadow-md border border-gray-200 p-4">
+                                        <div key={returnItem.id} className="bg-white rounded shadow-sm border border-gray-200 p-4">
                                             {/* Header with Date & Status */}
                                             <div className="flex justify-between items-start mb-3">
                                                 <div className="flex items-center gap-2">
@@ -322,24 +309,24 @@ const ReturnHistory = () => {
                                 </div>
 
                                 {/* Desktop Table View */}
-                                <div className="hidden lg:block bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+                                <div className="hidden lg:block bg-white border border-gray-300 rounded shadow-sm overflow-hidden">
                                     <div className="overflow-x-auto">
-                                        <table className="w-full">
+                                        <table className="w-full text-sm border-collapse">
                                             <thead>
-                                                <tr className="bg-gradient-to-r from-orange-500 to-red-600">
-                                                    <th className="px-6 py-4 text-left text-sm font-bold text-white uppercase tracking-wider">Date</th>
-                                                    <th className="px-6 py-4 text-left text-sm font-bold text-white uppercase tracking-wider">Battery</th>
-                                                    <th className="px-6 py-4 text-left text-sm font-bold text-white uppercase tracking-wider">Compensation</th>
-                                                    <th className="px-6 py-4 text-left text-sm font-bold text-white uppercase tracking-wider">Amount/Replacement</th>
-                                                    <th className="px-6 py-4 text-left text-sm font-bold text-white uppercase tracking-wider">Status</th>
-                                                    <th className="px-6 py-4 text-left text-sm font-bold text-white uppercase tracking-wider">Returned By</th>
-                                                    <th className="px-6 py-4 text-right text-sm font-bold text-white uppercase tracking-wider">Actions</th>
+                                                <tr className="bg-[#2563eb] text-white text-left">
+                                                    <th className="px-3 py-2 text-left text-xs font-bold text-white uppercase tracking-wider">Date</th>
+                                                    <th className="px-3 py-2 text-left text-xs font-bold text-white uppercase tracking-wider">Battery</th>
+                                                    <th className="px-3 py-2 text-left text-xs font-bold text-white uppercase tracking-wider">Compensation</th>
+                                                    <th className="px-3 py-2 text-left text-xs font-bold text-white uppercase tracking-wider">Amount/Replacement</th>
+                                                    <th className="px-3 py-2 text-left text-xs font-bold text-white uppercase tracking-wider">Status</th>
+                                                    <th className="px-3 py-2 text-left text-xs font-bold text-white uppercase tracking-wider">Returned By</th>
+                                                    <th className="px-3 py-2 text-right text-xs font-bold text-white uppercase tracking-wider">Actions</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                {filteredReturns.map((returnItem) => (
-                                                    <tr key={returnItem.id} className="border-b border-gray-200 hover:bg-orange-50 transition-colors">
-                                                        <td className="px-6 py-4">
+                                                {filteredReturns.map((returnItem, index) => (
+                                                    <tr key={returnItem.id} className={`border-b border-gray-200 transition-colors ${index % 2 === 0 ? 'bg-blue-50 hover:bg-blue-100' : 'bg-white hover:bg-blue-50'}`}>
+                                                        <td className="px-3 py-2">
                                                             <div className="flex items-center gap-2">
                                                                 <Calendar size={16} className="text-gray-400" />
                                                                 <span className="text-gray-800 font-medium">
@@ -347,13 +334,13 @@ const ReturnHistory = () => {
                                                                 </span>
                                                             </div>
                                                         </td>
-                                                        <td className="px-6 py-4">
+                                                        <td className="px-3 py-2">
                                                             <div>
                                                                 <p className="font-bold text-gray-800">{returnItem.serialNumber}</p>
                                                                 <p className="text-sm text-gray-500">{returnItem.brand} - {returnItem.model}</p>
                                                             </div>
                                                         </td>
-                                                        <td className="px-6 py-4">
+                                                        <td className="px-3 py-2">
                                                             <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium border ${getCompensationBadge(returnItem.compensationType)}`}>
                                                                 {returnItem.compensationType === 'Money' ? (
                                                                     <DollarSign size={14} />
@@ -363,7 +350,7 @@ const ReturnHistory = () => {
                                                                 {returnItem.compensationType}
                                                             </span>
                                                         </td>
-                                                        <td className="px-6 py-4">
+                                                        <td className="px-3 py-2">
                                                             {returnItem.compensationType === 'Money' ? (
                                                                 <span className="font-bold text-green-600">
                                                                     {APP_CONFIG.CURRENCY} {returnItem.moneyAmount?.toLocaleString() || '0'}
@@ -374,15 +361,15 @@ const ReturnHistory = () => {
                                                                 </span>
                                                             )}
                                                         </td>
-                                                        <td className="px-6 py-4">
+                                                        <td className="px-3 py-2">
                                                             <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getStatusBadge(returnItem.status)}`}>
                                                                 {returnItem.status}
                                                             </span>
                                                         </td>
-                                                        <td className="px-6 py-4 text-gray-700">
+                                                        <td className="px-3 py-2 text-gray-700">
                                                             {returnItem.returnedBy}
                                                         </td>
-                                                        <td className="px-6 py-4 text-right">
+                                                        <td className="px-3 py-2 text-right">
                                                             <button
                                                                 onClick={() => setSelectedReturn(returnItem)}
                                                                 className="p-2 text-orange-600 hover:bg-orange-100 rounded-lg transition-all"
@@ -406,9 +393,9 @@ const ReturnHistory = () => {
             {/* Return Details Modal */}
             {selectedReturn && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-                        <div className="sticky top-0 bg-gradient-to-r from-orange-500 to-red-600 p-6 flex justify-between items-center">
-                            <h2 className="text-2xl font-bold text-white">Return Details</h2>
+                    <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-300">
+                        <div className="sticky top-0 bg-[#2563eb] p-4 flex justify-between items-center">
+                            <h2 className="text-lg font-bold text-white">Return Details</h2>
                             <button 
                                 onClick={() => setSelectedReturn(null)} 
                                 className="text-white hover:bg-white/20 p-2 rounded-lg transition-colors"
@@ -419,7 +406,7 @@ const ReturnHistory = () => {
                         
                         <div className="p-6 space-y-6">
                             {/* Battery Info */}
-                            <div className="bg-gray-50 rounded-xl p-4">
+                            <div className="bg-gray-50 rounded p-4">
                                 <h3 className="font-bold text-lg text-gray-800 mb-3">Battery Information</h3>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
@@ -444,7 +431,7 @@ const ReturnHistory = () => {
                             </div>
                             
                             {/* Return Info */}
-                            <div className="bg-orange-50 rounded-xl p-4">
+                            <div className="bg-orange-50 rounded p-4">
                                 <h3 className="font-bold text-lg text-gray-800 mb-3">Return Information</h3>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div>
@@ -471,7 +458,7 @@ const ReturnHistory = () => {
                             </div>
                             
                             {/* Compensation Info */}
-                            <div className={`rounded-xl p-4 ${selectedReturn.compensationType === 'Money' ? 'bg-green-50' : 'bg-blue-50'}`}>
+                            <div className={`rounded p-4 ${selectedReturn.compensationType === 'Money' ? 'bg-green-50' : 'bg-blue-50'}`}>
                                 <h3 className="font-bold text-lg text-gray-800 mb-3">Compensation Details</h3>
                                 <div className="flex items-center gap-3 mb-3">
                                     {selectedReturn.compensationType === 'Money' ? (
@@ -515,7 +502,7 @@ const ReturnHistory = () => {
                             
                             {/* Notes */}
                             {selectedReturn.notes && (
-                                <div className="bg-gray-50 rounded-xl p-4">
+                                <div className="bg-gray-50 rounded p-4">
                                     <h3 className="font-bold text-lg text-gray-800 mb-2">Notes</h3>
                                     <p className="text-gray-600">{selectedReturn.notes}</p>
                                 </div>
@@ -525,7 +512,7 @@ const ReturnHistory = () => {
                         <div className="p-6 border-t border-gray-200">
                             <button
                                 onClick={() => setSelectedReturn(null)}
-                                className="w-full px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-colors"
+                                className="w-full px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded font-medium transition-colors"
                             >
                                 Close
                             </button>

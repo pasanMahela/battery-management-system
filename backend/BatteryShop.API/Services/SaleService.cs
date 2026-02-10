@@ -168,6 +168,8 @@ public class SaleService
             Discount = dto.Discount,
             CashierId = cashierId,
             CashierName = cashierName,
+            PaidAmount = dto.PaidAmount,
+            Balance = dto.Balance,
             Items = saleItems,
             CreatedAt = DateTime.UtcNow
         };

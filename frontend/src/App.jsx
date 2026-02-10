@@ -5,6 +5,7 @@ import RoleBasedRoute from './components/RoleBasedRoute';
 import Login from './pages/Login';
 import Inventory from './pages/Inventory';
 import AddBattery from './pages/AddBattery';
+import EditBattery from './pages/EditBattery';
 import POS from './pages/POS';
 import Sales from './pages/Sales';
 import UserManagement from './pages/UserManagement';
@@ -13,12 +14,15 @@ import Customers from './pages/Customers';
 import Returns from './pages/Returns';
 import ReturnHistory from './pages/ReturnHistory';
 import ActivityLog from './pages/ActivityLog';
+import PurchaseHistory from './pages/PurchaseHistory';
 import ScannerPage from './pages/Scanner';
 import { ScannerProvider } from './context/ScannerContext';
 import { useContext, useState, useEffect } from 'react';
 import AuthContext from './context/AuthContext';
 import { Package, ShoppingCart, BarChart3, TrendingUp, DollarSign, Battery } from 'lucide-react';
 import { USER_ROLES, API_ENDPOINTS } from './constants/constants';
+import SalesChart from './components/SalesChart';
+import PageHeader from './components/PageHeader';
 
 const PrivateRoute = ({ children }) => {
   const { user, loading } = useContext(AuthContext);
@@ -30,6 +34,7 @@ const Dashboard = () => {
   const { user } = useContext(AuthContext);
   const role = user?.role || 'Unknown';
   const [timePeriod, setTimePeriod] = useState('today'); // 'today', 'yesterday', 'week', 'month', 'year'
+  const [salesData, setSalesData] = useState([]);
   const [stats, setStats] = useState({
     totalInventory: 0,
     todaysSales: 0,
@@ -54,6 +59,7 @@ const Dashboard = () => {
           headers: { Authorization: `Bearer ${user.token}` }
         });
         const sales = await salesRes.json();
+        setSalesData(sales);
 
         // Calculate total inventory
         const totalInventory = batteries.reduce((sum, b) => sum + b.stockQuantity, 0);
@@ -147,126 +153,122 @@ const Dashboard = () => {
   }, [user, timePeriod]);
 
   return (
-    <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 min-h-screen">
-      <div className="container mx-auto">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-800 mb-2">Welcome Back!</h1>
-          <p className="text-gray-600">Here's what's happening with your battery shop today.</p>
+    <div className="min-h-screen bg-gray-100">
+      <div className="w-full max-w-[1400px] mx-auto p-2 sm:p-3 space-y-3">
+        <PageHeader title="Dashboard" />
+
+        <div className="bg-white border border-gray-300 rounded shadow-sm p-3">
+          <p className="text-sm text-gray-600">Welcome back, <span className="font-bold text-gray-800">{user?.username}</span>. Here's what's happening with your battery shop.</p>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-          {/* Total Inventory - Links to View Inventory */}
-          <a href="/inventory/view" className="bg-white p-6 rounded-xl shadow-md border border-blue-100 hover:shadow-lg transition-all cursor-pointer">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
+          {/* Total Inventory */}
+          <a href="/inventory/view" className="bg-white p-4 rounded shadow-sm border border-gray-300 hover:border-[#2563eb] transition-all cursor-pointer">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-600 text-sm">Total Inventory</p>
-                <h3 className="text-3xl font-bold text-gray-800 mt-1">{stats.totalInventory}</h3>
+                <p className="text-xs font-bold text-gray-500 uppercase">Total Inventory</p>
+                <h3 className="text-2xl font-extrabold text-gray-800 mt-1">{stats.totalInventory}</h3>
               </div>
-              <Battery size={40} className="text-blue-500" />
+              <div className="p-2 bg-blue-50 rounded"><Battery size={24} className="text-[#2563eb]" /></div>
             </div>
           </a>
 
           {/* Sales with Period Selector */}
-          <div className="bg-white p-6 rounded-xl shadow-md border border-green-100">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex-1">
-                <p className="text-gray-600 text-sm mb-1">Total Sales</p>
-                <h3 className="text-3xl font-bold text-gray-800">{stats.todaysSales}</h3>
+          <div className="bg-white p-4 rounded shadow-sm border border-gray-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-bold text-gray-500 uppercase">Sales</p>
+                <h3 className="text-2xl font-extrabold text-gray-800 mt-1">{stats.todaysSales}</h3>
               </div>
-              <DollarSign size={40} className="text-green-500" />
+              <div className="p-2 bg-green-50 rounded"><DollarSign size={24} className="text-green-600" /></div>
             </div>
-            <div className="flex gap-1 mt-3 flex-wrap">
-              <button onClick={() => setTimePeriod('today')} className={`px-2 py-1 text-xs rounded transition-colors ${timePeriod === 'today' ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>Today</button>
-              <button onClick={() => setTimePeriod('yesterday')} className={`px-2 py-1 text-xs rounded transition-colors ${timePeriod === 'yesterday' ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>Yesterday</button>
-              <button onClick={() => setTimePeriod('week')} className={`px-2 py-1 text-xs rounded transition-colors ${timePeriod === 'week' ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>Week</button>
-              <button onClick={() => setTimePeriod('month')} className={`px-2 py-1 text-xs rounded transition-colors ${timePeriod === 'month' ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>Month</button>
-              <button onClick={() => setTimePeriod('year')} className={`px-2 py-1 text-xs rounded transition-colors ${timePeriod === 'year' ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>Year</button>
+            <div className="flex gap-1 mt-2 flex-wrap">
+              {['today','yesterday','week','month','year'].map(p => (
+                <button key={p} onClick={() => setTimePeriod(p)} className={`px-2 py-0.5 text-[10px] rounded font-bold transition-colors ${timePeriod === p ? 'bg-[#2563eb] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>{p.charAt(0).toUpperCase() + p.slice(1)}</button>
+              ))}
             </div>
           </div>
 
-          {/* Expiring Soon - Links to Inventory with Expiring Filter */}
-          <a href="/inventory/view?filter=expiring" className="bg-white p-6 rounded-xl shadow-md border border-orange-100 hover:shadow-lg transition-all cursor-pointer">
+          {/* Expiring Soon */}
+          <a href="/inventory/view?filter=expiring" className="bg-white p-4 rounded shadow-sm border border-gray-300 hover:border-orange-400 transition-all cursor-pointer">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-600 text-sm">Expiring Soon</p>
-                <h3 className="text-3xl font-bold text-gray-800 mt-1">{stats.expiringSoon}</h3>
+                <p className="text-xs font-bold text-gray-500 uppercase">Expiring Soon</p>
+                <h3 className="text-2xl font-extrabold text-gray-800 mt-1">{stats.expiringSoon}</h3>
               </div>
-              <TrendingUp size={40} className="text-orange-500" />
+              <div className="p-2 bg-orange-50 rounded"><TrendingUp size={24} className="text-orange-500" /></div>
             </div>
           </a>
 
-          {/* Total Revenue with Period Selector */}
-          <div className="bg-white p-6 rounded-xl shadow-md border border-purple-100">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex-1">
-                <p className="text-gray-600 text-sm mb-1">Total Revenue</p>
-                <h3 className="text-3xl font-bold text-gray-800">LKR {stats.periodRevenue.toLocaleString()}</h3>
-              </div>
-              <BarChart3 size={40} className="text-purple-500" />
-            </div>
-            <div className="flex gap-1 mt-3 flex-wrap">
-              <button onClick={() => setTimePeriod('today')} className={`px-2 py-1 text-xs rounded transition-colors ${timePeriod === 'today' ? 'bg-purple-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>Today</button>
-              <button onClick={() => setTimePeriod('yesterday')} className={`px-2 py-1 text-xs rounded transition-colors ${timePeriod === 'yesterday' ? 'bg-purple-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>Yesterday</button>
-              <button onClick={() => setTimePeriod('week')} className={`px-2 py-1 text-xs rounded transition-colors ${timePeriod === 'week' ? 'bg-purple-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>Week</button>
-              <button onClick={() => setTimePeriod('month')} className={`px-2 py-1 text-xs rounded transition-colors ${timePeriod === 'month' ? 'bg-purple-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>Month</button>
-              <button onClick={() => setTimePeriod('year')} className={`px-2 py-1 text-xs rounded transition-colors ${timePeriod === 'year' ? 'bg-purple-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>Year</button>
-            </div>
-          </div>
-
-          {/* Total Profit with Period Selector */}
-          <div className="bg-white p-6 rounded-xl shadow-md border border-indigo-100">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex-1">
-                <p className="text-gray-600 text-sm mb-1">Total Profit</p>
-                <h3 className="text-3xl font-bold text-gray-800">LKR {stats.periodProfit.toLocaleString()}</h3>
-              </div>
-              <Package size={40} className="text-indigo-500" />
-            </div>
-            <div className="flex gap-1 mt-3 flex-wrap">
-              <button onClick={() => setTimePeriod('today')} className={`px-2 py-1 text-xs rounded transition-colors ${timePeriod === 'today' ? 'bg-indigo-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>Today</button>
-              <button onClick={() => setTimePeriod('yesterday')} className={`px-2 py-1 text-xs rounded transition-colors ${timePeriod === 'yesterday' ? 'bg-indigo-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>Yesterday</button>
-              <button onClick={() => setTimePeriod('week')} className={`px-2 py-1 text-xs rounded transition-colors ${timePeriod === 'week' ? 'bg-indigo-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>Week</button>
-              <button onClick={() => setTimePeriod('month')} className={`px-2 py-1 text-xs rounded transition-colors ${timePeriod === 'month' ? 'bg-indigo-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>Month</button>
-              <button onClick={() => setTimePeriod('year')} className={`px-2 py-1 text-xs rounded transition-colors ${timePeriod === 'year' ? 'bg-indigo-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>Year</button>
-            </div>
-          </div>
-
-          {/* Total Inventory Value */}
-          <a href="/inventory/view" className="bg-white p-6 rounded-xl shadow-md border border-teal-100 hover:shadow-lg transition-all cursor-pointer">
+          {/* Revenue */}
+          <div className="bg-white p-4 rounded shadow-sm border border-gray-300">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-gray-600 text-sm">Inventory Value</p>
-                <h3 className="text-3xl font-bold text-gray-800 mt-1">LKR {stats.totalInventoryValue.toLocaleString()}</h3>
+                <p className="text-xs font-bold text-gray-500 uppercase">Revenue</p>
+                <h3 className="text-xl font-extrabold text-gray-800 mt-1">LKR {stats.periodRevenue.toLocaleString()}</h3>
               </div>
-              <Battery size={40} className="text-teal-500" />
+              <div className="p-2 bg-purple-50 rounded"><BarChart3 size={24} className="text-purple-500" /></div>
+            </div>
+          </div>
+
+          {/* Profit */}
+          <div className="bg-white p-4 rounded shadow-sm border border-gray-300">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-bold text-gray-500 uppercase">Profit</p>
+                <h3 className="text-xl font-extrabold text-gray-800 mt-1">LKR {stats.periodProfit.toLocaleString()}</h3>
+              </div>
+              <div className="p-2 bg-indigo-50 rounded"><Package size={24} className="text-indigo-500" /></div>
+            </div>
+          </div>
+
+          {/* Inventory Value */}
+          <a href="/inventory/view" className="bg-white p-4 rounded shadow-sm border border-gray-300 hover:border-teal-400 transition-all cursor-pointer">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-bold text-gray-500 uppercase">Inventory Value</p>
+                <h3 className="text-xl font-extrabold text-gray-800 mt-1">LKR {stats.totalInventoryValue.toLocaleString()}</h3>
+              </div>
+              <div className="p-2 bg-teal-50 rounded"><Battery size={24} className="text-teal-500" /></div>
             </div>
           </a>
         </div>
 
+        {/* Sales Analytics Chart */}
+        {salesData.length > 0 && (
+          <div className="bg-white border border-gray-300 rounded shadow-sm p-4">
+            <h3 className="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2">
+              <BarChart3 size={16} className="text-[#2563eb]" />
+              Sales Analytics (Last 7 Days)
+            </h3>
+            <SalesChart sales={salesData} days={7} />
+          </div>
+        )}
+
         {/* Quick Actions */}
-        <div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-white border border-gray-300 rounded shadow-sm p-4">
+          <h2 className="text-sm font-bold text-gray-800 mb-3">Quick Actions</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {role === 'Admin' && (
-              <a href="/inventory/view" className="block p-6 bg-white border-2 border-blue-200 rounded-xl hover:border-blue-400 hover:shadow-lg transition-all">
-                <Package size={32} className="mb-3 text-blue-500" />
-                <h3 className="text-xl font-bold text-gray-800 mb-2">Manage Inventory</h3>
-                <p className="text-gray-600 text-sm">Add, edit, or remove battery stock</p>
+              <a href="/inventory/view" className="block p-4 bg-white border-2 border-gray-300 rounded hover:border-[#2563eb] transition-all">
+                <Package size={24} className="mb-2 text-[#2563eb]" />
+                <h3 className="text-sm font-bold text-gray-800 mb-1">Manage Inventory</h3>
+                <p className="text-xs text-gray-500">Add, edit, or remove battery stock</p>
               </a>
             )}
 
-            <a href="/pos" className="block p-6 bg-white border-2 border-green-200 rounded-xl hover:border-green-400 hover:shadow-lg transition-all">
-              <ShoppingCart size={32} className="mb-3 text-green-500" />
-              <h3 className="text-xl font-bold text-gray-800 mb-2">Process Sale</h3>
-              <p className="text-gray-600 text-sm">Complete a customer transaction</p>
+            <a href="/pos" className="block p-4 bg-white border-2 border-gray-300 rounded hover:border-green-500 transition-all">
+              <ShoppingCart size={24} className="mb-2 text-green-600" />
+              <h3 className="text-sm font-bold text-gray-800 mb-1">Process Sale</h3>
+              <p className="text-xs text-gray-500">Complete a customer transaction</p>
             </a>
 
             {role === 'Admin' && (
-              <a href="/sales" className="block p-6 bg-white border-2 border-purple-200 rounded-xl hover:border-purple-400 hover:shadow-lg transition-all">
-                <BarChart3 size={32} className="mb-3 text-purple-500" />
-                <h3 className="text-xl font-bold text-gray-800 mb-2">View Sales</h3>
-                <p className="text-gray-600 text-sm">Analyze sales reports and history</p>
+              <a href="/sales" className="block p-4 bg-white border-2 border-gray-300 rounded hover:border-purple-500 transition-all">
+                <BarChart3 size={24} className="mb-2 text-purple-500" />
+                <h3 className="text-sm font-bold text-gray-800 mb-1">View Sales</h3>
+                <p className="text-xs text-gray-500">Analyze sales reports and history</p>
               </a>
             )}
           </div>
@@ -302,6 +304,13 @@ function App() {
             <RoleBasedRoute allowedRoles={[USER_ROLES.ADMIN]}>
               <Layout>
                 <AddBattery />
+              </Layout>
+            </RoleBasedRoute>
+          } />
+          <Route path="/inventory/edit" element={
+            <RoleBasedRoute allowedRoles={[USER_ROLES.ADMIN]}>
+              <Layout>
+                <EditBattery />
               </Layout>
             </RoleBasedRoute>
           } />
@@ -371,6 +380,15 @@ function App() {
               <RoleBasedRoute allowedRoles={[USER_ROLES.ADMIN]}>
                 <Layout>
                   <ActivityLog />
+                </Layout>
+              </RoleBasedRoute>
+            </PrivateRoute>
+          } />
+          <Route path="/purchase-history" element={
+            <PrivateRoute>
+              <RoleBasedRoute allowedRoles={[USER_ROLES.ADMIN]}>
+                <Layout>
+                  <PurchaseHistory />
                 </Layout>
               </RoleBasedRoute>
             </PrivateRoute>
