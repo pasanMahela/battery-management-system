@@ -287,11 +287,11 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/scanner/:sessionId" element={<ScannerPage />} />
           <Route path="/" element={
-            <RoleBasedRoute allowedRoles={[USER_ROLES.ADMIN]}>
+            <PrivateRoute>
               <Layout>
-                <Dashboard />
+                <POS />
               </Layout>
-            </RoleBasedRoute>
+            </PrivateRoute>
           } />
           <Route path="/inventory/view" element={
             <RoleBasedRoute allowedRoles={[USER_ROLES.ADMIN]}>
