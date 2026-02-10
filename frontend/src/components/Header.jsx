@@ -1,7 +1,7 @@
 ﻿import { useContext, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
-import { Package, ShoppingCart, BarChart3, LogOut, User, Zap, ChevronDown, Plus, Users, History, Menu, X, ScrollText, Edit2, ClipboardList } from 'lucide-react';
+import { Home, Package, ShoppingCart, BarChart3, LogOut, User, ChevronDown, Plus, Users, History, Menu, X, ScrollText, Edit2, ClipboardList } from 'lucide-react';
 import { APP_CONFIG } from '../constants/constants';
 import NotificationBell from './NotificationBell';
 import ScannerStatusIndicator from './ScannerStatusIndicator';
@@ -65,18 +65,9 @@ const Header = () => {
             <div className="max-w-[1400px] mx-auto px-3 sm:px-4 lg:px-6 py-1.5">
                 <div className="flex justify-between items-center">
                     {/* Logo & Brand */}
-                    <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
-                        <div className="relative">
-                            <div className="w-8 h-8 bg-[#2563eb] rounded flex items-center justify-center">
-                                <Zap className="w-4 h-4 text-white" fill="currentColor" />
-                            </div>
-                            <div className="absolute -top-0.5 -right-0.5 w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></div>
-                        </div>
-                        <div className="hidden sm:block">
-                            <h1 className="text-sm font-extrabold text-[#2563eb] leading-none">
-                                {APP_CONFIG.APP_NAME}
-                            </h1>
-                            <p className="text-[9px] text-gray-400 font-bold hidden lg:block">{APP_CONFIG.APP_SUBTITLE}</p>
+                    <div className="flex items-center cursor-pointer" onClick={() => navigate('/')}>
+                        <div className="w-8 h-8 bg-[#2563eb] rounded flex items-center justify-center">
+                            <span className="text-white font-extrabold text-lg">R</span>
                         </div>
                     </div>
 
@@ -95,6 +86,7 @@ const Header = () => {
                                 <NavButton path="/customers" icon={Users} label="Customers" />
                                 <NavButton path="/users" icon={Users} label="Users" />
                                 <NavButton path="/activity-log" icon={ScrollText} label="Logs" />
+                                <NavButton path="/dashboard" icon={Home} label="Dashboard" />
                             </>
                         )}
                     </nav>
@@ -179,6 +171,7 @@ const Header = () => {
                                     <MobileNavItem path="/customers" icon={Users} label="Customers" />
                                     <MobileNavItem path="/users" icon={Users} label="Users" />
                                     <MobileNavItem path="/activity-log" icon={ScrollText} label="Activity Log" />
+                                    <MobileNavItem path="/dashboard" icon={Home} label="Dashboard" />
                                 </>
                             )}
                             

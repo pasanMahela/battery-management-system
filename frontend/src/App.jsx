@@ -293,6 +293,13 @@ function App() {
               </Layout>
             </PrivateRoute>
           } />
+          <Route path="/dashboard" element={
+            <RoleBasedRoute allowedRoles={[USER_ROLES.ADMIN]}>
+              <Layout>
+                <Dashboard />
+              </Layout>
+            </RoleBasedRoute>
+          } />
           <Route path="/inventory/view" element={
             <RoleBasedRoute allowedRoles={[USER_ROLES.ADMIN]}>
               <Layout>
