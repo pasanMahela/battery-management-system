@@ -1048,7 +1048,7 @@ const POS = () => {
                         <button
                             onClick={handleCheckout}
                             disabled={cart.length === 0 || !customerName || !customerPhone || isProcessingSale}
-                            className="px-6 py-2 bg-[#CC0000] text-white hover:bg-[#990000] rounded font-bold text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                            className="px-6 py-2 bg-gray-200 text-gray-800 hover:bg-gray-300 rounded font-bold text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-colors border border-gray-300"
                         >
                             {isProcessingSale ? 'Processing...' : 'Close Sale & Print'}
                         </button>

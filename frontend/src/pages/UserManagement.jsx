@@ -314,7 +314,7 @@ const UserManagement = () => {
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-[#CC0000] hover:bg-[#990000] text-white rounded font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed border border-gray-300"
                                 >
                                     {isSubmitting ? (
                                         <><Loader2 size={16} className="animate-spin" /> Creating...</>

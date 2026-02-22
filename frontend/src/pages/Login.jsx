@@ -47,12 +47,12 @@ const Login = () => {
             <div className="w-full max-w-sm m-4">
                 <div className="bg-white rounded shadow-sm border border-gray-300 overflow-hidden">
                     {/* Header */}
-                    <div className="bg-[#2563eb] px-6 py-5 text-center">
+                    <div className="bg-[#CC0000] px-6 py-5 text-center">
                         <div className="w-12 h-12 bg-white rounded mx-auto mb-3 flex items-center justify-center">
-                            <span className="text-[#2563eb] font-extrabold text-2xl">R</span>
+                            <span className="text-[#CC0000] font-extrabold text-2xl">R</span>
                         </div>
                         <h2 className="text-lg font-extrabold text-white">{APP_CONFIG.SHOP_NAME}</h2>
-                        <p className="text-xs text-blue-200 font-bold mt-0.5">{APP_CONFIG.APP_SUBTITLE}</p>
+                        <p className="text-xs text-red-200 font-bold mt-0.5">{APP_CONFIG.APP_SUBTITLE}</p>
                     </div>
 
                     <div className="p-6 space-y-4">
@@ -75,7 +75,7 @@ const Login = () => {
                                     type="text"
                                     value={username}
                                     onChange={(e) => setUsername(e.target.value)}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded focus:border-[#2563eb] outline-none transition-all text-sm"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded focus:border-[#CC0000] outline-none transition-all text-sm"
                                     placeholder="Enter your username"
                                     required
                                     disabled={isLoading}
@@ -90,7 +90,7 @@ const Login = () => {
                                         type={showPassword ? "text" : "password"}
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        className="w-full px-3 py-2 pr-10 border border-gray-300 rounded focus:border-[#2563eb] outline-none transition-all text-sm"
+                                        className="w-full px-3 py-2 pr-10 border border-gray-300 rounded focus:border-[#CC0000] outline-none transition-all text-sm"
                                         placeholder="Enter your password"
                                         required
                                         disabled={isLoading}
@@ -110,7 +110,7 @@ const Login = () => {
                             <button
                                 type="submit"
                                 disabled={isLoading}
-                                className="w-full py-2.5 font-bold text-white bg-[#2563eb] rounded hover:bg-[#1d4ed8] transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                className="w-full py-2.5 font-bold text-gray-800 bg-gray-200 rounded hover:bg-gray-300 transition-all text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 border border-gray-300"
                             >
                                 {isLoading ? (
                                     <>

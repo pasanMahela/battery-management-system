@@ -415,7 +415,7 @@ const Inventory = () => {
                                 navigate('/inventory/add');
                             }}
                             disabled={isNavigating}
-                            className="flex items-center gap-1.5 px-4 py-2 bg-[#CC0000] text-white rounded hover:bg-[#990000] transition-colors text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex items-center gap-1.5 px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed border border-gray-300"
                         >
                             {isNavigating ? (
                                 <Loader2 size={16} className="animate-spin" />

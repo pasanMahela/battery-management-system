@@ -216,8 +216,8 @@ const AddBattery = () => {
                                         onFocus={() => setScanMode(true)}
                                         onBlur={() => setScanMode(false)}
                                         className={`flex-1 px-3 py-2 border rounded focus:bg-white outline-none transition-all text-sm ${scanMode
-                                                ? 'bg-green-50 border-green-400 ring-1 ring-green-200'
-                                                : 'bg-gray-50 border-gray-300 focus:border-[#CC0000]'
+                                            ? 'bg-green-50 border-green-400 ring-1 ring-green-200'
+                                            : 'bg-gray-50 border-gray-300 focus:border-[#CC0000]'
                                             }`}
                                         placeholder={scanMode ? 'Scan barcode now...' : 'Click scan or type barcode'}
                                     />
@@ -225,8 +225,8 @@ const AddBattery = () => {
                                         type="button"
                                         onClick={activateScanMode}
                                         className={`px-3 py-2 rounded font-medium transition-all flex items-center gap-1 text-sm ${scanMode
-                                                ? 'bg-green-500 text-white'
-                                                : 'bg-gray-100 text-gray-600 hover:bg-red-50 hover:text-[#CC0000] border border-gray-300'
+                                            ? 'bg-green-500 text-white'
+                                            : 'bg-gray-100 text-gray-600 hover:bg-red-50 hover:text-[#CC0000] border border-gray-300'
                                             }`}
                                         title="Click to activate barcode scanner"
                                     >
@@ -468,7 +468,7 @@ const AddBattery = () => {
                             <button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className="flex items-center gap-1.5 px-4 py-2 bg-[#CC0000] text-white rounded hover:bg-[#990000] font-bold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="flex items-center gap-1.5 px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 font-bold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-gray-300"
                             >
                                 {isSubmitting ? (
                                     <Loader2 size={20} className="animate-spin" />

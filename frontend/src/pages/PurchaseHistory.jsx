@@ -240,7 +240,7 @@ const PurchaseHistory = () => {
                                 <RefreshCw size={14} />
                                 Refresh
                             </button>
-                            <button onClick={exportCSV} className="flex items-center gap-1.5 px-3 py-2 rounded bg-[#CC0000] text-white hover:bg-[#990000] font-bold text-xs transition-all">
+                            <button onClick={exportCSV} className="flex items-center gap-1.5 px-3 py-2 rounded bg-gray-200 text-gray-800 hover:bg-gray-300 font-bold text-xs transition-all border border-gray-300">
                                 <Download size={14} />
                                 Export
                             </button>
