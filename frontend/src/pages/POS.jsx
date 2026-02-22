@@ -84,7 +84,7 @@ const POS = () => {
         const handleScannerInput = (e) => {
             // Skip if a modal is open or user is typing in an input field
             const isInputFocused = ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName);
-            
+
             // If the search input is focused, let the existing search handle it
             if (isInputFocused && document.activeElement !== document.body) {
                 // But still detect fast scanner input in the search field
@@ -576,10 +576,10 @@ const POS = () => {
         // Validate ID (optional field) - supports multiple formats
         // Sri Lankan NIC: 12 digits OR 9 digits + V/v
         // Passport: 6-20 alphanumeric characters
-        const idValidationError = customerId 
-            ? ((/^\d{12}$/.test(customerId) || /^\d{9}[vVxX]$/.test(customerId) || /^[A-Za-z0-9]{6,20}$/.test(customerId)) 
-                ? '' 
-                : 'ID must be valid NIC (12 digits or 9 digits + V) or passport (6-20 alphanumeric)') 
+        const idValidationError = customerId
+            ? ((/^\d{12}$/.test(customerId) || /^\d{9}[vVxX]$/.test(customerId) || /^[A-Za-z0-9]{6,20}$/.test(customerId))
+                ? ''
+                : 'ID must be valid NIC (12 digits or 9 digits + V) or passport (6-20 alphanumeric)')
             : '';
         setIdError(idValidationError);
 
@@ -603,16 +603,16 @@ const POS = () => {
         // Validate stock before processing
         setIsProcessingSale(true);
         const outOfStockItems = await validateStock();
-        
+
         if (outOfStockItems.length > 0) {
-            const itemList = outOfStockItems.map(i => 
+            const itemList = outOfStockItems.map(i =>
                 `• ${i.name}: Requested ${i.requested}, Available ${i.available}`
             ).join('\n');
-            setDialog({ 
-                isOpen: true, 
-                title: 'Insufficient Stock', 
-                message: `The following items have insufficient stock:\n\n${itemList}\n\nPlease update the cart and try again.`, 
-                type: 'error' 
+            setDialog({
+                isOpen: true,
+                title: 'Insufficient Stock',
+                message: `The following items have insufficient stock:\n\n${itemList}\n\nPlease update the cart and try again.`,
+                type: 'error'
             });
             setIsProcessingSale(false);
             return;
@@ -717,7 +717,7 @@ const POS = () => {
                                 onFocus={() => searchTerm.length >= 2 && setShowDropdown(true)}
                                 onKeyDown={handleKeyDown}
                                 ref={searchInputRef}
-                                className="w-full px-3 py-1.5 border-2 border-gray-400 rounded text-sm font-medium outline-none focus:border-blue-600 transition-colors"
+                                className="w-full px-3 py-1.5 border-2 border-gray-400 rounded text-sm font-medium outline-none focus:border-red-600 transition-colors"
                                 autoFocus
                             />
                         </div>
@@ -733,7 +733,7 @@ const POS = () => {
                             </span>
                         )}
                         <span className="inline-flex items-center gap-1 text-xs text-gray-500 ml-auto">
-                            <ScanBarcode size={14} className="text-blue-500" />
+                            <ScanBarcode size={14} className="text-red-500" />
                             Barcode scanner ready
                         </span>
                     </div>
@@ -756,7 +756,7 @@ const POS = () => {
                                                 {battery.barcode && <span className="text-gray-400 ml-2 font-mono text-xs">BC: {battery.barcode}</span>}
                                             </div>
                                             <div className="text-right whitespace-nowrap">
-                                                <span className="font-bold text-[#2563eb]">Rs. {battery.sellingPrice.toLocaleString()}</span>
+                                                <span className="font-bold text-[#CC0000]">Rs. {battery.sellingPrice.toLocaleString()}</span>
                                                 <span className="text-xs text-gray-500 ml-3">Stock: {battery.stockQuantity}</span>
                                             </div>
                                         </li>
@@ -788,7 +788,7 @@ const POS = () => {
                             value={overridePrice}
                             onChange={(e) => setOverridePrice(e.target.value)}
                             disabled={!selectedBattery}
-                            className="w-full px-2 py-1.5 border-2 border-gray-400 rounded text-xs font-bold text-right outline-none focus:border-blue-600 disabled:bg-gray-100"
+                            className="w-full px-2 py-1.5 border-2 border-gray-400 rounded text-xs font-bold text-right outline-none focus:border-red-600 disabled:bg-gray-100"
                         />
                         <input
                             type="number"
@@ -797,7 +797,7 @@ const POS = () => {
                             value={itemQuantity}
                             onChange={(e) => setItemQuantity(Math.max(1, Math.min(selectedBattery ? selectedBattery.stockQuantity : 1, parseInt(e.target.value) || 1)))}
                             disabled={!selectedBattery}
-                            className="w-full px-2 py-1.5 border-2 border-gray-400 rounded text-xs font-bold text-center outline-none focus:border-blue-600 disabled:bg-gray-100"
+                            className="w-full px-2 py-1.5 border-2 border-gray-400 rounded text-xs font-bold text-center outline-none focus:border-red-600 disabled:bg-gray-100"
                         />
                         <button
                             onClick={() => selectedBattery && setItemQuantity(Math.min(selectedBattery.stockQuantity, itemQuantity + 1))}
@@ -815,7 +815,7 @@ const POS = () => {
                             value={itemDiscount}
                             onChange={(e) => setItemDiscount(parseFloat(e.target.value) || 0)}
                             disabled={!selectedBattery}
-                            className="w-full px-2 py-1.5 border-2 border-gray-400 rounded text-xs font-medium text-right outline-none focus:border-blue-600 disabled:bg-gray-100"
+                            className="w-full px-2 py-1.5 border-2 border-gray-400 rounded text-xs font-medium text-right outline-none focus:border-red-600 disabled:bg-gray-100"
                             placeholder="0.00"
                         />
                         <input
@@ -826,7 +826,7 @@ const POS = () => {
                                 setItemDiscount(parseFloat(e.target.value) || 0);
                             }}
                             disabled={!selectedBattery}
-                            className="w-full px-2 py-1.5 border-2 border-gray-400 rounded text-xs font-medium text-right outline-none focus:border-blue-600 disabled:bg-gray-100"
+                            className="w-full px-2 py-1.5 border-2 border-gray-400 rounded text-xs font-medium text-right outline-none focus:border-red-600 disabled:bg-gray-100"
                             placeholder="0.00"
                         />
                         <button
@@ -841,30 +841,30 @@ const POS = () => {
                 </div>
 
                 {/* CART TABLE */}
-                <div className="bg-white border border-gray-300 rounded shadow-sm overflow-x-auto">
+                <div className="bg-white border-2 border-red-600 rounded shadow-sm overflow-x-auto">
                     {/* Table Header */}
                     <table className="w-full text-sm border-collapse" style={{ minWidth: '700px' }}>
                         <thead>
-                            <tr className="bg-[#2563eb] text-white text-left">
-                                <th className="px-3 py-2 font-bold border-r border-blue-400/30">Item Code</th>
-                                <th className="px-3 py-2 font-bold border-r border-blue-400/30">Item Name</th>
-                                <th className="px-3 py-2 font-bold border-r border-blue-400/30 text-right">Price Rs.</th>
-                                <th className="px-3 py-2 font-bold border-r border-blue-400/30 text-center">Qty</th>
-                                <th className="px-3 py-2 font-bold border-r border-blue-400/30 text-right">Discount Rs.</th>
-                                <th className="px-3 py-2 font-bold border-r border-blue-400/30 text-right">Total Price Rs.</th>
+                            <tr className="bg-[#CC0000] text-white text-left">
+                                <th className="px-3 py-2 font-bold border-r border-red-400/30">Item Code</th>
+                                <th className="px-3 py-2 font-bold border-r border-red-400/30">Item Name</th>
+                                <th className="px-3 py-2 font-bold border-r border-red-400/30 text-right">Price Rs.</th>
+                                <th className="px-3 py-2 font-bold border-r border-red-400/30 text-center">Qty</th>
+                                <th className="px-3 py-2 font-bold border-r border-red-400/30 text-right">Discount Rs.</th>
+                                <th className="px-3 py-2 font-bold border-r border-red-400/30 text-right">Total Price Rs.</th>
                                 <th className="px-3 py-2 font-bold text-center">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
                             {cart.length === 0 ? (
                                 <tr>
-                                    <td colSpan="7" className="py-8 text-center text-gray-400 bg-blue-50">
+                                    <td colSpan="7" className="py-8 text-center text-gray-400 bg-green-50">
                                         Search for items to add to cart
                                     </td>
                                 </tr>
                             ) : (
                                 cart.map((item, index) => (
-                                    <tr key={index} className={`border-b border-gray-200 ${index % 2 === 0 ? 'bg-blue-50' : 'bg-blue-100/40'}`}>
+                                    <tr key={index} className={`border-b border-gray-200 ${index % 2 === 0 ? 'bg-green-50' : 'bg-green-100/40'}`}>
                                         <td className="px-3 py-2 font-mono text-xs border-r border-gray-300">{item.serialNumber}</td>
                                         <td className="px-3 py-2 font-bold border-r border-gray-300">{item.brand} {item.model}</td>
                                         <td className="px-3 py-2 text-right font-medium border-r border-gray-300">{item.unitPrice.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
@@ -872,7 +872,7 @@ const POS = () => {
                                         <td className="px-3 py-2 text-right border-r border-gray-300">{(item.itemDiscount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
                                         <td className="px-3 py-2 text-right font-bold border-r border-gray-300">{((item.unitPrice * item.quantity) - (item.itemDiscount || 0)).toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
                                         <td className="px-3 py-2 text-center">
-                                            <button onClick={() => removeFromCart(index)} className="text-blue-700 hover:text-red-600 underline text-xs font-medium">
+                                            <button onClick={() => removeFromCart(index)} className="text-red-700 hover:text-red-900 underline text-xs font-medium">
                                                 Remove
                                             </button>
                                         </td>
@@ -881,12 +881,12 @@ const POS = () => {
                             )}
 
                             {/* SUMMARY ROWS */}
-                            <tr className="bg-blue-50 border-t-2 border-gray-300">
+                            <tr className="bg-green-50 border-t-2 border-gray-300">
                                 <td colSpan="5" className="px-3 py-2 text-right font-bold border-r border-gray-300">Gross Value Rs.</td>
                                 <td className="px-3 py-2 text-right font-bold border-r border-gray-300">{calculateSubtotal().toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
                                 <td></td>
                             </tr>
-                            <tr className="bg-blue-100/40">
+                            <tr className="bg-green-100/40">
                                 <td colSpan="5" className="px-3 py-2 text-right font-bold border-r border-gray-300">Deductions Rs.</td>
                                 <td className="px-3 py-1 text-right border-r border-gray-300">
                                     <div className="flex items-center justify-end gap-1">
@@ -895,7 +895,7 @@ const POS = () => {
                                             min="0"
                                             value={discount}
                                             onChange={(e) => setDiscount(parseFloat(e.target.value) || 0)}
-                                            className="w-24 px-2 py-1 border border-gray-400 rounded text-right text-sm font-medium outline-none focus:border-blue-600"
+                                            className="w-24 px-2 py-1 border border-gray-400 rounded text-right text-sm font-medium outline-none focus:border-red-600"
                                         />
                                         <select
                                             value={discountType}
@@ -909,12 +909,12 @@ const POS = () => {
                                 </td>
                                 <td></td>
                             </tr>
-                            <tr className="bg-blue-50">
+                            <tr className="bg-green-50">
                                 <td colSpan="5" className="px-3 py-2 text-right font-bold border-r border-gray-300">Net Value Rs.</td>
                                 <td className="px-3 py-2 text-right font-extrabold text-lg border-r border-gray-300">{calculateTotal().toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
                                 <td></td>
                             </tr>
-                            <tr className="bg-blue-100/40">
+                            <tr className="bg-green-100/40">
                                 <td colSpan="5" className="px-3 py-2 text-right font-bold border-r border-gray-300">Paid Amount Rs.</td>
                                 <td className="px-3 py-1 text-right border-r border-gray-300">
                                     <input
@@ -923,23 +923,22 @@ const POS = () => {
                                         value={paidAmount}
                                         onChange={(e) => setPaidAmount(e.target.value)}
                                         placeholder="0.00"
-                                        className="w-full px-2 py-1 border border-gray-400 rounded text-right text-sm font-medium outline-none focus:border-blue-600"
+                                        className="w-full px-2 py-1 border border-gray-400 rounded text-right text-sm font-medium outline-none focus:border-red-600"
                                     />
                                 </td>
                                 <td></td>
                             </tr>
-                            <tr className="bg-blue-50">
+                            <tr className="bg-green-50">
                                 <td colSpan="5" className="px-3 py-2 text-right font-bold border-r border-gray-300">Balance Rs.</td>
-                                <td className={`px-3 py-2 text-right font-extrabold text-lg border-r border-gray-300 ${
-                                    paidAmount && (parseFloat(paidAmount) - calculateTotal()) < 0 ? 'text-red-600' : 'text-green-700'
-                                }`}>
+                                <td className={`px-3 py-2 text-right font-extrabold text-lg border-r border-gray-300 ${paidAmount && (parseFloat(paidAmount) - calculateTotal()) < 0 ? 'text-red-600' : 'text-green-700'
+                                    }`}>
                                     {paidAmount ? (parseFloat(paidAmount) - calculateTotal()).toLocaleString('en-US', { minimumFractionDigits: 2 }) : '0.00'}
                                 </td>
                                 <td></td>
                             </tr>
 
                             {/* CUSTOMER & CHECKOUT ROWS */}
-                            <tr className="bg-blue-100/40">
+                            <tr className="bg-green-100/40">
                                 <td colSpan="5" className="px-3 py-2 text-right font-bold border-r border-gray-300">Customer Phone:</td>
                                 <td className="px-3 py-1 border-r border-gray-300" colSpan="2">
                                     <div className="relative" ref={customerSearchRef}>
@@ -950,7 +949,7 @@ const POS = () => {
                                             onKeyDown={handleCustomerKeyDown}
                                             onFocus={() => customerSearchTerm.length >= 3 && setShowCustomerDropdown(true)}
                                             placeholder="Enter Phone *"
-                                            className={`w-full px-2 py-1 border rounded text-sm outline-none ${phoneError ? 'border-red-500' : 'border-gray-400 focus:border-blue-600'}`}
+                                            className={`w-full px-2 py-1 border rounded text-sm outline-none ${phoneError ? 'border-red-500' : 'border-gray-400 focus:border-red-600'}`}
                                         />
                                         {phoneError && <p className="text-red-500 text-[10px] mt-0.5">{phoneError}</p>}
                                         {showCustomerDropdown && (customerResults.length > 0 || customerSearchTerm.length >= 3) && (
@@ -982,7 +981,7 @@ const POS = () => {
                                     </div>
                                 </td>
                             </tr>
-                            <tr className="bg-blue-50">
+                            <tr className="bg-green-50">
                                 <td colSpan="5" className="px-3 py-2 text-right font-bold border-r border-gray-300">Customer Name:</td>
                                 <td className="px-3 py-1 border-r border-gray-300" colSpan="2">
                                     <input
@@ -990,18 +989,18 @@ const POS = () => {
                                         value={customerName}
                                         onChange={(e) => setCustomerName(e.target.value)}
                                         placeholder="Customer Name *"
-                                        className="w-full px-2 py-1 border border-gray-400 rounded text-sm outline-none focus:border-blue-600"
+                                        className="w-full px-2 py-1 border border-gray-400 rounded text-sm outline-none focus:border-red-600"
                                         disabled={!isNewCustomer && !!customerPhone}
                                     />
                                     {isNewCustomer && <span className="text-[10px] text-green-600 font-medium">New customer</span>}
                                     {!isNewCustomer && customerPhone && (
-                                        <span className="text-[10px] text-blue-600 font-medium cursor-pointer" onClick={() => {
+                                        <span className="text-[10px] text-red-600 font-medium cursor-pointer" onClick={() => {
                                             setCustomerId(''); setCustomerName(''); setCustomerPhone(''); setCustomerSearchTerm(''); setIsNewCustomer(false);
                                         }}>Existing customer (clear)</span>
                                     )}
                                 </td>
                             </tr>
-                            <tr className="bg-blue-100/40">
+                            <tr className="bg-green-100/40">
                                 <td colSpan="5" className="px-3 py-2 text-right font-bold border-r border-gray-300">Customer ID:</td>
                                 <td className="px-3 py-1 border-r border-gray-300" colSpan="2">
                                     <input
@@ -1017,19 +1016,19 @@ const POS = () => {
                                             }
                                         }}
                                         placeholder="NIC / Passport (optional)"
-                                        className={`w-full px-2 py-1 border rounded text-sm outline-none ${idError ? 'border-red-500' : 'border-gray-400 focus:border-blue-600'}`}
+                                        className={`w-full px-2 py-1 border rounded text-sm outline-none ${idError ? 'border-red-500' : 'border-gray-400 focus:border-red-600'}`}
                                     />
                                     {idError && <p className="text-red-500 text-[10px] mt-0.5">{idError}</p>}
                                 </td>
                             </tr>
-                            <tr className="bg-blue-50">
+                            <tr className="bg-green-50">
                                 <td colSpan="5" className="px-3 py-2 text-right font-bold border-r border-gray-300">Date:</td>
                                 <td className="px-3 py-1 border-r border-gray-300" colSpan="2">
                                     <input
                                         type="date"
                                         value={saleDate}
                                         onChange={(e) => setSaleDate(e.target.value)}
-                                        className="w-full px-2 py-1 border border-gray-400 rounded text-sm outline-none focus:border-blue-600"
+                                        className="w-full px-2 py-1 border border-gray-400 rounded text-sm outline-none focus:border-red-600"
                                     />
                                 </td>
                             </tr>
@@ -1049,7 +1048,7 @@ const POS = () => {
                         <button
                             onClick={handleCheckout}
                             disabled={cart.length === 0 || !customerName || !customerPhone || isProcessingSale}
-                            className="px-6 py-2 bg-[#2563eb] text-white hover:bg-[#1d4ed8] rounded font-bold text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                            className="px-6 py-2 bg-[#CC0000] text-white hover:bg-[#990000] rounded font-bold text-sm disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                         >
                             {isProcessingSale ? 'Processing...' : 'Close Sale & Print'}
                         </button>

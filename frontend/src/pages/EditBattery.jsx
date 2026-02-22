@@ -275,7 +275,7 @@ const EditBattery = () => {
                 <div className="flex items-center justify-between bg-white border border-gray-300 rounded shadow-sm p-3">
                     <button
                         onClick={() => navigate('/inventory/view')}
-                        className="flex items-center gap-1.5 text-gray-600 hover:text-[#2563eb] font-bold text-sm transition-colors"
+                        className="flex items-center gap-1.5 text-gray-600 hover:text-[#CC0000] font-bold text-sm transition-colors"
                     >
                         <ArrowLeft size={16} />
                         Back to Inventory
@@ -285,7 +285,7 @@ const EditBattery = () => {
 
                 {/* Search Section */}
                 <div className="bg-white border border-gray-300 rounded shadow-sm overflow-hidden">
-                    <div className="bg-[#2563eb] px-4 py-3">
+                    <div className="bg-[#CC0000] px-4 py-3">
                         <h2 className="text-base font-bold text-white">Search Battery</h2>
                     </div>
                     <div className="p-4">
@@ -311,11 +311,10 @@ const EditBattery = () => {
                                         setTimeout(() => setShowSearchDropdown(false), 200);
                                         setSearchScanMode(false);
                                     }}
-                                    className={`w-full px-3 py-2 border rounded outline-none transition-all text-sm ${
-                                        searchScanMode
+                                    className={`w-full px-3 py-2 border rounded outline-none transition-all text-sm ${searchScanMode
                                             ? 'bg-green-50 border-green-400 ring-1 ring-green-200'
-                                            : 'bg-gray-50 border-gray-300 focus:border-[#2563eb] focus:bg-white'
-                                    }`}
+                                            : 'bg-gray-50 border-gray-300 focus:border-[#CC0000] focus:bg-white'
+                                        }`}
                                     placeholder={searchScanMode ? 'Scan barcode now...' : 'Enter serial number, barcode, brand or model...'}
                                     autoFocus
                                 />
@@ -326,7 +325,7 @@ const EditBattery = () => {
                                             <div
                                                 key={battery.id}
                                                 onClick={() => loadBattery(battery)}
-                                                className="px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 last:border-0"
+                                                className="px-3 py-2 hover:bg-green-50 cursor-pointer border-b border-gray-100 last:border-0"
                                             >
                                                 <div className="flex justify-between items-center">
                                                     <div>
@@ -344,11 +343,10 @@ const EditBattery = () => {
                             <button
                                 type="button"
                                 onClick={activateSearchScanMode}
-                                className={`px-3 py-2 rounded font-medium transition-all flex items-center gap-1 text-sm ${
-                                    searchScanMode
+                                className={`px-3 py-2 rounded font-medium transition-all flex items-center gap-1 text-sm ${searchScanMode
                                         ? 'bg-green-500 text-white'
-                                        : 'bg-gray-100 text-gray-600 hover:bg-blue-50 hover:text-[#2563eb] border border-gray-300'
-                                }`}
+                                        : 'bg-gray-100 text-gray-600 hover:bg-red-50 hover:text-[#CC0000] border border-gray-300'
+                                    }`}
                                 title="Click to scan barcode"
                             >
                                 <ScanBarcode size={16} />
@@ -357,7 +355,7 @@ const EditBattery = () => {
                                 type="button"
                                 onClick={() => { setShowSearchDropdown(false); handleSearch(); }}
                                 disabled={isSearching}
-                                className="flex items-center gap-1.5 px-4 py-2 bg-[#2563eb] text-white rounded hover:bg-[#1d4ed8] transition-colors text-sm font-bold disabled:opacity-50"
+                                className="flex items-center gap-1.5 px-4 py-2 bg-[#CC0000] text-white rounded hover:bg-[#990000] transition-colors text-sm font-bold disabled:opacity-50"
                             >
                                 {isSearching ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} />}
                                 Search
@@ -381,311 +379,309 @@ const EditBattery = () => {
                 </div>
 
                 {/* Edit Form - Always visible */}
-                    <div className="bg-white border border-gray-300 rounded shadow-sm overflow-hidden">
-                        <div className="bg-[#2563eb] px-4 py-3">
-                            <h2 className="text-base font-bold text-white">Battery Information</h2>
+                <div className="bg-white border border-gray-300 rounded shadow-sm overflow-hidden">
+                    <div className="bg-[#CC0000] px-4 py-3">
+                        <h2 className="text-base font-bold text-white">Battery Information</h2>
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="p-4 sm:p-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Serial Number */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                                    Serial Number <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={formData.serialNumber}
+                                    readOnly
+                                    className="w-full px-3 py-2 bg-gray-200 border border-gray-300 rounded text-sm text-gray-600 cursor-not-allowed"
+                                />
+                            </div>
+
+                            {/* Barcode */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                                    Barcode
+                                    {scanMode && (
+                                        <span className="ml-2 inline-flex items-center gap-1 text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full animate-pulse">
+                                            <Focus size={12} /> Ready to scan
+                                        </span>
+                                    )}
+                                </label>
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        ref={barcodeRef}
+                                        value={formData.barcode}
+                                        onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
+                                        onKeyDown={handleBarcodeKeyDown}
+                                        onFocus={() => setScanMode(true)}
+                                        onBlur={() => setScanMode(false)}
+                                        className={`flex-1 px-3 py-2 border rounded focus:bg-white outline-none transition-all text-sm ${scanMode
+                                                ? 'bg-green-50 border-green-400 ring-1 ring-green-200'
+                                                : 'bg-gray-50 border-gray-300 focus:border-[#CC0000]'
+                                            }`}
+                                        placeholder={scanMode ? 'Scan barcode now...' : 'Click scan or type barcode'}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={activateScanMode}
+                                        className={`px-3 py-2 rounded font-medium transition-all flex items-center gap-1 text-sm ${scanMode
+                                                ? 'bg-green-500 text-white'
+                                                : 'bg-gray-100 text-gray-600 hover:bg-red-50 hover:text-[#CC0000] border border-gray-300'
+                                            }`}
+                                        title="Click to activate barcode scanner"
+                                    >
+                                        <ScanBarcode size={16} />
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Brand with Autocomplete */}
+                            <div className="relative">
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                                    Brand <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={formData.brand}
+                                    onChange={(e) => {
+                                        setFormData({ ...formData, brand: e.target.value });
+                                        setShowBrandDropdown(true);
+                                    }}
+                                    onFocus={() => setShowBrandDropdown(true)}
+                                    onBlur={() => setTimeout(() => setShowBrandDropdown(false), 200)}
+                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded focus:border-[#CC0000] focus:bg-white outline-none transition-all text-sm"
+                                    required
+                                    placeholder="Type or select brand"
+                                />
+                                {showBrandDropdown && filteredBrands.length > 0 && formData.brand && (
+                                    <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded shadow-lg border border-gray-200 max-h-48 overflow-y-auto z-10">
+                                        {filteredBrands.map((brand, index) => (
+                                            <div
+                                                key={index}
+                                                onClick={() => {
+                                                    setFormData({ ...formData, brand });
+                                                    setShowBrandDropdown(false);
+                                                }}
+                                                className="px-3 py-2 hover:bg-green-50 cursor-pointer text-sm text-gray-700"
+                                            >
+                                                {brand}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Model with Autocomplete */}
+                            <div className="relative">
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                                    Model <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="text"
+                                    value={formData.model}
+                                    onChange={(e) => {
+                                        setFormData({ ...formData, model: e.target.value });
+                                        setShowModelDropdown(true);
+                                    }}
+                                    onFocus={() => setShowModelDropdown(true)}
+                                    onBlur={() => setTimeout(() => setShowModelDropdown(false), 200)}
+                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded focus:border-[#CC0000] focus:bg-white outline-none transition-all text-sm"
+                                    required
+                                    placeholder="Type or select model"
+                                />
+                                {showModelDropdown && filteredModels.length > 0 && formData.model && (
+                                    <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded shadow-lg border border-gray-200 max-h-48 overflow-y-auto z-10">
+                                        {filteredModels.map((model, index) => (
+                                            <div
+                                                key={index}
+                                                onClick={() => {
+                                                    setFormData({ ...formData, model });
+                                                    setShowModelDropdown(false);
+                                                }}
+                                                className="px-3 py-2 hover:bg-green-50 cursor-pointer text-sm text-gray-700"
+                                            >
+                                                {model}
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Capacity */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                                    Capacity (Ah) <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    value={formData.capacity}
+                                    onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
+                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded focus:border-[#CC0000] focus:bg-white outline-none transition-all text-sm"
+                                    required
+                                />
+                            </div>
+
+                            {/* Voltage */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                                    Voltage (V) <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="number"
+                                    step="0.1"
+                                    value={formData.voltage}
+                                    onChange={(e) => setFormData({ ...formData, voltage: e.target.value })}
+                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded focus:border-[#CC0000] focus:bg-white outline-none transition-all text-sm"
+                                    placeholder="e.g., 12"
+                                    required
+                                />
+                            </div>
+
+                            {/* Purchase Price */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                                    Purchase Price (LKR) <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    value={formData.purchasePrice}
+                                    onChange={(e) => setFormData({ ...formData, purchasePrice: e.target.value })}
+                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded focus:border-[#CC0000] focus:bg-white outline-none transition-all text-sm"
+                                    required
+                                />
+                            </div>
+
+                            {/* Selling Price */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                                    Selling Price (LKR) <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="number"
+                                    step="0.01"
+                                    value={formData.sellingPrice}
+                                    onChange={(e) => setFormData({ ...formData, sellingPrice: e.target.value })}
+                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded focus:border-[#CC0000] focus:bg-white outline-none transition-all text-sm"
+                                    required
+                                />
+                            </div>
+
+                            {/* Purchase Date */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                                    Purchase Date <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="date"
+                                    value={formData.purchaseDate}
+                                    onChange={(e) => setFormData({ ...formData, purchaseDate: e.target.value })}
+                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded focus:border-[#CC0000] focus:bg-white outline-none transition-all text-sm"
+                                    required
+                                />
+                            </div>
+
+                            {/* Stock Quantity */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                                    Stock Quantity <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="number"
+                                    value={formData.stockQuantity}
+                                    onChange={(e) => setFormData({ ...formData, stockQuantity: e.target.value })}
+                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded focus:border-[#CC0000] focus:bg-white outline-none transition-all text-sm"
+                                    required
+                                />
+                            </div>
+
+                            {/* Warranty Period */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                                    Warranty (Months) <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="number"
+                                    value={formData.warrantyPeriodMonths}
+                                    onChange={(e) => setFormData({ ...formData, warrantyPeriodMonths: e.target.value })}
+                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded focus:border-[#CC0000] focus:bg-white outline-none transition-all text-sm"
+                                    required
+                                />
+                            </div>
+
+                            {/* Shelf Life */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                                    Shelf Life (Months) <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="number"
+                                    value={formData.shelfLifeMonths}
+                                    onChange={(e) => setFormData({ ...formData, shelfLifeMonths: e.target.value })}
+                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded focus:border-[#CC0000] focus:bg-white outline-none transition-all text-sm"
+                                    placeholder="e.g., 6 or 12 months"
+                                    required
+                                />
+                                <p className="text-xs text-gray-500 mt-1">How long can battery be stored before expiring</p>
+                            </div>
+
+                            {/* Sales Rep */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                                    Sales Rep
+                                </label>
+                                <input
+                                    type="text"
+                                    value={formData.salesRep}
+                                    onChange={(e) => setFormData({ ...formData, salesRep: e.target.value })}
+                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded focus:border-[#CC0000] focus:bg-white outline-none transition-all text-sm"
+                                    placeholder="Sales representative name"
+                                />
+                            </div>
+
+                            {/* Invoice Number */}
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                                    Invoice Number
+                                </label>
+                                <input
+                                    type="text"
+                                    value={formData.invoiceNumber}
+                                    onChange={(e) => setFormData({ ...formData, invoiceNumber: e.target.value })}
+                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded focus:border-[#CC0000] focus:bg-white outline-none transition-all text-sm"
+                                    placeholder="Invoice number"
+                                />
+                            </div>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="p-4 sm:p-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {/* Serial Number */}
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-1">
-                                        Serial Number <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={formData.serialNumber}
-                                        readOnly
-                                        className="w-full px-3 py-2 bg-gray-200 border border-gray-300 rounded text-sm text-gray-600 cursor-not-allowed"
-                                    />
-                                </div>
-
-                                {/* Barcode */}
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-1">
-                                        Barcode
-                                        {scanMode && (
-                                            <span className="ml-2 inline-flex items-center gap-1 text-xs font-medium text-green-600 bg-green-50 px-2 py-0.5 rounded-full animate-pulse">
-                                                <Focus size={12} /> Ready to scan
-                                            </span>
-                                        )}
-                                    </label>
-                                    <div className="flex gap-2">
-                                        <input
-                                            type="text"
-                                            ref={barcodeRef}
-                                            value={formData.barcode}
-                                            onChange={(e) => setFormData({ ...formData, barcode: e.target.value })}
-                                            onKeyDown={handleBarcodeKeyDown}
-                                            onFocus={() => setScanMode(true)}
-                                            onBlur={() => setScanMode(false)}
-                                            className={`flex-1 px-3 py-2 border rounded focus:bg-white outline-none transition-all text-sm ${
-                                                scanMode
-                                                    ? 'bg-green-50 border-green-400 ring-1 ring-green-200'
-                                                    : 'bg-gray-50 border-gray-300 focus:border-[#2563eb]'
-                                            }`}
-                                            placeholder={scanMode ? 'Scan barcode now...' : 'Click scan or type barcode'}
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={activateScanMode}
-                                            className={`px-3 py-2 rounded font-medium transition-all flex items-center gap-1 text-sm ${
-                                                scanMode
-                                                    ? 'bg-green-500 text-white'
-                                                    : 'bg-gray-100 text-gray-600 hover:bg-blue-50 hover:text-[#2563eb] border border-gray-300'
-                                            }`}
-                                            title="Click to activate barcode scanner"
-                                        >
-                                            <ScanBarcode size={16} />
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {/* Brand with Autocomplete */}
-                                <div className="relative">
-                                    <label className="block text-sm font-semibold text-gray-700 mb-1">
-                                        Brand <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={formData.brand}
-                                        onChange={(e) => {
-                                            setFormData({ ...formData, brand: e.target.value });
-                                            setShowBrandDropdown(true);
-                                        }}
-                                        onFocus={() => setShowBrandDropdown(true)}
-                                        onBlur={() => setTimeout(() => setShowBrandDropdown(false), 200)}
-                                        className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded focus:border-[#2563eb] focus:bg-white outline-none transition-all text-sm"
-                                        required
-                                        placeholder="Type or select brand"
-                                    />
-                                    {showBrandDropdown && filteredBrands.length > 0 && formData.brand && (
-                                        <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded shadow-lg border border-gray-200 max-h-48 overflow-y-auto z-10">
-                                            {filteredBrands.map((brand, index) => (
-                                                <div
-                                                    key={index}
-                                                    onClick={() => {
-                                                        setFormData({ ...formData, brand });
-                                                        setShowBrandDropdown(false);
-                                                    }}
-                                                    className="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm text-gray-700"
-                                                >
-                                                    {brand}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Model with Autocomplete */}
-                                <div className="relative">
-                                    <label className="block text-sm font-semibold text-gray-700 mb-1">
-                                        Model <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={formData.model}
-                                        onChange={(e) => {
-                                            setFormData({ ...formData, model: e.target.value });
-                                            setShowModelDropdown(true);
-                                        }}
-                                        onFocus={() => setShowModelDropdown(true)}
-                                        onBlur={() => setTimeout(() => setShowModelDropdown(false), 200)}
-                                        className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded focus:border-[#2563eb] focus:bg-white outline-none transition-all text-sm"
-                                        required
-                                        placeholder="Type or select model"
-                                    />
-                                    {showModelDropdown && filteredModels.length > 0 && formData.model && (
-                                        <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded shadow-lg border border-gray-200 max-h-48 overflow-y-auto z-10">
-                                            {filteredModels.map((model, index) => (
-                                                <div
-                                                    key={index}
-                                                    onClick={() => {
-                                                        setFormData({ ...formData, model });
-                                                        setShowModelDropdown(false);
-                                                    }}
-                                                    className="px-3 py-2 hover:bg-blue-50 cursor-pointer text-sm text-gray-700"
-                                                >
-                                                    {model}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Capacity */}
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-1">
-                                        Capacity (Ah) <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="number"
-                                        step="0.01"
-                                        value={formData.capacity}
-                                        onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
-                                        className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded focus:border-[#2563eb] focus:bg-white outline-none transition-all text-sm"
-                                        required
-                                    />
-                                </div>
-
-                                {/* Voltage */}
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-1">
-                                        Voltage (V) <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="number"
-                                        step="0.1"
-                                        value={formData.voltage}
-                                        onChange={(e) => setFormData({ ...formData, voltage: e.target.value })}
-                                        className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded focus:border-[#2563eb] focus:bg-white outline-none transition-all text-sm"
-                                        placeholder="e.g., 12"
-                                        required
-                                    />
-                                </div>
-
-                                {/* Purchase Price */}
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-1">
-                                        Purchase Price (LKR) <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="number"
-                                        step="0.01"
-                                        value={formData.purchasePrice}
-                                        onChange={(e) => setFormData({ ...formData, purchasePrice: e.target.value })}
-                                        className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded focus:border-[#2563eb] focus:bg-white outline-none transition-all text-sm"
-                                        required
-                                    />
-                                </div>
-
-                                {/* Selling Price */}
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-1">
-                                        Selling Price (LKR) <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="number"
-                                        step="0.01"
-                                        value={formData.sellingPrice}
-                                        onChange={(e) => setFormData({ ...formData, sellingPrice: e.target.value })}
-                                        className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded focus:border-[#2563eb] focus:bg-white outline-none transition-all text-sm"
-                                        required
-                                    />
-                                </div>
-
-                                {/* Purchase Date */}
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-1">
-                                        Purchase Date <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="date"
-                                        value={formData.purchaseDate}
-                                        onChange={(e) => setFormData({ ...formData, purchaseDate: e.target.value })}
-                                        className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded focus:border-[#2563eb] focus:bg-white outline-none transition-all text-sm"
-                                        required
-                                    />
-                                </div>
-
-                                {/* Stock Quantity */}
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-1">
-                                        Stock Quantity <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="number"
-                                        value={formData.stockQuantity}
-                                        onChange={(e) => setFormData({ ...formData, stockQuantity: e.target.value })}
-                                        className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded focus:border-[#2563eb] focus:bg-white outline-none transition-all text-sm"
-                                        required
-                                    />
-                                </div>
-
-                                {/* Warranty Period */}
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-1">
-                                        Warranty (Months) <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="number"
-                                        value={formData.warrantyPeriodMonths}
-                                        onChange={(e) => setFormData({ ...formData, warrantyPeriodMonths: e.target.value })}
-                                        className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded focus:border-[#2563eb] focus:bg-white outline-none transition-all text-sm"
-                                        required
-                                    />
-                                </div>
-
-                                {/* Shelf Life */}
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-1">
-                                        Shelf Life (Months) <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="number"
-                                        value={formData.shelfLifeMonths}
-                                        onChange={(e) => setFormData({ ...formData, shelfLifeMonths: e.target.value })}
-                                        className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded focus:border-[#2563eb] focus:bg-white outline-none transition-all text-sm"
-                                        placeholder="e.g., 6 or 12 months"
-                                        required
-                                    />
-                                    <p className="text-xs text-gray-500 mt-1">How long can battery be stored before expiring</p>
-                                </div>
-
-                                {/* Sales Rep */}
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-1">
-                                        Sales Rep
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={formData.salesRep}
-                                        onChange={(e) => setFormData({ ...formData, salesRep: e.target.value })}
-                                        className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded focus:border-[#2563eb] focus:bg-white outline-none transition-all text-sm"
-                                        placeholder="Sales representative name"
-                                    />
-                                </div>
-
-                                {/* Invoice Number */}
-                                <div>
-                                    <label className="block text-sm font-semibold text-gray-700 mb-1">
-                                        Invoice Number
-                                    </label>
-                                    <input
-                                        type="text"
-                                        value={formData.invoiceNumber}
-                                        onChange={(e) => setFormData({ ...formData, invoiceNumber: e.target.value })}
-                                        className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded focus:border-[#2563eb] focus:bg-white outline-none transition-all text-sm"
-                                        placeholder="Invoice number"
-                                    />
-                                </div>
-                            </div>
-
-                            {/* Action Buttons */}
-                            <div className="flex gap-3 justify-end mt-6 pt-4 border-t border-gray-200">
-                                <button
-                                    type="button"
-                                    onClick={clearSearch}
-                                    className="px-4 py-2 border-2 border-gray-400 text-gray-700 rounded hover:bg-gray-50 font-bold text-sm transition-colors"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={isSubmitting || !batteryFound}
-                                    className="flex items-center gap-1.5 px-4 py-2 bg-[#2563eb] text-white rounded hover:bg-[#1d4ed8] font-bold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {isSubmitting ? (
-                                        <Loader2 size={16} className="animate-spin" />
-                                    ) : (
-                                        <Save size={16} />
-                                    )}
-                                    {isSubmitting ? 'Updating...' : 'Update Battery'}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                        {/* Action Buttons */}
+                        <div className="flex gap-3 justify-end mt-6 pt-4 border-t border-gray-200">
+                            <button
+                                type="button"
+                                onClick={clearSearch}
+                                className="px-4 py-2 border-2 border-gray-400 text-gray-700 rounded hover:bg-gray-50 font-bold text-sm transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={isSubmitting || !batteryFound}
+                                className="flex items-center gap-1.5 px-4 py-2 bg-[#CC0000] text-white rounded hover:bg-[#990000] font-bold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {isSubmitting ? (
+                                    <Loader2 size={16} className="animate-spin" />
+                                ) : (
+                                    <Save size={16} />
+                                )}
+                                {isSubmitting ? 'Updating...' : 'Update Battery'}
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
 
             {/* Dialog */}

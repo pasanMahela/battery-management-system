@@ -168,14 +168,14 @@ const Sales = () => {
 
             // Create CSV rows
             const rows = filteredSales.map(sale => {
-                const itemsList = sale.items.map(item => 
+                const itemsList = sale.items.map(item =>
                     `${item.brand} ${item.model} x${item.quantity}`
                 ).join('; ');
-                
-                const subtotal = sale.items.reduce((sum, item) => 
+
+                const subtotal = sale.items.reduce((sum, item) =>
                     sum + (item.unitPrice * item.quantity), 0
                 );
-                
+
                 const profit = sale.items.reduce((sum, item) => {
                     const purchasePrice = item.purchasePrice || 0;
                     return sum + ((item.unitPrice - purchasePrice) * item.quantity);
@@ -233,7 +233,7 @@ const Sales = () => {
                 {/* Action Bar */}
                 <div className="flex items-center justify-between bg-white border border-gray-300 rounded shadow-sm p-3">
                     <div className="text-sm text-gray-600">Track and manage your transaction records</div>
-                    <button 
+                    <button
                         onClick={exportToCSV}
                         disabled={isExporting || filteredSales.length === 0}
                         className="flex items-center gap-1.5 px-4 py-2 bg-white border-2 border-gray-400 text-gray-700 rounded hover:bg-gray-50 transition-colors text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed"
@@ -254,7 +254,7 @@ const Sales = () => {
                             <button
                                 onClick={() => setTimePeriod('today')}
                                 className={`px-3 py-1 rounded text-xs font-bold transition-colors ${timePeriod === 'today'
-                                    ? 'bg-[#2563eb] text-white'
+                                    ? 'bg-[#CC0000] text-white'
                                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                     }`}
                             >
@@ -263,7 +263,7 @@ const Sales = () => {
                             <button
                                 onClick={() => setTimePeriod('week')}
                                 className={`px-3 py-1 rounded text-xs font-bold transition-colors ${timePeriod === 'week'
-                                    ? 'bg-[#2563eb] text-white'
+                                    ? 'bg-[#CC0000] text-white'
                                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                     }`}
                             >
@@ -272,7 +272,7 @@ const Sales = () => {
                             <button
                                 onClick={() => setTimePeriod('month')}
                                 className={`px-3 py-1 rounded text-xs font-bold transition-colors ${timePeriod === 'month'
-                                    ? 'bg-[#2563eb] text-white'
+                                    ? 'bg-[#CC0000] text-white'
                                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                                     }`}
                             >
@@ -282,15 +282,15 @@ const Sales = () => {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <div className="bg-blue-50 p-4 rounded border border-blue-200 flex items-center justify-between">
+                        <div className="bg-red-50 p-4 rounded border border-red-200 flex items-center justify-between">
                             <div>
-                                <p className="text-xs font-bold text-blue-700 uppercase tracking-wider">
+                                <p className="text-xs font-bold text-red-700 uppercase tracking-wider">
                                     Total Sales {timePeriod === 'today' ? 'Today' : timePeriod === 'week' ? 'This Week' : 'This Month'}
                                 </p>
-                                <h3 className="text-2xl font-extrabold text-blue-900 mt-1">{totalSalesToday}</h3>
-                                <p className="text-xs text-blue-600">Transactions</p>
+                                <h3 className="text-2xl font-extrabold text-red-900 mt-1">{totalSalesToday}</h3>
+                                <p className="text-xs text-red-600">Transactions</p>
                             </div>
-                            <div className="p-3 bg-[#2563eb] text-white rounded">
+                            <div className="p-3 bg-[#CC0000] text-white rounded">
                                 <FileText size={20} />
                             </div>
                         </div>
@@ -334,7 +334,7 @@ const Sales = () => {
                                 placeholder="Search customer, phone, battery brand, model..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded focus:border-[#2563eb] outline-none transition-all text-sm"
+                                className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded focus:border-red-600 outline-none transition-all text-sm"
                             />
                         </div>
                         <div className="md:col-span-3">
@@ -343,7 +343,7 @@ const Sales = () => {
                                 type="date"
                                 value={startDate}
                                 onChange={(e) => setStartDate(e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded focus:border-[#2563eb] outline-none transition-all text-sm"
+                                className="w-full px-3 py-2 border border-gray-300 rounded focus:border-red-600 outline-none transition-all text-sm"
                             />
                         </div>
                         <div className="md:col-span-3">
@@ -352,7 +352,7 @@ const Sales = () => {
                                 type="date"
                                 value={endDate}
                                 onChange={(e) => setEndDate(e.target.value)}
-                                className="w-full px-3 py-2 border border-gray-300 rounded focus:border-[#2563eb] outline-none transition-all text-sm"
+                                className="w-full px-3 py-2 border border-gray-300 rounded focus:border-red-600 outline-none transition-all text-sm"
                             />
                         </div>
                         <div className="md:col-span-1">
@@ -373,11 +373,11 @@ const Sales = () => {
 
                 {/* Filtered Results Summary */}
                 {(searchTerm || startDate || endDate) && (
-                    <div className="bg-[#2563eb] rounded shadow-sm p-4 text-white">
+                    <div className="bg-[#CC0000] rounded shadow-sm p-4 text-white">
                         <div className="flex items-center justify-between mb-3">
                             <div>
                                 <h3 className="text-sm font-bold">Filtered Results</h3>
-                                <p className="text-xs text-blue-100">
+                                <p className="text-xs text-red-100">
                                     {searchTerm && `Search: "${searchTerm}"`}
                                     {(searchTerm && (startDate || endDate)) && ' • '}
                                     {startDate && `From: ${new Date(startDate).toLocaleDateString()}`}
@@ -388,17 +388,17 @@ const Sales = () => {
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                             <div className="bg-white/10 rounded p-3 border border-white/20">
-                                <p className="text-xs font-bold text-blue-100 uppercase tracking-wider mb-1">Total Sales</p>
+                                <p className="text-xs font-bold text-red-100 uppercase tracking-wider mb-1">Total Sales</p>
                                 <h4 className="text-2xl font-extrabold">{filteredSales.length}</h4>
-                                <p className="text-xs text-blue-100">Transactions</p>
+                                <p className="text-xs text-red-100">Transactions</p>
                             </div>
                             <div className="bg-white/10 rounded p-3 border border-white/20">
-                                <p className="text-xs font-bold text-blue-100 uppercase tracking-wider mb-1">Total Revenue</p>
+                                <p className="text-xs font-bold text-red-100 uppercase tracking-wider mb-1">Total Revenue</p>
                                 <h4 className="text-2xl font-extrabold">{APP_CONFIG.CURRENCY} {totalRevenue.toLocaleString()}</h4>
-                                <p className="text-xs text-blue-100">Total earnings</p>
+                                <p className="text-xs text-red-100">Total earnings</p>
                             </div>
                             <div className="bg-white/10 rounded p-3 border border-white/20">
-                                <p className="text-xs font-bold text-blue-100 uppercase tracking-wider mb-1">Total Profit</p>
+                                <p className="text-xs font-bold text-red-100 uppercase tracking-wider mb-1">Total Profit</p>
                                 <h4 className="text-2xl font-extrabold">{APP_CONFIG.CURRENCY} {(() => {
                                     const filteredProfit = filteredSales.reduce((sum, sale) => {
                                         const saleProfit = sale.items?.reduce((itemSum, item) => {
@@ -410,7 +410,7 @@ const Sales = () => {
                                     }, 0);
                                     return filteredProfit.toLocaleString();
                                 })()}</h4>
-                                <p className="text-xs text-blue-100">Net earnings</p>
+                                <p className="text-xs text-red-100">Net earnings</p>
                             </div>
                         </div>
                     </div>
@@ -421,15 +421,15 @@ const Sales = () => {
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm border-collapse">
                             <thead>
-                                <tr className="bg-[#2563eb] text-white text-left">
-                                    <th onClick={() => handleSort('date')} className="px-3 py-2 text-xs font-bold text-white uppercase cursor-pointer hover:bg-blue-700 select-none">
+                                <tr className="bg-[#CC0000] text-white text-left">
+                                    <th onClick={() => handleSort('date')} className="px-3 py-2 text-xs font-bold text-white uppercase cursor-pointer hover:bg-red-800 select-none">
                                         <div className="flex items-center gap-1">Date <ArrowUpDown size={12} /></div>
                                     </th>
                                     <th className="px-3 py-2 text-xs font-bold text-white uppercase">Invoice #</th>
                                     <th className="px-3 py-2 text-xs font-bold text-white uppercase">Customer</th>
                                     <th className="px-3 py-2 text-xs font-bold text-white uppercase">Items</th>
                                     <th className="px-3 py-2 text-xs font-bold text-white uppercase text-right">Discount</th>
-                                    <th onClick={() => handleSort('totalAmount')} className="px-3 py-2 text-xs font-bold text-white uppercase cursor-pointer hover:bg-blue-700 select-none text-right">
+                                    <th onClick={() => handleSort('totalAmount')} className="px-3 py-2 text-xs font-bold text-white uppercase cursor-pointer hover:bg-red-800 select-none text-right">
                                         <div className="flex items-center justify-end gap-1">Total <ArrowUpDown size={12} /></div>
                                     </th>
                                     <th className="px-3 py-2 text-xs font-bold text-white uppercase text-right">Cashier</th>
@@ -441,7 +441,7 @@ const Sales = () => {
                                     <tr>
                                         <td colSpan="8" className="px-3 py-10 text-center">
                                             <div className="flex flex-col items-center justify-center gap-2">
-                                                <Loader2 size={32} className="text-[#2563eb] animate-spin" />
+                                                <Loader2 size={32} className="text-[#CC0000] animate-spin" />
                                                 <p className="text-gray-500 font-medium text-sm">Loading sales data...</p>
                                             </div>
                                         </td>
@@ -458,7 +458,7 @@ const Sales = () => {
                                     </tr>
                                 ) : (
                                     filteredSales.map((sale, index) => (
-                                        <tr key={sale.id} className={`${index % 2 === 0 ? 'bg-white' : 'bg-blue-50'} hover:bg-blue-100 transition-colors border-b border-gray-200`}>
+                                        <tr key={sale.id} className={`${index % 2 === 0 ? 'bg-white' : 'bg-green-50'} hover:bg-green-100 transition-colors border-b border-gray-200`}>
                                             <td className="px-3 py-2">
                                                 <div className="font-bold text-gray-900 text-sm">{new Date(sale.date).toLocaleDateString()}</div>
                                                 <div className="text-xs text-gray-500 font-mono">{new Date(sale.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
@@ -519,7 +519,7 @@ const Sales = () => {
                                             <td className="px-3 py-2 text-center">
                                                 <button
                                                     onClick={() => setPrintingSale(sale)}
-                                                    className="inline-flex items-center gap-1 px-2 py-1 bg-[#2563eb] text-white rounded hover:bg-[#1d4ed8] transition-colors font-bold text-xs"
+                                                    className="inline-flex items-center gap-1 px-2 py-1 bg-[#CC0000] text-white rounded hover:bg-[#990000] transition-colors font-bold text-xs"
                                                     title="View Receipt"
                                                 >
                                                     <Eye size={14} /> View

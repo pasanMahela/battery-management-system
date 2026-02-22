@@ -165,7 +165,7 @@ const AddBattery = () => {
                 <div className="flex items-center justify-between bg-white border border-gray-300 rounded shadow-sm p-3">
                     <button
                         onClick={() => navigate('/inventory/view')}
-                        className="flex items-center gap-1.5 text-gray-600 hover:text-[#2563eb] font-bold text-sm transition-colors"
+                        className="flex items-center gap-1.5 text-gray-600 hover:text-[#CC0000] font-bold text-sm transition-colors"
                     >
                         <ArrowLeft size={16} />
                         Back to Inventory
@@ -175,7 +175,7 @@ const AddBattery = () => {
 
                 {/* Form Card */}
                 <div className="bg-white border border-gray-300 rounded shadow-sm overflow-hidden">
-                    <div className="bg-[#2563eb] px-4 py-3">
+                    <div className="bg-[#CC0000] px-4 py-3">
                         <h2 className="text-base font-bold text-white">Battery Information</h2>
                     </div>
 
@@ -191,7 +191,7 @@ const AddBattery = () => {
                                     ref={serialNumberRef}
                                     value={formData.serialNumber}
                                     onChange={(e) => setFormData({ ...formData, serialNumber: e.target.value })}
-                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded focus:border-[#2563eb] focus:bg-white outline-none transition-all text-sm"
+                                    className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded focus:border-[#CC0000] focus:bg-white outline-none transition-all text-sm"
                                     required
                                 />
                             </div>
@@ -215,21 +215,19 @@ const AddBattery = () => {
                                         onKeyDown={handleBarcodeKeyDown}
                                         onFocus={() => setScanMode(true)}
                                         onBlur={() => setScanMode(false)}
-                                        className={`flex-1 px-3 py-2 border rounded focus:bg-white outline-none transition-all text-sm ${
-                                            scanMode
+                                        className={`flex-1 px-3 py-2 border rounded focus:bg-white outline-none transition-all text-sm ${scanMode
                                                 ? 'bg-green-50 border-green-400 ring-1 ring-green-200'
-                                                : 'bg-gray-50 border-gray-300 focus:border-[#2563eb]'
-                                        }`}
+                                                : 'bg-gray-50 border-gray-300 focus:border-[#CC0000]'
+                                            }`}
                                         placeholder={scanMode ? 'Scan barcode now...' : 'Click scan or type barcode'}
                                     />
                                     <button
                                         type="button"
                                         onClick={activateScanMode}
-                                        className={`px-3 py-2 rounded font-medium transition-all flex items-center gap-1 text-sm ${
-                                            scanMode
+                                        className={`px-3 py-2 rounded font-medium transition-all flex items-center gap-1 text-sm ${scanMode
                                                 ? 'bg-green-500 text-white'
-                                                : 'bg-gray-100 text-gray-600 hover:bg-blue-50 hover:text-[#2563eb] border border-gray-300'
-                                        }`}
+                                                : 'bg-gray-100 text-gray-600 hover:bg-red-50 hover:text-[#CC0000] border border-gray-300'
+                                            }`}
                                         title="Click to activate barcode scanner"
                                     >
                                         <ScanBarcode size={16} />
@@ -265,7 +263,7 @@ const AddBattery = () => {
                                                     setFormData({ ...formData, brand });
                                                     setShowBrandDropdown(false);
                                                 }}
-                                                className="px-4 py-2 hover:bg-blue-50 cursor-pointer text-gray-700"
+                                                className="px-4 py-2 hover:bg-green-50 cursor-pointer text-gray-700"
                                             >
                                                 {brand}
                                             </div>
@@ -470,7 +468,7 @@ const AddBattery = () => {
                             <button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className="flex items-center gap-1.5 px-4 py-2 bg-[#2563eb] text-white rounded hover:bg-[#1d4ed8] font-bold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="flex items-center gap-1.5 px-4 py-2 bg-[#CC0000] text-white rounded hover:bg-[#990000] font-bold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {isSubmitting ? (
                                     <Loader2 size={20} className="animate-spin" />

@@ -151,8 +151,8 @@ const PurchaseHistory = () => {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div className="bg-white rounded border border-gray-300 p-3 shadow-sm">
                         <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 bg-blue-50 rounded flex items-center justify-center">
-                                <Package size={16} className="text-[#2563eb]" />
+                            <div className="w-8 h-8 bg-red-50 rounded flex items-center justify-center">
+                                <Package size={16} className="text-[#CC0000]" />
                             </div>
                             <div>
                                 <p className="text-lg font-extrabold text-gray-900">{filtered.length}</p>
@@ -205,7 +205,7 @@ const PurchaseHistory = () => {
                                 placeholder="Search by brand, model, serial, invoice or rep..."
                                 value={searchTerm}
                                 onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
-                                className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded focus:border-[#2563eb] outline-none transition-all text-sm"
+                                className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded focus:border-red-600 outline-none transition-all text-sm"
                             />
                         </div>
                         <div className="flex gap-2">
@@ -215,7 +215,7 @@ const PurchaseHistory = () => {
                                     type="date"
                                     value={startDate}
                                     onChange={(e) => { setStartDate(e.target.value); setPage(1); }}
-                                    className="pl-8 pr-2 py-2 border border-gray-300 rounded focus:border-[#2563eb] outline-none text-sm"
+                                    className="pl-8 pr-2 py-2 border border-gray-300 rounded focus:border-red-600 outline-none text-sm"
                                     placeholder="From"
                                 />
                             </div>
@@ -225,14 +225,14 @@ const PurchaseHistory = () => {
                                     type="date"
                                     value={endDate}
                                     onChange={(e) => { setEndDate(e.target.value); setPage(1); }}
-                                    className="pl-8 pr-2 py-2 border border-gray-300 rounded focus:border-[#2563eb] outline-none text-sm"
+                                    className="pl-8 pr-2 py-2 border border-gray-300 rounded focus:border-red-600 outline-none text-sm"
                                     placeholder="To"
                                 />
                             </div>
                         </div>
                         <div className="flex gap-2">
                             {hasActiveFilters && (
-                                <button onClick={clearFilters} className="px-3 py-2 text-xs text-[#2563eb] hover:bg-blue-50 rounded border border-gray-300 font-bold transition-all">
+                                <button onClick={clearFilters} className="px-3 py-2 text-xs text-[#CC0000] hover:bg-red-50 rounded border border-gray-300 font-bold transition-all">
                                     Clear
                                 </button>
                             )}
@@ -240,7 +240,7 @@ const PurchaseHistory = () => {
                                 <RefreshCw size={14} />
                                 Refresh
                             </button>
-                            <button onClick={exportCSV} className="flex items-center gap-1.5 px-3 py-2 rounded bg-[#2563eb] text-white hover:bg-[#1d4ed8] font-bold text-xs transition-all">
+                            <button onClick={exportCSV} className="flex items-center gap-1.5 px-3 py-2 rounded bg-[#CC0000] text-white hover:bg-[#990000] font-bold text-xs transition-all">
                                 <Download size={14} />
                                 Export
                             </button>
@@ -253,22 +253,22 @@ const PurchaseHistory = () => {
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm border-collapse">
                             <thead>
-                                <tr className="bg-[#2563eb] text-white text-left">
-                                    <th className="px-3 py-2 text-xs font-bold uppercase cursor-pointer hover:bg-[#1d4ed8]" onClick={() => handleSort('purchaseDate')}>
+                                <tr className="bg-[#CC0000] text-white text-left">
+                                    <th className="px-3 py-2 text-xs font-bold uppercase cursor-pointer hover:bg-[#990000]" onClick={() => handleSort('purchaseDate')}>
                                         Date <SortIcon column="purchaseDate" />
                                     </th>
                                     <th className="px-3 py-2 text-xs font-bold uppercase">Invoice #</th>
-                                    <th className="px-3 py-2 text-xs font-bold uppercase cursor-pointer hover:bg-[#1d4ed8]" onClick={() => handleSort('brand')}>
+                                    <th className="px-3 py-2 text-xs font-bold uppercase cursor-pointer hover:bg-[#990000]" onClick={() => handleSort('brand')}>
                                         Brand / Model <SortIcon column="brand" />
                                     </th>
                                     <th className="px-3 py-2 text-xs font-bold uppercase">Serial #</th>
-                                    <th className="px-3 py-2 text-xs font-bold uppercase cursor-pointer hover:bg-[#1d4ed8] text-right" onClick={() => handleSort('stockQuantity')}>
+                                    <th className="px-3 py-2 text-xs font-bold uppercase cursor-pointer hover:bg-[#990000] text-right" onClick={() => handleSort('stockQuantity')}>
                                         Qty <SortIcon column="stockQuantity" />
                                     </th>
-                                    <th className="px-3 py-2 text-xs font-bold uppercase cursor-pointer hover:bg-[#1d4ed8] text-right" onClick={() => handleSort('purchasePrice')}>
+                                    <th className="px-3 py-2 text-xs font-bold uppercase cursor-pointer hover:bg-[#990000] text-right" onClick={() => handleSort('purchasePrice')}>
                                         Unit Price <SortIcon column="purchasePrice" />
                                     </th>
-                                    <th className="px-3 py-2 text-xs font-bold uppercase cursor-pointer hover:bg-[#1d4ed8] text-right" onClick={() => handleSort('totalCost')}>
+                                    <th className="px-3 py-2 text-xs font-bold uppercase cursor-pointer hover:bg-[#990000] text-right" onClick={() => handleSort('totalCost')}>
                                         Total Cost <SortIcon column="totalCost" />
                                     </th>
                                     <th className="px-3 py-2 text-xs font-bold uppercase">Sell Price</th>
@@ -281,7 +281,7 @@ const PurchaseHistory = () => {
                                     <tr>
                                         <td colSpan="10" className="py-10 text-center text-gray-400">
                                             <div className="flex flex-col items-center gap-2">
-                                                <RefreshCw size={24} className="animate-spin text-[#2563eb]" />
+                                                <RefreshCw size={24} className="animate-spin text-[#CC0000]" />
                                                 <p className="font-bold text-sm">Loading purchase history...</p>
                                             </div>
                                         </td>
@@ -301,7 +301,7 @@ const PurchaseHistory = () => {
                                         const totalCost = b.purchasePrice * b.stockQuantity;
                                         const margin = b.sellingPrice > 0 ? ((b.sellingPrice - b.purchasePrice) / b.purchasePrice * 100) : 0;
                                         return (
-                                            <tr key={b.id} className={`${index % 2 === 0 ? 'bg-white' : 'bg-blue-50'} hover:bg-blue-100 transition-colors border-b border-gray-200`}>
+                                            <tr key={b.id} className={`${index % 2 === 0 ? 'bg-white' : 'bg-green-50'} hover:bg-green-100 transition-colors border-b border-gray-200`}>
                                                 <td className="px-3 py-2">
                                                     <span className="text-xs font-bold text-gray-700">
                                                         {new Date(b.purchaseDate).toLocaleDateString()}
@@ -375,9 +375,9 @@ const PurchaseHistory = () => {
                                                 key={pageNum}
                                                 onClick={() => setPage(pageNum)}
                                                 className={`w-8 h-8 rounded text-xs font-bold transition-all ${page === pageNum
-                                                    ? 'bg-[#2563eb] text-white'
+                                                    ? 'bg-[#CC0000] text-white'
                                                     : 'text-gray-600 hover:bg-white border border-transparent hover:border-gray-300'
-                                                }`}
+                                                    }`}
                                             >
                                                 {pageNum}
                                             </button>

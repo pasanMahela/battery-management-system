@@ -133,7 +133,7 @@ const Customers = () => {
                                 <p className="text-xs font-bold text-gray-500 uppercase">Total Customers</p>
                                 <h3 className="text-2xl font-extrabold text-gray-800 mt-1">{customers.length}</h3>
                             </div>
-                            <div className="p-2 bg-blue-50 rounded"><Users size={24} className="text-[#2563eb]" /></div>
+                            <div className="p-2 bg-red-50 rounded"><Users size={24} className="text-[#CC0000]" /></div>
                         </div>
                     </div>
                     <div className="bg-white p-4 rounded shadow-sm border border-gray-300">
@@ -162,7 +162,7 @@ const Customers = () => {
                 {isLoading ? (
                     <div className="flex items-center justify-center py-10">
                         <div className="text-center">
-                            <Loader2 size={32} className="animate-spin text-[#2563eb] mx-auto mb-2" />
+                            <Loader2 size={32} className="animate-spin text-[#CC0000] mx-auto mb-2" />
                             <p className="text-gray-500 font-medium text-sm">Loading customers...</p>
                         </div>
                     </div>
@@ -177,10 +177,10 @@ const Customers = () => {
                                     placeholder="Search by name, phone, or customer ID..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="flex-1 px-3 py-2 border border-gray-300 rounded focus:border-[#2563eb] outline-none transition-all text-sm"
+                                    className="flex-1 px-3 py-2 border border-gray-300 rounded focus:border-red-600 outline-none transition-all text-sm"
                                 />
                                 <p className="text-xs text-gray-500">
-                                    Showing <span className="font-bold text-[#2563eb]">{filteredCustomers.length}</span> of{' '}
+                                    Showing <span className="font-bold text-red-600">{filteredCustomers.length}</span> of{' '}
                                     <span className="font-bold">{customers.length}</span>
                                 </p>
                             </div>
@@ -189,138 +189,138 @@ const Customers = () => {
                         {/* Customers Table */}
                         <div className="bg-white border border-gray-300 rounded shadow-sm overflow-hidden">
                             <div className="overflow-x-auto">
-                            <table className="w-full text-sm border-collapse">
-                                <thead>
-                                    <tr className="bg-[#2563eb] text-white text-left">
-                                        <th className="px-3 py-2 text-xs font-bold uppercase">#</th>
-                                        <th className="px-3 py-2 text-xs font-bold uppercase">Customer ID</th>
-                                        <th onClick={() => handleSort('name')} className="px-3 py-2 text-xs font-bold uppercase cursor-pointer hover:bg-blue-700">
-                                            Customer Name {sortConfig.key === 'name' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
-                                        </th>
-                                        <th className="px-3 py-2 text-xs font-bold uppercase">Phone</th>
-                                        <th onClick={() => handleSort('totalPurchases')} className="px-3 py-2 text-xs font-bold uppercase cursor-pointer hover:bg-blue-700">
-                                            Purchases {sortConfig.key === 'totalPurchases' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
-                                        </th>
-                                        <th onClick={() => handleSort('totalSpent')} className="px-3 py-2 text-xs font-bold uppercase cursor-pointer hover:bg-blue-700">
-                                            Total Spent {sortConfig.key === 'totalSpent' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
-                                        </th>
-                                        <th onClick={() => handleSort('lastPurchaseDate')} className="px-3 py-2 text-xs font-bold uppercase cursor-pointer hover:bg-blue-700">
-                                            Last Purchase {sortConfig.key === 'lastPurchaseDate' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
-                                        </th>
-                                        <th className="px-3 py-2 text-xs font-bold uppercase text-center">Details</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {filteredCustomers.length === 0 ? (
-                                        <tr>
-                                            <td colSpan="8" className="px-3 py-10 text-center text-gray-400 text-sm">
-                                                No customers found
-                                            </td>
+                                <table className="w-full text-sm border-collapse">
+                                    <thead>
+                                        <tr className="bg-[#CC0000] text-white text-left">
+                                            <th className="px-3 py-2 text-xs font-bold uppercase">#</th>
+                                            <th className="px-3 py-2 text-xs font-bold uppercase">Customer ID</th>
+                                            <th onClick={() => handleSort('name')} className="px-3 py-2 text-xs font-bold uppercase cursor-pointer hover:bg-red-800">
+                                                Customer Name {sortConfig.key === 'name' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                                            </th>
+                                            <th className="px-3 py-2 text-xs font-bold uppercase">Phone</th>
+                                            <th onClick={() => handleSort('totalPurchases')} className="px-3 py-2 text-xs font-bold uppercase cursor-pointer hover:bg-red-800">
+                                                Purchases {sortConfig.key === 'totalPurchases' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                                            </th>
+                                            <th onClick={() => handleSort('totalSpent')} className="px-3 py-2 text-xs font-bold uppercase cursor-pointer hover:bg-red-800">
+                                                Total Spent {sortConfig.key === 'totalSpent' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                                            </th>
+                                            <th onClick={() => handleSort('lastPurchaseDate')} className="px-3 py-2 text-xs font-bold uppercase cursor-pointer hover:bg-red-800">
+                                                Last Purchase {sortConfig.key === 'lastPurchaseDate' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                                            </th>
+                                            <th className="px-3 py-2 text-xs font-bold uppercase text-center">Details</th>
                                         </tr>
-                                    ) : (
-                                        filteredCustomers.map((customer, index) => (
-                                            <React.Fragment key={customer.phone}>
-                                                <tr className={`${index % 2 === 0 ? 'bg-white' : 'bg-blue-50'} hover:bg-blue-100 transition-colors border-b border-gray-200`}>
-                                                    <td className="px-3 py-2 text-gray-600 text-sm">{index + 1}</td>
-                                                    <td className="px-3 py-2 text-gray-600 font-mono text-xs">{customer.id || '-'}</td>
-                                                    <td className="px-3 py-2 text-gray-800 font-bold text-sm">{customer.name}</td>
-                                                    <td className="px-3 py-2 text-gray-600 text-sm">{customer.phone}</td>
-                                                    <td className="px-3 py-2 text-gray-800 text-sm">{customer.totalPurchases}</td>
-                                                    <td className="px-3 py-2 text-gray-800 font-bold text-sm">
-                                                        LKR {customer.totalSpent.toLocaleString()}
-                                                    </td>
-                                                    <td className="px-3 py-2 text-gray-600 text-sm">
-                                                        {new Date(customer.lastPurchaseDate).toLocaleDateString()}
-                                                    </td>
-                                                    <td className="px-3 py-2 text-center">
-                                                        <button
-                                                            onClick={() =>
-                                                                setExpandedCustomer(
-                                                                    expandedCustomer === customer.phone ? null : customer.phone
-                                                                )
-                                                            }
-                                                            className="text-[#2563eb] hover:text-[#1d4ed8] font-bold flex items-center justify-center mx-auto gap-1 text-xs"
-                                                        >
-                                                            {expandedCustomer === customer.phone ? (
-                                                                <><ChevronUp size={14} /> Hide</>
-                                                            ) : (
-                                                                <><ChevronDown size={14} /> Show</>
-                                                            )}
-                                                        </button>
-                                                    </td>
-                                                </tr>
-
-                                                {/* Expanded Details */}
-                                                {expandedCustomer === customer.phone && (
-                                                    <tr>
-                                                        <td colSpan="8" className="bg-gray-50 px-3 py-4 border-b border-gray-300">
-                                                            <div className="max-w-6xl mx-auto">
-                                                                <h3 className="text-sm font-bold text-gray-800 mb-3">
-                                                                    Purchase History
-                                                                </h3>
-                                                                <div className="space-y-2">
-                                                                    {customer.sales
-                                                                        .sort((a, b) => new Date(b.date) - new Date(a.date))
-                                                                        .map((sale) => (
-                                                                            <div
-                                                                                key={sale.id}
-                                                                                className="bg-white p-3 rounded border border-gray-200"
-                                                                            >
-                                                                                <div className="flex justify-between items-start mb-2">
-                                                                                    <div className="flex-1">
-                                                                                        <p className="text-xs text-gray-600">
-                                                                                            Invoice: <span className="font-mono font-bold text-[#2563eb]">{sale.invoiceNumber}</span>
-                                                                                        </p>
-                                                                                        <p className="text-xs text-gray-600">
-                                                                                            Date: {new Date(sale.date).toLocaleString()}
-                                                                                        </p>
-                                                                                        <p className="text-xs text-gray-600">
-                                                                                            Cashier: {sale.cashierName}
-                                                                                        </p>
-                                                                                    </div>
-                                                                                    <div className="flex flex-col items-end gap-2">
-                                                                                        <div className="text-right">
-                                                                                            <p className="text-xs text-gray-500">Total Amount</p>
-                                                                                            <p className="text-lg font-extrabold text-green-700">
-                                                                                                LKR {sale.totalAmount.toLocaleString()}
-                                                                                            </p>
-                                                                                            {sale.discount > 0 && (
-                                                                                                <p className="text-[10px] text-orange-600">
-                                                                                                    Discount: LKR {sale.discount}
-                                                                                                </p>
-                                                                                            )}
-                                                                                        </div>
-                                                                                        <button
-                                                                                            onClick={() => setSelectedSale(sale)}
-                                                                                            className="flex items-center gap-1 px-2 py-1 bg-[#2563eb] hover:bg-[#1d4ed8] text-white rounded text-xs font-bold transition-colors"
-                                                                                        >
-                                                                                            <Eye size={14} /> View Invoice
-                                                                                        </button>
-                                                                                    </div>
-                                                                                </div>
-                                                                                <div className="mt-2 pt-2 border-t border-gray-200">
-                                                                                    <p className="text-xs font-bold text-gray-700 mb-1">Items:</p>
-                                                                                    <div className="space-y-0.5">
-                                                                                        {sale.items.map((item, idx) => (
-                                                                                            <div key={idx} className="flex justify-between text-xs text-gray-600">
-                                                                                                <span>{item.brand} {item.model} (S/N: {item.serialNumber}) × {item.quantity}</span>
-                                                                                                <span className="font-medium">LKR {item.subtotal.toLocaleString()}</span>
-                                                                                            </div>
-                                                                                        ))}
-                                                                                    </div>
-                                                                                </div>
-                                                                            </div>
-                                                                        ))}
-                                                                </div>
-                                                            </div>
+                                    </thead>
+                                    <tbody>
+                                        {filteredCustomers.length === 0 ? (
+                                            <tr>
+                                                <td colSpan="8" className="px-3 py-10 text-center text-gray-400 text-sm">
+                                                    No customers found
+                                                </td>
+                                            </tr>
+                                        ) : (
+                                            filteredCustomers.map((customer, index) => (
+                                                <React.Fragment key={customer.phone}>
+                                                    <tr className={`${index % 2 === 0 ? 'bg-white' : 'bg-green-50'} hover:bg-green-100 transition-colors border-b border-gray-200`}>
+                                                        <td className="px-3 py-2 text-gray-600 text-sm">{index + 1}</td>
+                                                        <td className="px-3 py-2 text-gray-600 font-mono text-xs">{customer.id || '-'}</td>
+                                                        <td className="px-3 py-2 text-gray-800 font-bold text-sm">{customer.name}</td>
+                                                        <td className="px-3 py-2 text-gray-600 text-sm">{customer.phone}</td>
+                                                        <td className="px-3 py-2 text-gray-800 text-sm">{customer.totalPurchases}</td>
+                                                        <td className="px-3 py-2 text-gray-800 font-bold text-sm">
+                                                            LKR {customer.totalSpent.toLocaleString()}
+                                                        </td>
+                                                        <td className="px-3 py-2 text-gray-600 text-sm">
+                                                            {new Date(customer.lastPurchaseDate).toLocaleDateString()}
+                                                        </td>
+                                                        <td className="px-3 py-2 text-center">
+                                                            <button
+                                                                onClick={() =>
+                                                                    setExpandedCustomer(
+                                                                        expandedCustomer === customer.phone ? null : customer.phone
+                                                                    )
+                                                                }
+                                                                className="text-[#CC0000] hover:text-[#990000] font-bold flex items-center justify-center mx-auto gap-1 text-xs"
+                                                            >
+                                                                {expandedCustomer === customer.phone ? (
+                                                                    <><ChevronUp size={14} /> Hide</>
+                                                                ) : (
+                                                                    <><ChevronDown size={14} /> Show</>
+                                                                )}
+                                                            </button>
                                                         </td>
                                                     </tr>
-                                                )}
-                                            </React.Fragment>
-                                        ))
-                                    )}
-                                </tbody>
-                            </table>
+
+                                                    {/* Expanded Details */}
+                                                    {expandedCustomer === customer.phone && (
+                                                        <tr>
+                                                            <td colSpan="8" className="bg-gray-50 px-3 py-4 border-b border-gray-300">
+                                                                <div className="max-w-6xl mx-auto">
+                                                                    <h3 className="text-sm font-bold text-gray-800 mb-3">
+                                                                        Purchase History
+                                                                    </h3>
+                                                                    <div className="space-y-2">
+                                                                        {customer.sales
+                                                                            .sort((a, b) => new Date(b.date) - new Date(a.date))
+                                                                            .map((sale) => (
+                                                                                <div
+                                                                                    key={sale.id}
+                                                                                    className="bg-white p-3 rounded border border-gray-200"
+                                                                                >
+                                                                                    <div className="flex justify-between items-start mb-2">
+                                                                                        <div className="flex-1">
+                                                                                            <p className="text-xs text-gray-600">
+                                                                                                Invoice: <span className="font-mono font-bold text-[#CC0000]">{sale.invoiceNumber}</span>
+                                                                                            </p>
+                                                                                            <p className="text-xs text-gray-600">
+                                                                                                Date: {new Date(sale.date).toLocaleString()}
+                                                                                            </p>
+                                                                                            <p className="text-xs text-gray-600">
+                                                                                                Cashier: {sale.cashierName}
+                                                                                            </p>
+                                                                                        </div>
+                                                                                        <div className="flex flex-col items-end gap-2">
+                                                                                            <div className="text-right">
+                                                                                                <p className="text-xs text-gray-500">Total Amount</p>
+                                                                                                <p className="text-lg font-extrabold text-green-700">
+                                                                                                    LKR {sale.totalAmount.toLocaleString()}
+                                                                                                </p>
+                                                                                                {sale.discount > 0 && (
+                                                                                                    <p className="text-[10px] text-orange-600">
+                                                                                                        Discount: LKR {sale.discount}
+                                                                                                    </p>
+                                                                                                )}
+                                                                                            </div>
+                                                                                            <button
+                                                                                                onClick={() => setSelectedSale(sale)}
+                                                                                                className="flex items-center gap-1 px-2 py-1 bg-[#CC0000] hover:bg-[#990000] text-white rounded text-xs font-bold transition-colors"
+                                                                                            >
+                                                                                                <Eye size={14} /> View Invoice
+                                                                                            </button>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                    <div className="mt-2 pt-2 border-t border-gray-200">
+                                                                                        <p className="text-xs font-bold text-gray-700 mb-1">Items:</p>
+                                                                                        <div className="space-y-0.5">
+                                                                                            {sale.items.map((item, idx) => (
+                                                                                                <div key={idx} className="flex justify-between text-xs text-gray-600">
+                                                                                                    <span>{item.brand} {item.model} (S/N: {item.serialNumber}) × {item.quantity}</span>
+                                                                                                    <span className="font-medium">LKR {item.subtotal.toLocaleString()}</span>
+                                                                                                </div>
+                                                                                            ))}
+                                                                                        </div>
+                                                                                    </div>
+                                                                                </div>
+                                                                            ))}
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    )}
+                                                </React.Fragment>
+                                            ))
+                                        )}
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </>

@@ -159,13 +159,13 @@ const UserManagement = () => {
                     {/* Existing Users List */}
                     <div className="bg-white rounded shadow-sm border border-gray-300 p-4">
                         <h2 className="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2">
-                            <Users size={16} className="text-[#2563eb]" />
+                            <Users size={16} className="text-[#CC0000]" />
                             Existing Users
                         </h2>
 
                         {isLoadingUsers ? (
                             <div className="flex items-center justify-center py-8">
-                                <Loader2 size={32} className="animate-spin text-[#2563eb]" />
+                                <Loader2 size={32} className="animate-spin text-[#CC0000]" />
                             </div>
                         ) : users.length === 0 ? (
                             <div className="bg-gray-50 border border-gray-200 rounded p-4 text-gray-500 text-center">
@@ -178,12 +178,12 @@ const UserManagement = () => {
                                 {users.map((userItem) => (
                                     <div
                                         key={userItem.id}
-                                        className="flex items-center justify-between p-3 bg-blue-50 hover:bg-blue-100 rounded border border-gray-200 transition-colors"
+                                        className="flex items-center justify-between p-3 bg-green-50 hover:bg-green-100 rounded border border-gray-200 transition-colors"
                                     >
                                         <div className="flex items-center gap-3">
                                             <div className={`w-9 h-9 rounded flex items-center justify-center text-white font-bold text-sm ${userItem.role === 'Admin'
                                                 ? 'bg-purple-600'
-                                                : 'bg-[#2563eb]'
+                                                : 'bg-[#CC0000]'
                                                 }`}>
                                                 {userItem.username.charAt(0).toUpperCase()}
                                             </div>
@@ -199,7 +199,7 @@ const UserManagement = () => {
                                                     Admin
                                                 </span>
                                             ) : (
-                                                <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-bold">
+                                                <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded text-xs font-bold">
                                                     Cashier
                                                 </span>
                                             )}
@@ -220,7 +220,7 @@ const UserManagement = () => {
                     {/* Add User Form */}
                     <div className="bg-white rounded shadow-sm border border-gray-300 p-4">
                         <h2 className="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2">
-                            <UserPlus size={16} className="text-[#2563eb]" />
+                            <UserPlus size={16} className="text-[#CC0000]" />
                             Add New User
                         </h2>
 
@@ -236,7 +236,7 @@ const UserManagement = () => {
                                         type="text"
                                         value={formData.username}
                                         onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                                        className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded focus:border-[#2563eb] outline-none transition-all text-sm"
+                                        className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded focus:border-red-600 outline-none transition-all text-sm"
                                         placeholder="Enter username"
                                         required
                                     />
@@ -254,7 +254,7 @@ const UserManagement = () => {
                                         type="password"
                                         value={formData.password}
                                         onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                        className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded focus:border-[#2563eb] outline-none transition-all text-sm"
+                                        className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded focus:border-red-600 outline-none transition-all text-sm"
                                         placeholder="Enter password"
                                         required
                                         minLength={6}
@@ -274,7 +274,7 @@ const UserManagement = () => {
                                         type="password"
                                         value={formData.confirmPassword}
                                         onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                                        className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded focus:border-[#2563eb] outline-none transition-all text-sm"
+                                        className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded focus:border-red-600 outline-none transition-all text-sm"
                                         placeholder="Confirm password"
                                         required
                                     />
@@ -289,7 +289,7 @@ const UserManagement = () => {
                                 <select
                                     value={formData.role}
                                     onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded focus:border-[#2563eb] outline-none transition-all text-sm"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded focus:border-red-600 outline-none transition-all text-sm"
                                     required
                                 >
                                     <option value={USER_ROLES.CASHIER}>Cashier (POS Access Only)</option>
@@ -314,7 +314,7 @@ const UserManagement = () => {
                                 <button
                                     type="submit"
                                     disabled={isSubmitting}
-                                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-[#2563eb] hover:bg-[#1d4ed8] text-white rounded font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-[#CC0000] hover:bg-[#990000] text-white rounded font-bold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     {isSubmitting ? (
                                         <><Loader2 size={16} className="animate-spin" /> Creating...</>

@@ -164,13 +164,13 @@ const Dashboard = () => {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
           {/* Total Inventory */}
-          <a href="/inventory/view" className="bg-white p-4 rounded shadow-sm border border-gray-300 hover:border-[#2563eb] transition-all cursor-pointer">
+          <a href="/inventory/view" className="bg-white p-4 rounded shadow-sm border border-gray-300 hover:border-[#CC0000] transition-all cursor-pointer">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-bold text-gray-500 uppercase">Total Inventory</p>
                 <h3 className="text-2xl font-extrabold text-gray-800 mt-1">{stats.totalInventory}</h3>
               </div>
-              <div className="p-2 bg-blue-50 rounded"><Battery size={24} className="text-[#2563eb]" /></div>
+              <div className="p-2 bg-red-50 rounded"><Battery size={24} className="text-[#CC0000]" /></div>
             </div>
           </a>
 
@@ -184,8 +184,8 @@ const Dashboard = () => {
               <div className="p-2 bg-green-50 rounded"><DollarSign size={24} className="text-green-600" /></div>
             </div>
             <div className="flex gap-1 mt-2 flex-wrap">
-              {['today','yesterday','week','month','year'].map(p => (
-                <button key={p} onClick={() => setTimePeriod(p)} className={`px-2 py-0.5 text-[10px] rounded font-bold transition-colors ${timePeriod === p ? 'bg-[#2563eb] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>{p.charAt(0).toUpperCase() + p.slice(1)}</button>
+              {['today', 'yesterday', 'week', 'month', 'year'].map(p => (
+                <button key={p} onClick={() => setTimePeriod(p)} className={`px-2 py-0.5 text-[10px] rounded font-bold transition-colors ${timePeriod === p ? 'bg-[#CC0000] text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>{p.charAt(0).toUpperCase() + p.slice(1)}</button>
               ))}
             </div>
           </div>
@@ -239,7 +239,7 @@ const Dashboard = () => {
         {salesData.length > 0 && (
           <div className="bg-white border border-gray-300 rounded shadow-sm p-4">
             <h3 className="text-sm font-bold text-gray-800 mb-3 flex items-center gap-2">
-              <BarChart3 size={16} className="text-[#2563eb]" />
+              <BarChart3 size={16} className="text-[#CC0000]" />
               Sales Analytics (Last 7 Days)
             </h3>
             <SalesChart sales={salesData} days={7} />
@@ -251,8 +251,8 @@ const Dashboard = () => {
           <h2 className="text-sm font-bold text-gray-800 mb-3">Quick Actions</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {role === 'Admin' && (
-              <a href="/inventory/view" className="block p-4 bg-white border-2 border-gray-300 rounded hover:border-[#2563eb] transition-all">
-                <Package size={24} className="mb-2 text-[#2563eb]" />
+              <a href="/inventory/view" className="block p-4 bg-white border-2 border-gray-300 rounded hover:border-[#CC0000] transition-all">
+                <Package size={24} className="mb-2 text-[#CC0000]" />
                 <h3 className="text-sm font-bold text-gray-800 mb-1">Manage Inventory</h3>
                 <p className="text-xs text-gray-500">Add, edit, or remove battery stock</p>
               </a>
@@ -283,124 +283,122 @@ function App() {
     <AuthProvider>
       <BrowserRouter>
         <ScannerProvider>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/scanner/:sessionId" element={<ScannerPage />} />
-          <Route path="/" element={
-            <PrivateRoute>
-              <Layout>
-                <POS />
-              </Layout>
-            </PrivateRoute>
-          } />
-          <Route path="/dashboard" element={
-            <RoleBasedRoute allowedRoles={[USER_ROLES.ADMIN]}>
-              <Layout>
-                <Dashboard />
-              </Layout>
-            </RoleBasedRoute>
-          } />
-          <Route path="/inventory/view" element={
-            <RoleBasedRoute allowedRoles={[USER_ROLES.ADMIN]}>
-              <Layout>
-                <Inventory />
-              </Layout>
-            </RoleBasedRoute>
-          } />
-          <Route path="/inventory/add" element={
-            <RoleBasedRoute allowedRoles={[USER_ROLES.ADMIN]}>
-              <Layout>
-                <AddBattery />
-              </Layout>
-            </RoleBasedRoute>
-          } />
-          <Route path="/inventory/edit" element={
-            <RoleBasedRoute allowedRoles={[USER_ROLES.ADMIN]}>
-              <Layout>
-                <EditBattery />
-              </Layout>
-            </RoleBasedRoute>
-          } />
-          <Route path="/inventory" element={<Navigate to="/inventory/view" replace />} />
-          <Route path="/pos" element={
-            <PrivateRoute>
-              <Layout>
-                <POS />
-              </Layout>
-            </PrivateRoute>
-          } />
-          <Route
-            path="/sales"
-            element={
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/scanner/:sessionId" element={<ScannerPage />} />
+            <Route path="/" element={
               <PrivateRoute>
-                <RoleBasedRoute allowedRoles={[USER_ROLES.ADMIN, USER_ROLES.CASHIER]}>
-                  <Layout><Sales /></Layout>
-                </RoleBasedRoute>
+                <Navigate to="/pos" replace />
               </PrivateRoute>
-            }
-          />
-          <Route
-            path="/customers"
-            element={
+            } />
+            <Route path="/dashboard" element={
+              <RoleBasedRoute allowedRoles={[USER_ROLES.ADMIN]}>
+                <Layout>
+                  <Dashboard />
+                </Layout>
+              </RoleBasedRoute>
+            } />
+            <Route path="/inventory/view" element={
+              <RoleBasedRoute allowedRoles={[USER_ROLES.ADMIN]}>
+                <Layout>
+                  <Inventory />
+                </Layout>
+              </RoleBasedRoute>
+            } />
+            <Route path="/inventory/add" element={
+              <RoleBasedRoute allowedRoles={[USER_ROLES.ADMIN]}>
+                <Layout>
+                  <AddBattery />
+                </Layout>
+              </RoleBasedRoute>
+            } />
+            <Route path="/inventory/edit" element={
+              <RoleBasedRoute allowedRoles={[USER_ROLES.ADMIN]}>
+                <Layout>
+                  <EditBattery />
+                </Layout>
+              </RoleBasedRoute>
+            } />
+            <Route path="/inventory" element={<Navigate to="/inventory/view" replace />} />
+            <Route path="/pos" element={
               <PrivateRoute>
-                <RoleBasedRoute allowedRoles={[USER_ROLES.ADMIN]}>
-                  <Layout><Customers /></Layout>
-                </RoleBasedRoute>
+                <Layout>
+                  <POS />
+                </Layout>
               </PrivateRoute>
-            }
-          />
-          <Route
-            path="/users"
-            element={
+            } />
+            <Route
+              path="/sales"
+              element={
+                <PrivateRoute>
+                  <RoleBasedRoute allowedRoles={[USER_ROLES.ADMIN, USER_ROLES.CASHIER]}>
+                    <Layout><Sales /></Layout>
+                  </RoleBasedRoute>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/customers"
+              element={
+                <PrivateRoute>
+                  <RoleBasedRoute allowedRoles={[USER_ROLES.ADMIN]}>
+                    <Layout><Customers /></Layout>
+                  </RoleBasedRoute>
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/users"
+              element={
+                <PrivateRoute>
+                  <RoleBasedRoute allowedRoles={[USER_ROLES.ADMIN]}>
+                    <Layout>
+                      <UserManagement />
+                    </Layout>
+                  </RoleBasedRoute>
+                </PrivateRoute>
+              }
+            />
+            <Route path="/change-password" element={
+              <PrivateRoute>
+                <Layout>
+                  <ChangePassword />
+                </Layout>
+              </PrivateRoute>
+            } />
+            <Route path="/returns" element={
+              <RoleBasedRoute allowedRoles={[USER_ROLES.ADMIN]}>
+                <Layout>
+                  <Returns />
+                </Layout>
+              </RoleBasedRoute>
+            } />
+            <Route path="/return-history" element={
+              <RoleBasedRoute allowedRoles={[USER_ROLES.ADMIN]}>
+                <Layout>
+                  <ReturnHistory />
+                </Layout>
+              </RoleBasedRoute>
+            } />
+            <Route path="/activity-log" element={
               <PrivateRoute>
                 <RoleBasedRoute allowedRoles={[USER_ROLES.ADMIN]}>
                   <Layout>
-                    <UserManagement />
+                    <ActivityLog />
                   </Layout>
                 </RoleBasedRoute>
               </PrivateRoute>
-            }
-          />
-          <Route path="/change-password" element={
-            <PrivateRoute>
-              <Layout>
-                <ChangePassword />
-              </Layout>
-            </PrivateRoute>
-          } />
-          <Route path="/returns" element={
-            <RoleBasedRoute allowedRoles={[USER_ROLES.ADMIN]}>
-              <Layout>
-                <Returns />
-              </Layout>
-            </RoleBasedRoute>
-          } />
-          <Route path="/return-history" element={
-            <RoleBasedRoute allowedRoles={[USER_ROLES.ADMIN]}>
-              <Layout>
-                <ReturnHistory />
-              </Layout>
-            </RoleBasedRoute>
-          } />
-          <Route path="/activity-log" element={
-            <PrivateRoute>
-              <RoleBasedRoute allowedRoles={[USER_ROLES.ADMIN]}>
-                <Layout>
-                  <ActivityLog />
-                </Layout>
-              </RoleBasedRoute>
-            </PrivateRoute>
-          } />
-          <Route path="/purchase-history" element={
-            <PrivateRoute>
-              <RoleBasedRoute allowedRoles={[USER_ROLES.ADMIN]}>
-                <Layout>
-                  <PurchaseHistory />
-                </Layout>
-              </RoleBasedRoute>
-            </PrivateRoute>
-          } />
-        </Routes>
+            } />
+            <Route path="/purchase-history" element={
+              <PrivateRoute>
+                <RoleBasedRoute allowedRoles={[USER_ROLES.ADMIN]}>
+                  <Layout>
+                    <PurchaseHistory />
+                  </Layout>
+                </RoleBasedRoute>
+              </PrivateRoute>
+            } />
+          </Routes>
         </ScannerProvider>
       </BrowserRouter>
     </AuthProvider>

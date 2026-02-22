@@ -36,9 +36,9 @@ const Header = () => {
     const NavButton = ({ path, icon: Icon, label, className = '' }) => (
         <button
             onClick={() => handleNavigation(path)}
-            className={`flex items-center gap-1 px-2 py-1 rounded font-bold transition-all text-xs whitespace-nowrap ${isActive(path)
-                ? 'bg-[#2563eb] text-white'
-                : 'text-gray-600 hover:bg-blue-50 hover:text-[#2563eb]'
+            className={`flex items-center gap-1 px-2 py-1 rounded font-bold transition-all text-xs whitespace-nowrap text-white ${isActive(path)
+                ? 'bg-[#CC0000] hover:bg-[#990000]'
+                : 'bg-[#003399] hover:bg-[#002b80]'
                 } ${className}`}
         >
             <Icon size={14} />
@@ -50,9 +50,9 @@ const Header = () => {
     const MobileNavItem = ({ path, icon: Icon, label }) => (
         <button
             onClick={() => handleNavigation(path)}
-            className={`flex items-center gap-3 w-full px-4 py-3 rounded font-bold transition-all ${isActive(path)
-                ? 'bg-[#2563eb] text-white'
-                : 'text-gray-700 hover:bg-blue-50'
+            className={`flex items-center gap-3 w-full px-4 py-3 rounded font-bold transition-all text-white ${isActive(path)
+                ? 'bg-[#CC0000] hover:bg-[#990000]'
+                : 'bg-[#003399] hover:bg-[#002b80]'
                 }`}
         >
             <Icon size={20} />
@@ -66,7 +66,7 @@ const Header = () => {
                 <div className="flex justify-between items-center">
                     {/* Logo & Brand */}
                     <div className="flex items-center cursor-pointer" onClick={() => navigate('/')}>
-                        <div className="w-8 h-8 bg-[#2563eb] rounded flex items-center justify-center">
+                        <div className="w-8 h-8 bg-[#CC0000] rounded flex items-center justify-center">
                             <span className="text-white font-extrabold text-lg">R</span>
                         </div>
                     </div>
@@ -98,19 +98,19 @@ const Header = () => {
 
                         {/* Notification Bell */}
                         <NotificationBell />
-                        
+
                         {/* User Dropdown - Desktop */}
                         <div className="relative hidden md:block"
                             onMouseEnter={() => setShowUserDropdown(true)}
                             onMouseLeave={() => setShowUserDropdown(false)}
                         >
                             <button className="flex items-center gap-1.5 px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded border border-gray-300 transition-colors cursor-pointer">
-                                <div className="w-6 h-6 bg-[#2563eb] rounded-full flex items-center justify-center text-white text-xs font-bold">
+                                <div className="w-6 h-6 bg-[#CC0000] rounded-full flex items-center justify-center text-white text-xs font-bold">
                                     {username.charAt(0).toUpperCase()}
                                 </div>
                                 <div className="hidden lg:block text-right">
                                     <p className="text-gray-800 font-bold text-[11px] leading-tight">{username}</p>
-                                    <p className="text-[9px] text-[#2563eb] font-bold">{role}</p>
+                                    <p className="text-[9px] text-[#CC0000] font-bold">{role}</p>
                                 </div>
                                 <ChevronDown size={12} className={`hidden lg:block transition-transform ${showUserDropdown ? 'rotate-180' : ''}`} />
                             </button>
@@ -119,14 +119,14 @@ const Header = () => {
                                 <div className="absolute right-0 top-full mt-0 w-48 bg-white rounded shadow-md border border-gray-300 py-1 z-50">
                                     <div className="px-3 py-2 border-b border-gray-100 lg:hidden">
                                         <p className="text-gray-800 font-semibold text-sm">{username}</p>
-                                        <p className="text-xs text-blue-600">{role}</p>
+                                        <p className="text-xs text-red-600">{role}</p>
                                     </div>
                                     <button
                                         onClick={() => {
                                             navigate('/change-password');
                                             setShowUserDropdown(false);
                                         }}
-                                        className="w-full text-left px-3 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors flex items-center gap-2 text-sm"
+                                        className="w-full text-left px-3 py-2 text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors flex items-center gap-2 text-sm"
                                     >
                                         <User size={16} />
                                         <span className="font-medium">Change Password</span>
@@ -174,15 +174,15 @@ const Header = () => {
                                     <MobileNavItem path="/dashboard" icon={Home} label="Dashboard" />
                                 </>
                             )}
-                            
+
                             <div className="border-t border-gray-200 my-2 pt-2">
                                 <div className="flex items-center gap-3 px-4 py-2">
-                                    <div className="w-10 h-10 bg-[#2563eb] rounded-full flex items-center justify-center text-white font-bold">
+                                    <div className="w-10 h-10 bg-[#CC0000] rounded-full flex items-center justify-center text-white font-bold">
                                         {username.charAt(0).toUpperCase()}
                                     </div>
                                     <div>
                                         <p className="text-gray-800 font-semibold">{username}</p>
-                                        <p className="text-xs text-blue-600 font-medium">{role}</p>
+                                        <p className="text-xs text-red-600 font-medium">{role}</p>
                                     </div>
                                 </div>
                                 <button
@@ -190,7 +190,7 @@ const Header = () => {
                                         navigate('/change-password');
                                         setShowMobileMenu(false);
                                     }}
-                                    className="flex items-center gap-3 w-full px-4 py-3 text-gray-700 hover:bg-blue-50 rounded-lg transition-colors"
+                                    className="flex items-center gap-3 w-full px-4 py-3 text-gray-700 hover:bg-red-50 rounded-lg transition-colors"
                                 >
                                     <User size={20} />
                                     <span className="font-medium">Change Password</span>

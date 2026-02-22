@@ -156,8 +156,8 @@ const ActivityLog = () => {
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                     <div className="bg-white rounded border border-gray-300 p-3 shadow-sm">
                         <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 bg-blue-50 rounded flex items-center justify-center">
-                                <Activity size={16} className="text-[#2563eb]" />
+                            <div className="w-8 h-8 bg-red-50 rounded flex items-center justify-center">
+                                <Activity size={16} className="text-[#CC0000]" />
                             </div>
                             <div>
                                 <p className="text-lg font-extrabold text-gray-900">{stats?.total || 0}</p>
@@ -171,7 +171,7 @@ const ActivityLog = () => {
                         { type: 'Return', icon: RotateCcw, color: 'orange' },
                         { type: 'Auth', icon: LogIn, color: 'purple' },
                     ].map(({ type, icon: Icon, color }) => (
-                        <div key={type} className={`bg-white rounded border p-3 shadow-sm cursor-pointer hover:border-[#2563eb] transition-all ${entityType === type ? 'border-[#2563eb] bg-blue-50' : 'border-gray-300'}`}
+                        <div key={type} className={`bg-white rounded border p-3 shadow-sm cursor-pointer hover:border-[#CC0000] transition-all ${entityType === type ? 'border-[#CC0000] bg-red-50' : 'border-gray-300'}`}
                             onClick={() => { setEntityType(entityType === type ? '' : type); setPage(1); }}>
                             <div className="flex items-center gap-2">
                                 <div className={`w-8 h-8 bg-${color}-50 rounded flex items-center justify-center`}>
@@ -196,16 +196,16 @@ const ActivityLog = () => {
                                 placeholder="Search activities by description, user, or ID..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded focus:border-[#2563eb] outline-none transition-all text-sm"
+                                className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded focus:border-red-600 outline-none transition-all text-sm"
                             />
                         </div>
                         <button
                             onClick={() => setShowFilters(!showFilters)}
-                            className={`flex items-center gap-1.5 px-3 py-2 rounded border font-bold text-xs transition-all ${showFilters ? 'bg-blue-50 border-[#2563eb] text-[#2563eb]' : 'border-gray-300 text-gray-600 hover:bg-gray-50'}`}
+                            className={`flex items-center gap-1.5 px-3 py-2 rounded border font-bold text-xs transition-all ${showFilters ? 'bg-red-50 border-[#CC0000] text-[#CC0000]' : 'border-gray-300 text-gray-600 hover:bg-gray-50'}`}
                         >
                             <Filter size={14} />
                             Filters
-                            {hasActiveFilters && <span className="w-1.5 h-1.5 bg-[#2563eb] rounded-full"></span>}
+                            {hasActiveFilters && <span className="w-1.5 h-1.5 bg-[#CC0000] rounded-full"></span>}
                         </button>
                         <button
                             onClick={() => { fetchLogs(); fetchStats(); }}
@@ -225,7 +225,7 @@ const ActivityLog = () => {
                                     <select
                                         value={entityType}
                                         onChange={(e) => { setEntityType(e.target.value); setPage(1); }}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:border-[#2563eb] outline-none"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:border-red-600 outline-none"
                                     >
                                         <option value="">All Types</option>
                                         <option value="Battery">Battery</option>
@@ -240,7 +240,7 @@ const ActivityLog = () => {
                                     <select
                                         value={action}
                                         onChange={(e) => { setAction(e.target.value); setPage(1); }}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:border-[#2563eb] outline-none"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:border-red-600 outline-none"
                                     >
                                         <option value="">All Actions</option>
                                         <option value="Created">Created</option>
@@ -257,7 +257,7 @@ const ActivityLog = () => {
                                         type="date"
                                         value={startDate}
                                         onChange={(e) => { setStartDate(e.target.value); setPage(1); }}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:border-[#2563eb] outline-none"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:border-red-600 outline-none"
                                     />
                                 </div>
                                 <div>
@@ -266,14 +266,14 @@ const ActivityLog = () => {
                                         type="date"
                                         value={endDate}
                                         onChange={(e) => { setEndDate(e.target.value); setPage(1); }}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:border-[#2563eb] outline-none"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded text-sm focus:border-red-600 outline-none"
                                     />
                                 </div>
                             </div>
                             {hasActiveFilters && (
                                 <button
                                     onClick={clearFilters}
-                                    className="mt-2 text-xs text-[#2563eb] hover:text-[#1d4ed8] font-bold"
+                                    className="mt-2 text-xs text-[#CC0000] hover:text-[#990000] font-bold"
                                 >
                                     Clear all filters
                                 </button>
@@ -287,7 +287,7 @@ const ActivityLog = () => {
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm border-collapse">
                             <thead>
-                                <tr className="bg-[#2563eb] text-white text-left">
+                                <tr className="bg-[#CC0000] text-white text-left">
                                     <th className="px-3 py-2 text-xs font-bold uppercase">Time</th>
                                     <th className="px-3 py-2 text-xs font-bold uppercase">User</th>
                                     <th className="px-3 py-2 text-xs font-bold uppercase">Action</th>
@@ -300,7 +300,7 @@ const ActivityLog = () => {
                                     <tr>
                                         <td colSpan="5" className="py-10 text-center text-gray-400">
                                             <div className="flex flex-col items-center gap-2">
-                                                <RefreshCw size={24} className="animate-spin text-[#2563eb]" />
+                                                <RefreshCw size={24} className="animate-spin text-[#CC0000]" />
                                                 <p className="font-bold text-sm">Loading activity logs...</p>
                                             </div>
                                         </td>
@@ -317,7 +317,7 @@ const ActivityLog = () => {
                                     </tr>
                                 ) : (
                                     logs.map((log, index) => (
-                                        <tr key={log.id} className={`${index % 2 === 0 ? 'bg-white' : 'bg-blue-50'} hover:bg-blue-100 transition-colors border-b border-gray-200`}>
+                                        <tr key={log.id} className={`${index % 2 === 0 ? 'bg-white' : 'bg-green-50'} hover:bg-green-100 transition-colors border-b border-gray-200`}>
                                             <td className="px-3 py-2">
                                                 <span className="text-xs text-gray-700 font-bold">{formatDate(log.timestamp)}</span>
                                                 <p className="text-[10px] text-gray-400">
@@ -388,7 +388,7 @@ const ActivityLog = () => {
                                                 key={pageNum}
                                                 onClick={() => setPage(pageNum)}
                                                 className={`w-8 h-8 rounded text-xs font-bold transition-all ${page === pageNum
-                                                    ? 'bg-[#2563eb] text-white'
+                                                    ? 'bg-[#CC0000] text-white'
                                                     : 'text-gray-600 hover:bg-white border border-transparent hover:border-gray-300'
                                                     }`}
                                             >

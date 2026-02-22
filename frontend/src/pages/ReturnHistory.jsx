@@ -15,7 +15,7 @@ const ReturnHistory = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [toast, setToast] = useState(null);
     const [selectedReturn, setSelectedReturn] = useState(null);
-    
+
     // Filters
     const [searchQuery, setSearchQuery] = useState('');
     const [filterStatus, setFilterStatus] = useState('all');
@@ -23,11 +23,11 @@ const ReturnHistory = () => {
     const [dateFrom, setDateFrom] = useState('');
     const [dateTo, setDateTo] = useState('');
     const [showFilters, setShowFilters] = useState(false);
-    
+
     useEffect(() => {
         fetchReturns();
     }, []);
-    
+
     const fetchReturns = async () => {
         try {
             setIsLoading(true);
@@ -42,11 +42,11 @@ const ReturnHistory = () => {
             setIsLoading(false);
         }
     };
-    
+
     // Filter and search returns
     const getFilteredReturns = () => {
         let filtered = [...returns];
-        
+
         // Search filter
         if (searchQuery) {
             const query = searchQuery.toLowerCase();
@@ -57,17 +57,17 @@ const ReturnHistory = () => {
                 r.returnedBy?.toLowerCase().includes(query)
             );
         }
-        
+
         // Status filter
         if (filterStatus !== 'all') {
             filtered = filtered.filter(r => r.status === filterStatus);
         }
-        
+
         // Compensation type filter
         if (filterCompensationType !== 'all') {
             filtered = filtered.filter(r => r.compensationType === filterCompensationType);
         }
-        
+
         // Date range filter
         if (dateFrom) {
             const fromDate = new Date(dateFrom);
@@ -78,15 +78,15 @@ const ReturnHistory = () => {
             toDate.setHours(23, 59, 59, 999);
             filtered = filtered.filter(r => new Date(r.returnDate) <= toDate);
         }
-        
+
         // Sort by return date descending (most recent first)
         filtered.sort((a, b) => new Date(b.returnDate) - new Date(a.returnDate));
-        
+
         return filtered;
     };
-    
+
     const filteredReturns = getFilteredReturns();
-    
+
     const clearFilters = () => {
         setSearchQuery('');
         setFilterStatus('all');
@@ -94,7 +94,7 @@ const ReturnHistory = () => {
         setDateFrom('');
         setDateTo('');
     };
-    
+
     const getStatusBadge = (status) => {
         const styles = {
             'Completed': 'bg-green-100 text-green-700 border-green-200',
@@ -102,20 +102,20 @@ const ReturnHistory = () => {
         };
         return styles[status] || 'bg-gray-100 text-gray-700 border-gray-200';
     };
-    
+
     const getCompensationBadge = (type) => {
         if (type === 'Money') {
             return 'bg-emerald-100 text-emerald-700 border-emerald-200';
         }
-        return 'bg-blue-100 text-blue-700 border-blue-200';
+        return 'bg-green-100 text-green-700 border-green-200';
     };
-    
+
     return (
         <div className="min-h-screen bg-gray-100">
             <div className="w-full max-w-[1400px] mx-auto p-2 sm:p-3 space-y-3">
                 {/* Header */}
                 <PageHeader title="Return History" />
-                
+
                 {/* Loading State */}
                 {isLoading ? (
                     <div className="flex items-center justify-center py-20">
@@ -132,13 +132,13 @@ const ReturnHistory = () => {
                                 <h3 className="text-sm font-bold text-gray-800">Search & Filters</h3>
                                 <button
                                     onClick={() => setShowFilters(!showFilters)}
-                                    className="flex items-center gap-1.5 text-sm text-[#2563eb] hover:text-[#1d4ed8] font-medium"
+                                    className="flex items-center gap-1.5 text-sm text-red-600 hover:text-red-700 font-medium"
                                 >
                                     <Filter size={16} />
                                     {showFilters ? 'Hide Filters' : 'Show Filters'}
                                 </button>
                             </div>
-                            
+
                             {/* Search */}
                             <div className="relative mb-3">
                                 <Search size={16} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
@@ -147,10 +147,10 @@ const ReturnHistory = () => {
                                     placeholder="Search by serial number, brand, model, or user..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded focus:border-[#2563eb] outline-none transition-all text-sm"
+                                    className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded focus:border-red-600 outline-none transition-all text-sm"
                                 />
                             </div>
-                            
+
                             {/* Advanced Filters */}
                             {showFilters && (
                                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-4 border-t border-gray-200">
@@ -160,28 +160,28 @@ const ReturnHistory = () => {
                                         <select
                                             value={filterStatus}
                                             onChange={(e) => setFilterStatus(e.target.value)}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded focus:border-[#2563eb] outline-none transition-all text-sm"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded focus:border-red-600 outline-none transition-all text-sm"
                                         >
                                             <option value="all">All Statuses</option>
                                             <option value="Completed">Completed</option>
                                             <option value="Pending">Pending</option>
                                         </select>
                                     </div>
-                                    
+
                                     {/* Compensation Type Filter */}
                                     <div>
                                         <label className="block text-sm font-semibold text-gray-700 mb-2">Compensation Type</label>
                                         <select
                                             value={filterCompensationType}
                                             onChange={(e) => setFilterCompensationType(e.target.value)}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded focus:border-[#2563eb] outline-none transition-all text-sm"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded focus:border-red-600 outline-none transition-all text-sm"
                                         >
                                             <option value="all">All Types</option>
                                             <option value="Money">Money</option>
                                             <option value="Replacement">Replacement</option>
                                         </select>
                                     </div>
-                                    
+
                                     {/* Date From */}
                                     <div>
                                         <label className="block text-sm font-semibold text-gray-700 mb-1">From Date</label>
@@ -189,10 +189,10 @@ const ReturnHistory = () => {
                                             type="date"
                                             value={dateFrom}
                                             onChange={(e) => setDateFrom(e.target.value)}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded focus:border-[#2563eb] outline-none transition-all text-sm"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded focus:border-red-600 outline-none transition-all text-sm"
                                         />
                                     </div>
-                                    
+
                                     {/* Date To */}
                                     <div>
                                         <label className="block text-sm font-semibold text-gray-700 mb-2">To Date</label>
@@ -200,16 +200,16 @@ const ReturnHistory = () => {
                                             type="date"
                                             value={dateTo}
                                             onChange={(e) => setDateTo(e.target.value)}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded focus:border-[#2563eb] outline-none transition-all text-sm"
+                                            className="w-full px-3 py-2 border border-gray-300 rounded focus:border-red-600 outline-none transition-all text-sm"
                                         />
                                     </div>
                                 </div>
                             )}
-                            
+
                             {/* Results count & Clear */}
                             <div className="flex justify-between items-center mt-4">
                                 <div className="text-sm text-gray-600">
-                                    Showing <span className="font-bold text-[#2563eb]">{filteredReturns.length}</span> of <span className="font-bold">{returns.length}</span> returns
+                                    Showing <span className="font-bold text-red-600">{filteredReturns.length}</span> of <span className="font-bold">{returns.length}</span> returns
                                 </div>
                                 {(searchQuery || filterStatus !== 'all' || filterCompensationType !== 'all' || dateFrom || dateTo) && (
                                     <button
@@ -222,15 +222,15 @@ const ReturnHistory = () => {
                                 )}
                             </div>
                         </div>
-                        
+
                         {/* Returns - Empty State */}
                         {filteredReturns.length === 0 ? (
                             <div className="bg-white border border-gray-300 rounded shadow-sm p-8 text-center">
                                 <RotateCcw size={48} className="text-gray-300 mx-auto mb-4" />
                                 <h3 className="text-xl font-bold text-gray-600 mb-2">No Returns Found</h3>
                                 <p className="text-gray-500">
-                                    {returns.length === 0 
-                                        ? 'No battery returns have been recorded yet.' 
+                                    {returns.length === 0
+                                        ? 'No battery returns have been recorded yet.'
                                         : 'No returns match your search criteria.'}
                                 </p>
                             </div>
@@ -282,7 +282,7 @@ const ReturnHistory = () => {
                                                             {APP_CONFIG.CURRENCY} {returnItem.moneyAmount?.toLocaleString() || '0'}
                                                         </p>
                                                     ) : (
-                                                        <p className="font-medium text-blue-600 text-sm">
+                                                        <p className="font-medium text-red-600 text-sm">
                                                             {returnItem.replacementSerialNumber || 'Battery Added'}
                                                         </p>
                                                     )}
@@ -313,7 +313,7 @@ const ReturnHistory = () => {
                                     <div className="overflow-x-auto">
                                         <table className="w-full text-sm border-collapse">
                                             <thead>
-                                                <tr className="bg-[#2563eb] text-white text-left">
+                                                <tr className="bg-[#CC0000] text-white text-left">
                                                     <th className="px-3 py-2 text-left text-xs font-bold text-white uppercase tracking-wider">Date</th>
                                                     <th className="px-3 py-2 text-left text-xs font-bold text-white uppercase tracking-wider">Battery</th>
                                                     <th className="px-3 py-2 text-left text-xs font-bold text-white uppercase tracking-wider">Compensation</th>
@@ -325,7 +325,7 @@ const ReturnHistory = () => {
                                             </thead>
                                             <tbody>
                                                 {filteredReturns.map((returnItem, index) => (
-                                                    <tr key={returnItem.id} className={`border-b border-gray-200 transition-colors ${index % 2 === 0 ? 'bg-blue-50 hover:bg-blue-100' : 'bg-white hover:bg-blue-50'}`}>
+                                                    <tr key={returnItem.id} className={`border-b border-gray-200 transition-colors ${index % 2 === 0 ? 'bg-green-50 hover:bg-green-100' : 'bg-white hover:bg-green-50'}`}>
                                                         <td className="px-3 py-2">
                                                             <div className="flex items-center gap-2">
                                                                 <Calendar size={16} className="text-gray-400" />
@@ -356,7 +356,7 @@ const ReturnHistory = () => {
                                                                     {APP_CONFIG.CURRENCY} {returnItem.moneyAmount?.toLocaleString() || '0'}
                                                                 </span>
                                                             ) : (
-                                                                <span className="text-blue-600 font-medium">
+                                                                <span className="text-red-600 font-medium">
                                                                     {returnItem.replacementSerialNumber || 'Replacement Battery'}
                                                                 </span>
                                                             )}
@@ -389,21 +389,21 @@ const ReturnHistory = () => {
                     </>
                 )}
             </div>
-            
+
             {/* Return Details Modal */}
             {selectedReturn && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
                     <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-300">
-                        <div className="sticky top-0 bg-[#2563eb] p-4 flex justify-between items-center">
+                        <div className="sticky top-0 bg-[#CC0000] p-4 flex justify-between items-center">
                             <h2 className="text-lg font-bold text-white">Return Details</h2>
-                            <button 
-                                onClick={() => setSelectedReturn(null)} 
+                            <button
+                                onClick={() => setSelectedReturn(null)}
                                 className="text-white hover:bg-white/20 p-2 rounded-lg transition-colors"
                             >
                                 <X size={24} />
                             </button>
                         </div>
-                        
+
                         <div className="p-6 space-y-6">
                             {/* Battery Info */}
                             <div className="bg-gray-50 rounded p-4">
@@ -429,7 +429,7 @@ const ReturnHistory = () => {
                                     </div>
                                 </div>
                             </div>
-                            
+
                             {/* Return Info */}
                             <div className="bg-orange-50 rounded p-4">
                                 <h3 className="font-bold text-lg text-gray-800 mb-3">Return Information</h3>
@@ -456,17 +456,17 @@ const ReturnHistory = () => {
                                     </div>
                                 </div>
                             </div>
-                            
+
                             {/* Compensation Info */}
-                            <div className={`rounded p-4 ${selectedReturn.compensationType === 'Money' ? 'bg-green-50' : 'bg-blue-50'}`}>
+                            <div className={`rounded p-4 ${selectedReturn.compensationType === 'Money' ? 'bg-green-50' : 'bg-green-50'}`}>
                                 <h3 className="font-bold text-lg text-gray-800 mb-3">Compensation Details</h3>
                                 <div className="flex items-center gap-3 mb-3">
                                     {selectedReturn.compensationType === 'Money' ? (
                                         <DollarSign size={24} className="text-green-600" />
                                     ) : (
-                                        <Package size={24} className="text-blue-600" />
+                                        <Package size={24} className="text-green-700" />
                                     )}
-                                    <span className={`text-xl font-bold ${selectedReturn.compensationType === 'Money' ? 'text-green-600' : 'text-blue-600'}`}>
+                                    <span className={`text-xl font-bold ${selectedReturn.compensationType === 'Money' ? 'text-green-600' : 'text-green-700'}`}>
                                         {selectedReturn.compensationType}
                                     </span>
                                 </div>
@@ -482,7 +482,7 @@ const ReturnHistory = () => {
                                     <div className="space-y-3">
                                         <div>
                                             <p className="text-sm text-gray-500">Replacement Battery Serial Number</p>
-                                            <p className="font-bold text-blue-600">{selectedReturn.replacementSerialNumber || 'N/A'}</p>
+                                            <p className="font-bold text-red-600">{selectedReturn.replacementSerialNumber || 'N/A'}</p>
                                         </div>
                                         {selectedReturn.replacementSalesRep && (
                                             <div>
@@ -499,7 +499,7 @@ const ReturnHistory = () => {
                                     </div>
                                 )}
                             </div>
-                            
+
                             {/* Notes */}
                             {selectedReturn.notes && (
                                 <div className="bg-gray-50 rounded p-4">
@@ -508,7 +508,7 @@ const ReturnHistory = () => {
                                 </div>
                             )}
                         </div>
-                        
+
                         <div className="p-6 border-t border-gray-200">
                             <button
                                 onClick={() => setSelectedReturn(null)}
@@ -520,7 +520,7 @@ const ReturnHistory = () => {
                     </div>
                 </div>
             )}
-            
+
             {/* Toast */}
             {toast && (
                 <Toast

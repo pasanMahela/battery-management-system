@@ -9,9 +9,9 @@ const NotificationBell = () => {
     const [notifications, setNotifications] = useState([]);
     const [showDropdown, setShowDropdown] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [dismissedIds, setDismissedIds] = useState(() => {
+    const [readIds, setReadIds] = useState(() => {
         try {
-            return JSON.parse(localStorage.getItem('dismissed_notifications') || '[]');
+            return JSON.parse(localStorage.getItem('read_notifications') || '[]');
         } catch {
             return [];
         }
@@ -28,13 +28,13 @@ const NotificationBell = () => {
 
     const fetchNotifications = async () => {
         if (!user?.token) return;
-        
+
         try {
             setLoading(true);
             const res = await axios.get(API_ENDPOINTS.BATTERY, {
                 headers: { Authorization: `Bearer ${user.token}` }
             });
-            
+
             const batteries = res.data;
             const alerts = [];
             const today = new Date();
@@ -80,8 +80,7 @@ const NotificationBell = () => {
                 }
             });
 
-            const dismissed = JSON.parse(localStorage.getItem('dismissed_notifications') || '[]');
-            setNotifications(alerts.filter(a => !dismissed.includes(a.id)));
+            setNotifications(alerts);
         } catch (err) {
             // Silently fail - notifications are not critical
         } finally {
@@ -89,24 +88,22 @@ const NotificationBell = () => {
         }
     };
 
-    const dismissNotification = (id) => {
-        setNotifications(prev => prev.filter(n => n.id !== id));
-        setDismissedIds(prev => {
+    const markAsRead = (id) => {
+        setReadIds(prev => {
+            if (prev.includes(id)) return prev;
             const updated = [...prev, id];
-            localStorage.setItem('dismissed_notifications', JSON.stringify(updated));
+            localStorage.setItem('read_notifications', JSON.stringify(updated));
             return updated;
         });
     };
 
-    const dismissAll = () => {
+    const markAllAsRead = () => {
         const allIds = notifications.map(n => n.id);
-        setDismissedIds(prev => {
+        setReadIds(prev => {
             const updated = [...new Set([...prev, ...allIds])];
-            localStorage.setItem('dismissed_notifications', JSON.stringify(updated));
+            localStorage.setItem('read_notifications', JSON.stringify(updated));
             return updated;
         });
-        setNotifications([]);
-        setShowDropdown(false);
     };
 
     const getNotificationIcon = (type) => {
@@ -129,32 +126,30 @@ const NotificationBell = () => {
             case 'medium':
                 return 'border-l-orange-500 bg-orange-50';
             default:
-                return 'border-l-blue-500 bg-blue-50';
+                return 'border-l-green-500 bg-green-50';
         }
     };
 
     if (user?.role !== 'Admin') return null;
 
-    const unreadCount = notifications.length;
-    const hasHighPriority = notifications.some(n => n.severity === 'high');
+    const unreadCount = notifications.filter(n => !readIds.includes(n.id)).length;
+    const hasHighPriority = notifications.some(n => n.severity === 'high' && !readIds.includes(n.id));
 
     return (
         <div className="relative">
             <button
                 onClick={() => setShowDropdown(!showDropdown)}
-                className={`relative p-2 rounded-lg transition-colors ${
-                    hasHighPriority 
-                        ? 'text-red-600 hover:bg-red-100' 
-                        : unreadCount > 0 
-                            ? 'text-orange-600 hover:bg-orange-100' 
-                            : 'text-gray-600 hover:bg-gray-100'
-                }`}
+                className={`relative p-2 rounded-lg transition-colors ${hasHighPriority
+                    ? 'text-red-600 hover:bg-red-100'
+                    : unreadCount > 0
+                        ? 'text-orange-600 hover:bg-orange-100'
+                        : 'text-gray-600 hover:bg-gray-100'
+                    }`}
             >
                 <Bell size={20} />
                 {unreadCount > 0 && (
-                    <span className={`absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center text-xs font-bold text-white rounded-full ${
-                        hasHighPriority ? 'bg-red-500' : 'bg-orange-500'
-                    }`}>
+                    <span className={`absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center text-xs font-bold text-white rounded-full ${hasHighPriority ? 'bg-red-500' : 'bg-orange-500'
+                        }`}>
                         {unreadCount > 99 ? '99+' : unreadCount}
                     </span>
                 )}
@@ -162,18 +157,18 @@ const NotificationBell = () => {
 
             {showDropdown && (
                 <>
-                    <div 
-                        className="fixed inset-0 z-40" 
+                    <div
+                        className="fixed inset-0 z-40"
                         onClick={() => setShowDropdown(false)}
                     />
-                    <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 overflow-hidden">
-                        <div className="bg-gradient-to-r from-blue-500 to-indigo-600 px-4 py-3 flex items-center justify-between">
+                    <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded shadow-lg border border-gray-300 z-50 overflow-hidden">
+                        <div className="bg-[#CC0000] px-4 py-3 flex items-center justify-between">
                             <h3 className="text-white font-bold">Notifications</h3>
                             <span className="bg-white/20 text-white text-xs px-2 py-1 rounded-full">
-                                {unreadCount} alerts
+                                {unreadCount} unread
                             </span>
                         </div>
-                        
+
                         <div className="max-h-96 overflow-y-auto">
                             {loading ? (
                                 <div className="p-4 text-center text-gray-500">
@@ -187,41 +182,43 @@ const NotificationBell = () => {
                                 </div>
                             ) : (
                                 notifications.map(notification => (
-                                    <div 
+                                    <div
                                         key={notification.id}
-                                        className={`p-3 border-l-4 ${getSeverityColor(notification.severity)} border-b border-gray-100 last:border-b-0`}
+                                        className={`p-3 border-l-4 ${readIds.includes(notification.id) ? 'border-l-gray-300 bg-gray-50 opacity-60' : getSeverityColor(notification.severity)} border-b border-gray-100 last:border-b-0 transition-opacity`}
                                     >
                                         <div className="flex items-start gap-3">
                                             <div className="mt-0.5">
                                                 {getNotificationIcon(notification.type)}
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <p className="font-semibold text-gray-800 text-sm">
+                                                <p className={`text-sm ${readIds.includes(notification.id) ? 'font-medium text-gray-500' : 'font-semibold text-gray-800'}`}>
                                                     {notification.title}
                                                 </p>
                                                 <p className="text-gray-600 text-xs mt-0.5 line-clamp-2">
                                                     {notification.message}
                                                 </p>
                                             </div>
-                                            <button
-                                                onClick={() => dismissNotification(notification.id)}
-                                                className="text-gray-400 hover:text-gray-600 p-1"
-                                            >
-                                                <X size={14} />
-                                            </button>
+                                            {!readIds.includes(notification.id) && (
+                                                <button
+                                                    onClick={() => markAsRead(notification.id)}
+                                                    className="text-gray-400 hover:text-green-600 p-1" title="Mark as read"
+                                                >
+                                                    <X size={14} />
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                 ))
                             )}
                         </div>
-                        
-                        {notifications.length > 0 && (
+
+                        {unreadCount > 0 && (
                             <div className="p-2 bg-gray-50 border-t">
                                 <button
-                                    onClick={dismissAll}
-                                    className="w-full text-center text-sm text-gray-600 hover:text-gray-800 py-1"
+                                    onClick={markAllAsRead}
+                                    className="w-full text-center text-sm text-[#CC0000] hover:text-[#990000] font-bold py-1"
                                 >
-                                    Dismiss all
+                                    Mark all as read
                                 </button>
                             </div>
                         )}

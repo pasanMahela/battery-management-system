@@ -368,7 +368,7 @@ const Inventory = () => {
 
             const csvContent = [
                 headers.join(','),
-                ...rows.map(row => row.map(cell => 
+                ...rows.map(row => row.map(cell =>
                     typeof cell === 'string' && cell.includes(',') ? `"${cell}"` : cell
                 ).join(','))
             ].join('\n');
@@ -415,7 +415,7 @@ const Inventory = () => {
                                 navigate('/inventory/add');
                             }}
                             disabled={isNavigating}
-                            className="flex items-center gap-1.5 px-4 py-2 bg-[#2563eb] text-white rounded hover:bg-[#1d4ed8] transition-colors text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex items-center gap-1.5 px-4 py-2 bg-[#CC0000] text-white rounded hover:bg-[#990000] transition-colors text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isNavigating ? (
                                 <Loader2 size={16} className="animate-spin" />
@@ -431,7 +431,7 @@ const Inventory = () => {
                 {isLoading ? (
                     <div className="flex items-center justify-center py-20">
                         <div className="text-center">
-                            <Loader2 size={48} className="animate-spin text-blue-600 mx-auto mb-4" />
+                            <Loader2 size={48} className="animate-spin text-red-600 mx-auto mb-4" />
                             <p className="text-gray-600 font-medium">Loading inventory...</p>
                         </div>
                     </div>
@@ -443,7 +443,7 @@ const Inventory = () => {
                                 <h3 className="text-lg font-bold text-gray-800">Filters</h3>
                                 <button
                                     onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-                                    className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                                    className="text-sm text-red-600 hover:text-red-700 font-medium"
                                 >
                                     {showAdvancedFilters ? '- Hide Advanced Filters' : '+ Show Advanced Filters'}
                                 </button>
@@ -458,7 +458,7 @@ const Inventory = () => {
                                         placeholder="Search by serial, brand, model, invoice, sales rep..."
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-blue-500 outline-none transition-all"
+                                        className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-red-500 outline-none transition-all"
                                     />
                                 </div>
 
@@ -573,7 +573,7 @@ const Inventory = () => {
 
                             {/* Results count */}
                             <div className="mt-4 text-sm text-gray-600">
-                                Showing <span className="font-bold text-blue-600">{filteredBatteries.length}</span> of <span className="font-bold">{batteries.length}</span> batteries
+                                Showing <span className="font-bold text-red-600">{filteredBatteries.length}</span> of <span className="font-bold">{batteries.length}</span> batteries
                             </div>
                         </div>
 
@@ -667,7 +667,7 @@ const Inventory = () => {
                                             })()}
                                             <button
                                                 onClick={() => navigate(`/inventory/edit?id=${battery.id}`)}
-                                                className="flex items-center gap-1 px-3 py-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition-all text-sm font-medium"
+                                                className="flex items-center gap-1 px-3 py-2 text-green-700 bg-green-50 hover:bg-green-100 rounded-lg transition-all text-sm font-medium"
                                             >
                                                 <Edit2 size={16} /> Edit
                                             </button>
@@ -695,38 +695,38 @@ const Inventory = () => {
                         {/* Table View */}
                         <div className="hidden md:block bg-white border border-gray-300 rounded shadow-sm overflow-hidden">
                             <div className="overflow-x-auto">
-                            <table className="w-full text-sm border-collapse">
-                                <thead>
-                                    <tr className="bg-[#2563eb] text-white text-left">
-                                            <th onClick={() => handleSort('serialNumber')} className="px-3 py-2 text-left text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-700 whitespace-nowrap">
-                                            Serial # {sortConfig.key === 'serialNumber' && (sortConfig.direction === 'asc' ? '?' : '?')}
-                                        </th>
+                                <table className="w-full text-sm border-collapse">
+                                    <thead>
+                                        <tr className="bg-[#CC0000] text-white text-left">
+                                            <th onClick={() => handleSort('serialNumber')} className="px-3 py-2 text-left text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-red-800 whitespace-nowrap">
+                                                Serial # {sortConfig.key === 'serialNumber' && (sortConfig.direction === 'asc' ? '?' : '?')}
+                                            </th>
                                             {/* Hidden below lg */}
                                             <th className="hidden lg:table-cell px-3 py-2 text-left text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Barcode</th>
                                             {/* ALWAYS VISIBLE */}
-                                            <th onClick={() => handleSort('brand')} className="px-3 py-2 text-left text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-700 whitespace-nowrap">
-                                            Brand {sortConfig.key === 'brand' && (sortConfig.direction === 'asc' ? '?' : '?')}
-                                        </th>
+                                            <th onClick={() => handleSort('brand')} className="px-3 py-2 text-left text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-red-800 whitespace-nowrap">
+                                                Brand {sortConfig.key === 'brand' && (sortConfig.direction === 'asc' ? '?' : '?')}
+                                            </th>
                                             {/* ALWAYS VISIBLE */}
-                                            <th onClick={() => handleSort('model')} className="px-3 py-2 text-left text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-700 whitespace-nowrap">
-                                            Model {sortConfig.key === 'model' && (sortConfig.direction === 'asc' ? '?' : '?')}
-                                        </th>
+                                            <th onClick={() => handleSort('model')} className="px-3 py-2 text-left text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-red-800 whitespace-nowrap">
+                                                Model {sortConfig.key === 'model' && (sortConfig.direction === 'asc' ? '?' : '?')}
+                                            </th>
                                             {/* Hidden below xl */}
-                                            <th onClick={() => handleSort('capacity')} className="hidden xl:table-cell px-3 py-2 text-left text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-700 whitespace-nowrap">
-                                            Capacity {sortConfig.key === 'capacity' && (sortConfig.direction === 'asc' ? '?' : '?')}
-                                        </th>
+                                            <th onClick={() => handleSort('capacity')} className="hidden xl:table-cell px-3 py-2 text-left text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-red-800 whitespace-nowrap">
+                                                Capacity {sortConfig.key === 'capacity' && (sortConfig.direction === 'asc' ? '?' : '?')}
+                                            </th>
                                             {/* Hidden below xl */}
-                                            <th onClick={() => handleSort('voltage')} className="hidden xl:table-cell px-3 py-2 text-left text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-700 whitespace-nowrap">
-                                            Voltage {sortConfig.key === 'voltage' && (sortConfig.direction === 'asc' ? '?' : '?')}
-                                        </th>
+                                            <th onClick={() => handleSort('voltage')} className="hidden xl:table-cell px-3 py-2 text-left text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-red-800 whitespace-nowrap">
+                                                Voltage {sortConfig.key === 'voltage' && (sortConfig.direction === 'asc' ? '?' : '?')}
+                                            </th>
                                             {/* Hidden below xl */}
-                                            <th onClick={() => handleSort('sellingPrice')} className="hidden xl:table-cell px-3 py-2 text-left text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-700 whitespace-nowrap">
-                                            Price {sortConfig.key === 'sellingPrice' && (sortConfig.direction === 'asc' ? '?' : '?')}
-                                        </th>
+                                            <th onClick={() => handleSort('sellingPrice')} className="hidden xl:table-cell px-3 py-2 text-left text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-red-800 whitespace-nowrap">
+                                                Price {sortConfig.key === 'sellingPrice' && (sortConfig.direction === 'asc' ? '?' : '?')}
+                                            </th>
                                             {/* Hidden below lg */}
-                                            <th onClick={() => handleSort('purchaseDate')} className="hidden lg:table-cell px-3 py-2 text-left text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-blue-700 whitespace-nowrap">
+                                            <th onClick={() => handleSort('purchaseDate')} className="hidden lg:table-cell px-3 py-2 text-left text-xs font-bold text-white uppercase tracking-wider cursor-pointer hover:bg-red-800 whitespace-nowrap">
                                                 Purchase {sortConfig.key === 'purchaseDate' && (sortConfig.direction === 'asc' ? '?' : '?')}
-                                        </th>
+                                            </th>
                                             {/* ALWAYS VISIBLE */}
                                             <th className="px-3 py-2 text-left text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Expiry</th>
                                             {/* ALWAYS VISIBLE */}
@@ -739,21 +739,21 @@ const Inventory = () => {
                                             <th className="px-3 py-2 text-left text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Status</th>
                                             {/* ALWAYS VISIBLE */}
                                             <th className="px-3 py-2 text-right text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {filteredBatteries.map((battery, index) => {
-                                        const purchaseDate = new Date(battery.purchaseDate);
-                                        const expiryDate = new Date(purchaseDate);
-                                        expiryDate.setMonth(expiryDate.getMonth() + (battery.shelfLifeMonths || BUSINESS_DEFAULTS.DEFAULT_SHELF_LIFE_MONTHS));
-                                        const today = new Date();
-                                        const oneMonthFromNow = new Date();
-                                        oneMonthFromNow.setMonth(oneMonthFromNow.getMonth() + 1);
-                                        const isExpiringSoon = expiryDate <= oneMonthFromNow && expiryDate > today;
-                                        const isExpired = expiryDate <= today;
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {filteredBatteries.map((battery, index) => {
+                                            const purchaseDate = new Date(battery.purchaseDate);
+                                            const expiryDate = new Date(purchaseDate);
+                                            expiryDate.setMonth(expiryDate.getMonth() + (battery.shelfLifeMonths || BUSINESS_DEFAULTS.DEFAULT_SHELF_LIFE_MONTHS));
+                                            const today = new Date();
+                                            const oneMonthFromNow = new Date();
+                                            oneMonthFromNow.setMonth(oneMonthFromNow.getMonth() + 1);
+                                            const isExpiringSoon = expiryDate <= oneMonthFromNow && expiryDate > today;
+                                            const isExpired = expiryDate <= today;
 
-                                        return (
-                                            <tr key={battery.id} className={`border-b border-gray-200 transition-colors ${isExpiringSoon || isExpired ? 'bg-red-50 hover:bg-red-100' : index % 2 === 0 ? 'bg-blue-50 hover:bg-blue-100' : 'bg-white hover:bg-blue-50'}`}>
+                                            return (
+                                                <tr key={battery.id} className={`border-b border-gray-200 transition-colors ${isExpiringSoon || isExpired ? 'bg-red-50 hover:bg-red-100' : index % 2 === 0 ? 'bg-green-50 hover:bg-green-100' : 'bg-white hover:bg-green-50'}`}>
                                                     {/* ALWAYS VISIBLE */}
                                                     <td className="px-3 py-3 text-gray-800 text-sm font-medium">{battery.serialNumber}</td>
                                                     {/* Hidden below lg */}
@@ -771,27 +771,27 @@ const Inventory = () => {
                                                     {/* Hidden below lg */}
                                                     <td className="hidden lg:table-cell px-3 py-3 text-sm text-gray-700 whitespace-nowrap">
                                                         {new Date(battery.purchaseDate).toLocaleDateString()}
-                                                </td>
+                                                    </td>
                                                     {/* ALWAYS VISIBLE */}
                                                     <td className="px-3 py-3">
                                                         <div className="flex flex-col">
                                                             <span className={`text-sm font-medium whitespace-nowrap ${isExpired ? 'text-red-700 font-bold' : isExpiringSoon ? 'text-orange-600 font-bold' : 'text-gray-700'}`}>
-                                                            {expiryDate.toLocaleDateString()}
-                                                        </span>
-                                                        {isExpired && <span className="text-xs text-red-600 font-bold">EXPIRED</span>}
+                                                                {expiryDate.toLocaleDateString()}
+                                                            </span>
+                                                            {isExpired && <span className="text-xs text-red-600 font-bold">EXPIRED</span>}
                                                             {isExpiringSoon && !isExpired && <span className="text-xs text-orange-600 font-bold">EXPIRING</span>}
-                                                    </div>
-                                                </td>
+                                                        </div>
+                                                    </td>
                                                     {/* ALWAYS VISIBLE */}
                                                     <td className="px-3 py-3 text-gray-800 text-sm text-center">{battery.stockQuantity}</td>
                                                     {/* Hidden below 2xl */}
                                                     <td className="hidden 2xl:table-cell px-3 py-3 text-gray-700 text-sm">
-                                                    {battery.salesRep || '-'}
-                                                </td>
+                                                        {battery.salesRep || '-'}
+                                                    </td>
                                                     {/* Hidden below 2xl */}
                                                     <td className="hidden 2xl:table-cell px-3 py-3 text-gray-600 font-mono text-xs">
-                                                    {battery.invoiceNumber || '-'}
-                                                </td>
+                                                        {battery.invoiceNumber || '-'}
+                                                    </td>
                                                     {/* ALWAYS VISIBLE */}
                                                     <td className="px-3 py-3">
                                                         {(() => {
@@ -829,27 +829,27 @@ const Inventory = () => {
                                                                     </button>
                                                                 );
                                                             })()}
-                                                        <button
-                                                            onClick={() => navigate(`/inventory/edit?id=${battery.id}`)}
-                                                            className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg transition-all"
-                                                            title="Edit"
-                                                        >
+                                                            <button
+                                                                onClick={() => navigate(`/inventory/edit?id=${battery.id}`)}
+                                                                className="p-2 text-green-700 hover:bg-green-100 rounded-lg transition-all"
+                                                                title="Edit"
+                                                            >
                                                                 <Edit2 size={16} />
-                                                        </button>
-                                                        <button
-                                                            onClick={() => handleDelete(battery.id)}
-                                                            className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-all"
-                                                            title="Delete"
-                                                        >
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleDelete(battery.id)}
+                                                                className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-all"
+                                                                title="Delete"
+                                                            >
                                                                 <Trash2 size={16} />
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
 
@@ -873,7 +873,7 @@ const Inventory = () => {
                                                     type="text"
                                                     value={formData.serialNumber}
                                                     onChange={(e) => setFormData({ ...formData, serialNumber: e.target.value })}
-                                                    className="w-full px-3 py-2 bg-white border border-gray-300 rounded text-gray-800 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                                                    className="w-full px-3 py-2 bg-white border border-gray-300 rounded text-gray-800 focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none"
                                                     required
                                                 />
                                             </div>
@@ -1005,7 +1005,7 @@ const Inventory = () => {
                                             </button>
                                             <button
                                                 type="submit"
-                                                className="px-4 py-2 bg-[#2563eb] text-white rounded hover:bg-[#1d4ed8] transition-colors font-bold text-sm"
+                                                className="px-4 py-2 bg-[#CC0000] text-white rounded hover:bg-[#990000] transition-colors font-bold text-sm"
                                             >
                                                 {editingBattery ? 'Update' : 'Create'}
                                             </button>
@@ -1041,7 +1041,7 @@ const Inventory = () => {
             {viewingReturn && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
                     <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-gray-300">
-                        <div className="sticky top-0 bg-[#2563eb] p-4 flex justify-between items-center">
+                        <div className="sticky top-0 bg-[#CC0000] p-4 flex justify-between items-center">
                             <h2 className="text-lg font-bold text-white">Return Details</h2>
                             <button
                                 onClick={() => setViewingReturn(null)}
@@ -1094,8 +1094,8 @@ const Inventory = () => {
                                     <div>
                                         <p className="text-sm text-gray-500">Status</p>
                                         <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium border ${viewingReturn.status === 'Completed'
-                                                ? 'bg-green-100 text-green-700 border-green-200'
-                                                : 'bg-yellow-100 text-yellow-700 border-yellow-200'
+                                            ? 'bg-green-100 text-green-700 border-green-200'
+                                            : 'bg-yellow-100 text-yellow-700 border-yellow-200'
                                             }`}>
                                             {viewingReturn.status}
                                         </span>
@@ -1108,10 +1108,10 @@ const Inventory = () => {
                             </div>
 
                             {/* Compensation Info */}
-                            <div className={`rounded p-4 ${viewingReturn.compensationType === 'Money' ? 'bg-green-50' : 'bg-blue-50'}`}>
+                            <div className={`rounded p-4 ${viewingReturn.compensationType === 'Money' ? 'bg-green-50' : 'bg-green-50'}`}>
                                 <h3 className="font-bold text-lg text-gray-800 mb-3">Compensation Details</h3>
                                 <div className="flex items-center gap-3 mb-3">
-                                    <span className={`text-xl font-bold ${viewingReturn.compensationType === 'Money' ? 'text-green-600' : 'text-blue-600'}`}>
+                                    <span className={`text-xl font-bold ${viewingReturn.compensationType === 'Money' ? 'text-green-600' : 'text-green-700'}`}>
                                         {viewingReturn.compensationType}
                                     </span>
                                 </div>
@@ -1127,7 +1127,7 @@ const Inventory = () => {
                                     <div className="space-y-3">
                                         <div>
                                             <p className="text-sm text-gray-500">Replacement Battery Serial Number</p>
-                                            <p className="font-bold text-blue-600">{viewingReturn.replacementSerialNumber || 'N/A'}</p>
+                                            <p className="font-bold text-red-600">{viewingReturn.replacementSerialNumber || 'N/A'}</p>
                                         </div>
                                         {viewingReturn.replacementSalesRep && (
                                             <div>
